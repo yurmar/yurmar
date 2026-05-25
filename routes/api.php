@@ -3,6 +3,7 @@
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BriefOrderController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\ProjectController;
@@ -36,6 +37,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{project}', [ProjectController::class, 'update']);
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+});
+
+// Brief orders: публичное создание, защищённый просмотр
+Route::post('/brief-orders', [BriefOrderController::class, 'store']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/brief-orders', [BriefOrderController::class, 'index']);
+    Route::get('/brief-orders/{briefOrder}', [BriefOrderController::class, 'show']);
 });
 
 // Public read

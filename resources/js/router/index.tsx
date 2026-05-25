@@ -6,6 +6,7 @@ import Portfolio from '@/pages/portfolio'
 import About from '@/pages/about'
 import Contacts from '@/pages/contacts'
 import Notebook from '@/pages/notebook'
+import Orders from '@/pages/orders'
 import NotFound from '@/pages/not-found'
 
 export const router = createBrowserRouter([
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
             { path: 'about', element: <About /> },
             { path: 'contacts', element: <Contacts /> },
             { path: 'notebook', element: <Notebook /> },
+            { path: 'orders', element: <Orders /> },
             { path: '*', element: <NotFound /> },
         ],
     },
