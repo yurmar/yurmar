@@ -17,7 +17,7 @@ const FIELDS = [
 
 export default function ProjectsSection({ limit }: { limit?: number }) {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: '-60px' })
+    const isInView = useInView(ref, { once: true, amount: 0.3 })
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const [items, setItems] = useState<ProjectItem[]>([])
     const [modal, setModal] = useState(false)

@@ -34,7 +34,7 @@ function TechBadge({ item, isAuth, onEdit, onDelete }: { item: TechItem; isAuth:
 
 export default function TechnologiesSection() {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: '-60px' })
+    const isInView = useInView(ref, { once: true, amount: 0.3 })
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const [items, setItems] = useState<TechItem[]>([])
     const [modal, setModal] = useState(false)

@@ -43,7 +43,7 @@ function SkillTag({ name, color }: { name: string; color: string }) {
 
 export default function AboutSection() {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: '-80px' })
+    const isInView = useInView(ref, { once: true, amount: 0.3 })
     const [data, setData] = useState<AboutData>(DEFAULT)
     const [modal, setModal] = useState(false)
     const [form, setForm] = useState<Record<string, string>>({})
@@ -84,8 +84,8 @@ export default function AboutSection() {
         }
     }
 
-    const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
-    const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }
+    const container = { hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.2 } } }
+    const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }
 
     return (
         <section id="about" ref={ref} className="py-24 px-4">
@@ -120,7 +120,7 @@ export default function AboutSection() {
                                     key={i}
                                     initial={{ opacity: 0, x: -15 }}
                                     animate={isInView ? { opacity: 1, x: 0 } : {}}
-                                    transition={{ delay: 0.3 + i * 0.07 }}
+                                    transition={{ delay: 0.35 + i * 0.1, duration: 0.5 }}
                                     className="flex items-center gap-3 p-3 rounded-xl card-block"
                                 >
                                     <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />

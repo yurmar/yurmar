@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { smoothScrollTo } from '@/utils/scroll'
 import { Download, Mail, FolderOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { apiGetHero, apiUpdateHero, HeroData } from '@/api/hero'
@@ -145,16 +146,15 @@ export default function HeroSection() {
                             {data.btn_portfolio}
                         </motion.button>
                     </Link>
-                    <a href="#contacts">
-                        <motion.button
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 hover:border-sky-400/50 text-white font-semibold text-sm hover:bg-white/5 transition-all"
-                        >
-                            <Mail size={16} />
-                            {data.btn_contact}
-                        </motion.button>
-                    </a>
+                    <motion.button
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => { const el = document.getElementById('contacts'); if (el) smoothScrollTo(el) }}
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 hover:border-sky-400/50 text-white font-semibold text-sm hover:bg-white/5 transition-all"
+                    >
+                        <Mail size={16} />
+                        {data.btn_contact}
+                    </motion.button>
                     {data.resume_path && (
                         <a href={data.resume_path} download>
                             <motion.button

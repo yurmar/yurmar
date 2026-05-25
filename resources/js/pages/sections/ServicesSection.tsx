@@ -32,7 +32,7 @@ const FIELDS = [
 
 export default function ServicesSection() {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: '-60px' })
+    const isInView = useInView(ref, { once: true, amount: 0.3 })
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const [items, setItems] = useState<ServiceItem[]>([])
     const [modal, setModal] = useState(false)
@@ -125,7 +125,7 @@ export default function ServicesSection() {
                                     initial={{ opacity: 0, y: 30 }}
                                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                                     exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ delay: i * 0.06, duration: 0.4 }}
+                                    transition={{ delay: 0.1 + i * 0.09, duration: 0.45 }}
                                     whileHover={{ y: -4, transition: { duration: 0.2 } }}
                                     className="relative group card-block rounded-2xl p-5 cursor-default"
                                 >

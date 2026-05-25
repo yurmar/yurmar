@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Send, Mail, MessageCircle, Bot } from 'lucide-react'
+import { Send, Mail, MessageCircle, Bot, FileText } from 'lucide-react'
 import { apiGetContacts, apiUpdateContacts, ContactData } from '@/api/contacts'
 import EditButton from '@/components/ui/EditButton'
 import Modal from '@/components/ui/Modal'
+import BriefOrderModal from '@/components/BriefOrderModal'
 
 const DEFAULT: ContactData = {
     description: 'Готов обсудить проект любой сложности',
@@ -23,9 +24,10 @@ const FIELDS = [
 
 export default function ContactsSection() {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: '-60px' })
+    const isInView = useInView(ref, { once: true, amount: 0.3 })
     const [data, setData] = useState<ContactData>(DEFAULT)
     const [modal, setModal] = useState(false)
+    const [briefModal, setBriefModal] = useState(false)
     const [form, setForm] = useState<Record<string, string>>({})
     const [saving, setSaving] = useState(false)
 
@@ -106,19 +108,15 @@ export default function ContactsSection() {
                             {btn.label}
                         </motion.a>
                     ))}
-                    {data.telegram_url && (
-                        <motion.a
-                            href={data.telegram_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="flex items-center gap-2 px-6 py-3 rounded-xl border border-sky-400/40 text-sky-400 hover:bg-sky-500/10 font-semibold text-sm transition-colors"
-                        >
-                            <MessageCircle size={16} />
-                            Заказать разработку
-                        </motion.a>
-                    )}
+                    <motion.button
+                        onClick={() => setBriefModal(true)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl border border-sky-400/40 text-sky-400 hover:bg-sky-500/10 font-semibold text-sm transition-colors"
+                    >
+                        <FileText size={16} />
+                        Запросить стоимость
+                    </motion.button>
                 </motion.div>
 
                 {/* Decorative grid */}
@@ -136,6 +134,7 @@ export default function ContactsSection() {
             </div>
 
             <Modal open={modal} title="Редактировать контакты" fields={FIELDS} values={form} onChange={(k, v) => setForm(p => ({ ...p, [k]: v }))} onSave={handleSave} onClose={() => setModal(false)} saving={saving} />
+            <BriefOrderModal open={briefModal} onClose={() => setBriefModal(false)} />
         </section>
     )
 }

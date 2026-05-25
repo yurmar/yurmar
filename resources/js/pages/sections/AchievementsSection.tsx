@@ -31,7 +31,7 @@ function CountUp({ value, inView }: { value: string; inView: boolean }) {
 
 export default function AchievementsSection() {
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true, margin: '-60px' })
+    const isInView = useInView(ref, { once: true, amount: 0.3 })
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const [items, setItems] = useState<AchievementItem[]>([])
     const [modal, setModal] = useState(false)
@@ -110,7 +110,7 @@ export default function AchievementsSection() {
                                     initial={{ opacity: 0, scale: 0.85 }}
                                     animate={isInView ? { opacity: 1, scale: 1 } : {}}
                                     exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{ delay: i * 0.1, duration: 0.5 }}
+                                    transition={{ delay: 0.15 + i * 0.12, duration: 0.5 }}
                                     className="relative group card-block rounded-2xl p-6 text-center"
                                 >
                                     <div className="text-4xl font-bold text-sky-400 mb-2">
