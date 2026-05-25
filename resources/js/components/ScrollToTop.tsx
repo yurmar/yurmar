@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUp } from 'lucide-react'
+import { smoothScrollTo } from '@/utils/scroll'
 
 export default function ScrollToTop() {
     const [visible, setVisible] = useState(false)
@@ -11,7 +12,7 @@ export default function ScrollToTop() {
         return () => window.removeEventListener('scroll', onScroll)
     }, [])
 
-    const scrollUp = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+    const scrollUp = () => smoothScrollTo(0)
 
     return (
         <AnimatePresence>

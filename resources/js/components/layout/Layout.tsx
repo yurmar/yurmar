@@ -3,6 +3,7 @@ import Header from './Header'
 import Footer from './Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 import { useEffect } from 'react'
+import { smoothScrollTo } from '@/utils/scroll'
 
 export default function Layout() {
     const { pathname, hash } = useLocation()
@@ -10,7 +11,8 @@ export default function Layout() {
     useEffect(() => {
         if (hash) {
             setTimeout(() => {
-                document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
+                const el = document.querySelector(hash)
+                if (el) smoothScrollTo(el)
             }, 100)
         } else {
             window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
