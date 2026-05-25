@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { smoothScrollTo } from '@/utils/scroll'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogIn, LogOut } from 'lucide-react'
+import { Menu, X, LogIn, LogOut, FileText } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store'
@@ -33,7 +34,8 @@ export default function Header() {
 
     const handleNavClick = (item: typeof NAV[0]) => {
         if (item.anchor && location.pathname === '/') {
-            document.querySelector(item.anchor)?.scrollIntoView({ behavior: 'smooth' })
+            const el = document.querySelector(item.anchor)
+            if (el) smoothScrollTo(el)
         }
         setOpen(false)
     }
@@ -78,14 +80,22 @@ export default function Header() {
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
                     {isAuth ? (
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={handleLogout}
-                            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors"
-                        >
-                            <LogOut size={13} /> Выйти
-                        </motion.button>
+                        <div className="hidden md:flex items-center gap-2">
+                            <Link
+                                to="/orders"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
+                            >
+                                <FileText size={13} /> Заказы
+                            </Link>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleLogout}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors"
+                            >
+                                <LogOut size={13} /> Выйти
+                            </motion.button>
+                        </div>
                     ) : (
                         <Link to="/login" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors">
                             <LogIn size={13} /> Войти
@@ -129,9 +139,14 @@ export default function Header() {
                             ))}
                             <div className="pt-2 border-t border-white/10">
                                 {isAuth ? (
-                                    <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 w-full">
-                                        <LogOut size={14} /> Выйти
-                                    </button>
+                                    <>
+                                        <Link to="/orders" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
+                                            <FileText size={14} /> Заказы
+                                        </Link>
+                                        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 w-full">
+                                            <LogOut size={14} /> Выйти
+                                        </button>
+                                    </>
                                 ) : (
                                     <Link to="/login" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
                                         <LogIn size={14} /> Войти
