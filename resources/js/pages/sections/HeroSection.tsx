@@ -9,7 +9,7 @@ import Modal from '@/components/ui/Modal'
 
 const DEFAULT: HeroData = {
     photo_path: null,
-    name: 'Юрий Марчук',
+    name: 'YurMarDev',
     specialization: 'Fullstack Web Developer',
     offer_text: 'Fullstack Web Developer • Bitrix / Laravel / React\nБолее 12 лет в разработке веб-систем и корпоративных решений',
     resume_path: null,
