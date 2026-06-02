@@ -136,7 +136,7 @@ export default function HeroSection() {
                     transition={{ duration: 0.6, delay: 0.55 }}
                     className="flex flex-wrap items-center justify-center gap-3"
                 >
-                    <Link to="/portfolio">
+                    {/* <Link to="/portfolio">
                         <motion.button
                             whileHover={{ scale: 1.04 }}
                             whileTap={{ scale: 0.97 }}
@@ -145,7 +145,7 @@ export default function HeroSection() {
                             <FolderOpen size={16} />
                             {data.btn_portfolio}
                         </motion.button>
-                    </Link>
+                    </Link> */}
                     <motion.button
                         whileHover={{ scale: 1.04 }}
                         whileTap={{ scale: 0.97 }}
