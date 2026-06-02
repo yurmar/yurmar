@@ -98,7 +98,7 @@ export default function AboutSection() {
                 >
                     <div>
                         <p className="text-sky-400 text-sm font-medium tracking-widest uppercase mb-2">Обо мне</p>
-                        <h2 className="text-4xl md:text-5xl font-bold">Кто я такой</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold">Кто я</h2>
                     </div>
                     <EditButton onClick={openModal} />
                 </motion.div>
