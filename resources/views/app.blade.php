@@ -12,7 +12,19 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"></noscript>
     <link rel="preload" as="image" href="/images/logo.png">
     @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+    @production
+        @php
+            $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+            $cssFile = $manifest['resources/css/app.css']['file'] ?? null;
+        @endphp
+        @if($cssFile)
+        <link rel="preload" as="style" href="/build/{{ $cssFile }}" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="/build/{{ $cssFile }}"></noscript>
+        @endif
+        @vite(['resources/js/app.tsx'])
+    @else
+        @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+    @endproduction
 </head>
 <body>
 <!-- Static LCP shell: visible immediately before React mounts, removed after -->
