@@ -48,7 +48,7 @@ export default function Header() {
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2.5 group">
                     <div className="w-9 h-9 rounded-xl overflow-hidden border border-sky-400/30">
-                        <img src="/images/logo.png" alt="YurMar" className="w-full h-full object-cover" onError={e => (e.currentTarget.style.display = 'none')} />
+                        <img src="/images/logo.png" alt="" className="w-full h-full object-cover" onError={e => (e.currentTarget.style.display = 'none')} />
                     </div>
                     <span className="font-bold text-lg text-gray-600 tracking-tight group-hover:text-sky-400 transition-colors">
                         Yur<span className="text-sky-400">Mar</span>
@@ -105,6 +105,8 @@ export default function Header() {
                     {/* Burger */}
                     <button
                         onClick={() => setOpen(!open)}
+                        aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
+                        aria-expanded={open}
                         className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
                     >
                         {open ? <X size={20} /> : <Menu size={20} />}

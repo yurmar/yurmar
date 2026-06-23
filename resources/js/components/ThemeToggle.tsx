@@ -13,6 +13,7 @@ export function ThemeToggle() {
             className="bg-glass rounded-4xl w-8 h-8 md:w-10 md:h-10"
             variant="ghost"
             size="icon"
+            aria-label={dark ? 'Светлая тема' : 'Тёмная тема'}
             onClick={() => dispatch(toggleTheme())}
         >
             {dark ? <Sun /> : <Moon className="text-gray-600" />}
