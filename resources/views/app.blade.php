@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>YurMar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Юрий Марчук — Fullstack Web Developer. Разработка корпоративных сайтов, React SPA, Laravel API, Bitrix и WordPress. Более 12 лет опыта.">
+    <meta name="description" content="YurMarDev — Fullstack Web Developer. Разработка корпоративных сайтов, React SPA, Laravel API, Bitrix и WordPress. Более 12 лет опыта.">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" href="/images/logo.png" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
