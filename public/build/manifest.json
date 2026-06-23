@@ -1,6 +1,41 @@
 {
+  "_vendor-http-C0Zqfgkc.js": {
+    "file": "assets/vendor-http-C0Zqfgkc.js",
+    "name": "vendor-http"
+  },
+  "_vendor-motion-DjtBJHKN.js": {
+    "file": "assets/vendor-motion-DjtBJHKN.js",
+    "name": "vendor-motion",
+    "imports": [
+      "_vendor-redux-rOCWFPxA.js"
+    ]
+  },
+  "_vendor-react-l0sNRNKZ.js": {
+    "file": "assets/vendor-react-l0sNRNKZ.js",
+    "name": "vendor-react"
+  },
+  "_vendor-redux-rOCWFPxA.js": {
+    "file": "assets/vendor-redux-rOCWFPxA.js",
+    "name": "vendor-redux"
+  },
+  "_vendor-router-DlFw1pAI.js": {
+    "file": "assets/vendor-router-DlFw1pAI.js",
+    "name": "vendor-router",
+    "imports": [
+      "_vendor-redux-rOCWFPxA.js"
+    ]
+  },
+  "_vendor-ui-DCtoiTaz.js": {
+    "file": "assets/vendor-ui-DCtoiTaz.js",
+    "name": "vendor-ui",
+    "imports": [
+      "_vendor-redux-rOCWFPxA.js",
+      "_vendor-motion-DjtBJHKN.js",
+      "_vendor-router-DlFw1pAI.js"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-DJIoyhdw.css",
+    "file": "assets/app-Dn91dbj-.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,9 +44,104 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-BG2aim_w.js",
+    "file": "assets/app-1xtdPcJ-.js",
     "name": "app",
     "src": "resources/js/app.tsx",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "_vendor-redux-rOCWFPxA.js",
+      "_vendor-router-DlFw1pAI.js",
+      "_vendor-http-C0Zqfgkc.js",
+      "_vendor-ui-DCtoiTaz.js"
+    ],
+    "dynamicImports": [
+      "resources/js/pages/login.tsx",
+      "resources/js/pages/about.tsx",
+      "resources/js/pages/contacts.tsx",
+      "resources/js/pages/notebook.tsx",
+      "resources/js/pages/orders.tsx",
+      "resources/js/pages/not-found.tsx"
+    ]
+  },
+  "resources/js/pages/about.tsx": {
+    "file": "assets/about-BC6xiBOX.js",
+    "name": "about",
+    "src": "resources/js/pages/about.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "resources/js/app.tsx",
+      "_vendor-redux-rOCWFPxA.js",
+      "_vendor-router-DlFw1pAI.js",
+      "_vendor-http-C0Zqfgkc.js",
+      "_vendor-ui-DCtoiTaz.js"
+    ]
+  },
+  "resources/js/pages/contacts.tsx": {
+    "file": "assets/contacts-jcR3WqRz.js",
+    "name": "contacts",
+    "src": "resources/js/pages/contacts.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "resources/js/app.tsx",
+      "_vendor-redux-rOCWFPxA.js",
+      "_vendor-router-DlFw1pAI.js",
+      "_vendor-http-C0Zqfgkc.js",
+      "_vendor-ui-DCtoiTaz.js"
+    ]
+  },
+  "resources/js/pages/login.tsx": {
+    "file": "assets/login-DtBClxrK.js",
+    "name": "login",
+    "src": "resources/js/pages/login.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "_vendor-redux-rOCWFPxA.js",
+      "resources/js/app.tsx",
+      "_vendor-ui-DCtoiTaz.js",
+      "_vendor-router-DlFw1pAI.js",
+      "_vendor-http-C0Zqfgkc.js"
+    ]
+  },
+  "resources/js/pages/not-found.tsx": {
+    "file": "assets/not-found-CHkXOHDN.js",
+    "name": "not-found",
+    "src": "resources/js/pages/not-found.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "_vendor-ui-DCtoiTaz.js",
+      "_vendor-router-DlFw1pAI.js",
+      "_vendor-redux-rOCWFPxA.js"
+    ]
+  },
+  "resources/js/pages/notebook.tsx": {
+    "file": "assets/notebook-VLlu4QQ1.js",
+    "name": "notebook",
+    "src": "resources/js/pages/notebook.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "_vendor-ui-DCtoiTaz.js",
+      "_vendor-redux-rOCWFPxA.js",
+      "_vendor-router-DlFw1pAI.js"
+    ]
+  },
+  "resources/js/pages/orders.tsx": {
+    "file": "assets/orders-D9wNuFCu.js",
+    "name": "orders",
+    "src": "resources/js/pages/orders.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-motion-DjtBJHKN.js",
+      "_vendor-redux-rOCWFPxA.js",
+      "resources/js/app.tsx",
+      "_vendor-router-DlFw1pAI.js",
+      "_vendor-ui-DCtoiTaz.js",
+      "_vendor-http-C0Zqfgkc.js"
+    ]
   }
 }

@@ -95,6 +95,8 @@ export default function HeroSection() {
                         src={data.photo_path ?? '/images/logo.png'}
                         alt={data.name}
                         className="w-full h-full object-cover"
+                        fetchPriority="high"
+                        loading="eager"
                     />
                 </motion.div>
 

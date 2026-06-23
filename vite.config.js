@@ -16,4 +16,18 @@ export default defineConfig({
             '@': path.resolve('./resources/js'),
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-react': ['react', 'react-dom'],
+                    'vendor-router': ['react-router-dom'],
+                    'vendor-redux': ['@reduxjs/toolkit', 'react-redux', 'redux'],
+                    'vendor-motion': ['framer-motion'],
+                    'vendor-ui': ['lucide-react', '@radix-ui/react-avatar', '@radix-ui/react-slot'],
+                    'vendor-http': ['axios'],
+                },
+            },
+        },
+    },
 })
