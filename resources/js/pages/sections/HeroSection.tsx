@@ -100,11 +100,11 @@ export default function HeroSection() {
                     />
                 </motion.div>
 
-                {/* Name */}
+                {/* Name — no opacity: 0 initial so browser registers LCP immediately */}
                 <motion.h1
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 1, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
+                    transition={{ duration: 0.5 }}
                     className="text-5xl md:text-7xl font-bold text-white mb-3 tracking-tight"
                 >
                     {data.name}

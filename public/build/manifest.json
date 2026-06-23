@@ -44,7 +44,7 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-1xtdPcJ-.js",
+    "file": "assets/app-CfvSqCWx.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -65,7 +65,7 @@
     ]
   },
   "resources/js/pages/about.tsx": {
-    "file": "assets/about-BC6xiBOX.js",
+    "file": "assets/about-BosXBzGp.js",
     "name": "about",
     "src": "resources/js/pages/about.tsx",
     "isDynamicEntry": true,
@@ -79,7 +79,7 @@
     ]
   },
   "resources/js/pages/contacts.tsx": {
-    "file": "assets/contacts-jcR3WqRz.js",
+    "file": "assets/contacts-BNMl0Yli.js",
     "name": "contacts",
     "src": "resources/js/pages/contacts.tsx",
     "isDynamicEntry": true,
@@ -93,7 +93,7 @@
     ]
   },
   "resources/js/pages/login.tsx": {
-    "file": "assets/login-DtBClxrK.js",
+    "file": "assets/login-DL3-mbeT.js",
     "name": "login",
     "src": "resources/js/pages/login.tsx",
     "isDynamicEntry": true,
@@ -131,7 +131,7 @@
     ]
   },
   "resources/js/pages/orders.tsx": {
-    "file": "assets/orders-D9wNuFCu.js",
+    "file": "assets/orders-Yf_aghDQ.js",
     "name": "orders",
     "src": "resources/js/pages/orders.tsx",
     "isDynamicEntry": true,
