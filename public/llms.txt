@@ -1,0 +1,23 @@
+# YurMarDev — Fullstack Web Developer
+
+Юрий Марчук — fullstack-разработчик с более чем 12 годами опыта. Специализируется на корпоративных системах, государственных проектах и современных React SPA.
+
+## Стек технологий
+
+Frontend: React, TypeScript, Redux Toolkit, Tailwind CSS, Framer Motion
+Backend: PHP, Laravel, Bitrix, WordPress
+DevOps: Linux, Docker, Nginx, Git
+
+## Разделы сайта
+
+- [Главная](https://yurmar.ru/)
+- [Обо мне](https://yurmar.ru/#about)
+- [Услуги](https://yurmar.ru/#services)
+- [Достижения](https://yurmar.ru/#achievements)
+- [Технологии](https://yurmar.ru/#technologies)
+- [Контакты](https://yurmar.ru/#contacts)
+- [Блокнот](https://yurmar.ru/notebook)
+
+## Контакты
+
+Email: [yurmardev@yandex.ru](mailto:yurmardev@yandex.ru)
