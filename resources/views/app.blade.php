@@ -28,29 +28,7 @@
     @endproduction
 </head>
 <body>
-<!-- Static LCP shell: visible immediately before React mounts, removed after -->
-<div id="hero-shell" style="position:fixed;inset:0;z-index:999;background:linear-gradient(135deg,#050d1f 0%,#0a1628 40%,#0d2040 70%,#081424 100%);display:flex;align-items:center;justify-content:center">
-    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.55)"></div>
-    <h1 style="position:relative;font-family:Inter,system-ui,sans-serif;font-size:clamp(3rem,8vw,4.5rem);font-weight:700;color:#fff;text-align:center;letter-spacing:-0.025em;margin:0;line-height:1.1">YurMarDev</h1>
-</div>
 <div id="app"></div>
-<script>
-(function(){
-    var app=document.getElementById('app');
-    var shell=document.getElementById('hero-shell');
-    function removeShell(){
-        if(!shell)return;
-        shell.style.transition='opacity 0.25s';
-        shell.style.opacity='0';
-        setTimeout(function(){shell&&shell.remove();},250);
-    }
-    if(app&&app.firstChild){removeShell();return;}
-    var obs=new MutationObserver(function(){
-        if(app&&app.firstChild){removeShell();obs.disconnect();}
-    });
-    if(app)obs.observe(app,{childList:true});
-})();
-</script>
 <!-- Yandex Metrika: deferred until after page load to avoid blocking main thread -->
 <noscript><div><img src="https://mc.yandex.ru/watch/28095735" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <script>
