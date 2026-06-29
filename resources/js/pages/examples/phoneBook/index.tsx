@@ -436,8 +436,6 @@ function EmployeeCard({
                         </button>
                     </div>
 
-                    <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-3">Ответственности</p>
-
                     <div className="space-y-0.5 flex-1">
                         {RESPONSIBILITIES.map(r => (
                             <label
