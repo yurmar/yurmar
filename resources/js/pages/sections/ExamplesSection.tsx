@@ -10,7 +10,6 @@ import { RootState } from '@/store'
 const FOLDER_FIELDS = [
     { key: 'name', label: 'Название', type: 'text' as const },
     { key: 'description', label: 'Краткое описание (1 предложение)', type: 'text' as const },
-    { key: 'icon', label: 'Иконка (эмодзи)', type: 'text' as const, placeholder: '📞' },
     { key: 'color', label: 'Цвет (sky/purple/emerald/amber/rose/indigo)', type: 'text' as const, placeholder: 'sky' },
     { key: 'screenshot_path', label: 'Путь к скриншоту', type: 'text' as const, placeholder: '/images/phonebook.jpg' },
     { key: 'url', label: 'Ссылка на демо (внутренняя или внешняя)', type: 'text' as const, placeholder: '/examples/phone-book' },
@@ -55,7 +54,7 @@ export default function ExamplesSection() {
 
     const openCreate = () => {
         setEditing(null)
-        setForm({ name: '', description: '', icon: '', color: 'sky', screenshot_path: '', url: '', sort_order: String(folders.length) })
+        setForm({ name: '', description: '', color: 'sky', screenshot_path: '', url: '', sort_order: String(folders.length) })
         setModal(true)
     }
 
@@ -66,7 +65,6 @@ export default function ExamplesSection() {
         setForm({
             name: folder.name,
             description: folder.description ?? '',
-            icon: folder.icon ?? '',
             color: folder.color ?? 'sky',
             screenshot_path: (folder as any).screenshot_path ?? '',
             url: (folder as any).url ?? '',
@@ -180,13 +178,6 @@ export default function ExamplesSection() {
 
                                             {/* Depth overlay */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/50" />
-
-                                            {/* Icon top-left */}
-                                            {folder.icon && (
-                                                <div className="absolute top-4 left-4 text-2xl drop-shadow-lg select-none">
-                                                    {folder.icon}
-                                                </div>
-                                            )}
 
                                             {/* Title — centered */}
                                             <div className="absolute inset-0 flex items-center justify-center px-6">
