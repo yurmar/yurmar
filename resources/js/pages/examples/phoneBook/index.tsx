@@ -189,7 +189,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
     return (
         <button
             onClick={onChange}
-            className={`relative w-8 h-4 rounded-full transition-colors duration-200 flex-shrink-0 ${checked ? 'bg-sky-500' : 'bg-white/15 hover:bg-white/25'}`}
+            className={`relative w-8 h-4 rounded-full transition-colors duration-200 flex-shrink-0 ${checked ? 'bg-sky-500' : 'bg-foreground/15 hover:bg-foreground/25'}`}
         >
             <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform duration-200 ${checked ? 'translate-x-4' : ''}`} />
         </button>
@@ -199,7 +199,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 // ── Employee Form ─────────────────────────────────────────────────────────────
 
 function EmployeeForm({ values, onChange }: { values: Record<string, string>; onChange: (k: string, v: string) => void }) {
-    const inputCls = 'w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-sky-500/50 transition-colors'
+    const inputCls = 'w-full px-3 py-2 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-white placeholder-foreground/30 focus:outline-none focus:border-sky-500/50 transition-colors'
 
     return (
         <div className="space-y-3">
@@ -211,29 +211,29 @@ function EmployeeForm({ values, onChange }: { values: Record<string, string>; on
                 { key: 'email',     label: 'Email',      placeholder: 'ivanov@digit-solutions.ru' },
             ] as const).map(f => (
                 <div key={f.key}>
-                    <label className="block text-xs text-white/50 mb-1">{f.label}</label>
+                    <label className="block text-xs text-foreground/50 mb-1">{f.label}</label>
                     <input type="text" value={values[f.key] ?? ''} onChange={e => onChange(f.key, e.target.value)} placeholder={f.placeholder} className={inputCls} />
                 </div>
             ))}
             <div>
-                <label className="block text-xs text-white/50 mb-1">Отдел</label>
+                <label className="block text-xs text-foreground/50 mb-1">Отдел</label>
                 <select value={values.department ?? ''} onChange={e => onChange('department', e.target.value)}
                     className={inputCls + ' appearance-none cursor-pointer'}>
                     {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
             </div>
-            <div className="pt-1 border-t border-white/8">
-                <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-2 flex items-center gap-1.5">
+            <div className="pt-1 border-t border-foreground/8">
+                <p className="text-[10px] uppercase tracking-widest text-foreground/30 font-semibold mb-2 flex items-center gap-1.5">
                     <Plane size={10} /> Отпуск
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        <label className="block text-xs text-white/50 mb-1">С</label>
+                        <label className="block text-xs text-foreground/50 mb-1">С</label>
                         <input type="date" value={values.absenceFrom ?? ''} onChange={e => onChange('absenceFrom', e.target.value)}
                             className={inputCls + ' [color-scheme:dark]'} />
                     </div>
                     <div>
-                        <label className="block text-xs text-white/50 mb-1">По</label>
+                        <label className="block text-xs text-foreground/50 mb-1">По</label>
                         <input type="date" value={values.absenceTo ?? ''} onChange={e => onChange('absenceTo', e.target.value)}
                             className={inputCls + ' [color-scheme:dark]'} />
                     </div>
@@ -252,24 +252,24 @@ function EmployeeForm({ values, onChange }: { values: Record<string, string>; on
 // ── Vacancy Form ───────────────────────────────────────────────────────────────
 
 function VacancyForm({ values, onChange }: { values: Record<string, string>; onChange: (k: string, v: string) => void }) {
-    const inputCls = 'w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-teal-500/50 transition-colors'
+    const inputCls = 'w-full px-3 py-2 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-white placeholder-foreground/30 focus:outline-none focus:border-teal-500/50 transition-colors'
 
     return (
         <div className="space-y-3">
             <div>
-                <label className="block text-xs text-white/50 mb-1">Должность</label>
+                <label className="block text-xs text-foreground/50 mb-1">Должность</label>
                 <input type="text" value={values.position ?? ''} onChange={e => onChange('position', e.target.value)}
                     placeholder="Senior Developer" className={inputCls} />
             </div>
             <div>
-                <label className="block text-xs text-white/50 mb-1">Отдел</label>
+                <label className="block text-xs text-foreground/50 mb-1">Отдел</label>
                 <select value={values.department ?? ''} onChange={e => onChange('department', e.target.value)}
                     className={inputCls + ' appearance-none cursor-pointer'}>
                     {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
             </div>
             <div>
-                <label className="block text-xs text-white/50 mb-1">Описание</label>
+                <label className="block text-xs text-foreground/50 mb-1">Описание</label>
                 <textarea value={values.description ?? ''} onChange={e => onChange('description', e.target.value)}
                     placeholder="Требования и условия..." rows={3}
                     className={inputCls + ' resize-none'} />
@@ -290,15 +290,15 @@ function Dialog({ open, title, onClose, children }: { open: boolean; title: stri
             >
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
                 <motion.div
-                    className="relative z-10 w-full max-w-md bg-[#0d1a30] border border-white/10 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+                    className="relative z-10 w-full max-w-md bg-card border border-foreground/10 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
                     initial={{ scale: 0.92, opacity: 0, y: 16 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.92, opacity: 0, y: 16 }}
                     transition={{ type: 'spring', damping: 26, stiffness: 320 }}
                 >
                     <div className="flex items-center justify-between mb-5">
-                        <h3 className="font-semibold text-base text-white">{title}</h3>
-                        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+                        <h3 className="font-semibold text-base text-foreground">{title}</h3>
+                        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-foreground/10 text-foreground/50 hover:text-foreground transition-colors">
                             <X size={16} />
                         </button>
                     </div>
@@ -370,17 +370,17 @@ function EmployeeCard({
                     {/* Contacts */}
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                            <Phone size={11} className="text-white/30 flex-shrink-0" />
-                            <a href={`tel:${emp.phone}`} onClick={e => e.stopPropagation()} className="text-xs text-white/60 hover:text-white transition-colors truncate">
+                            <Phone size={11} className="text-foreground/30 flex-shrink-0" />
+                            <a href={`tel:${emp.phone}`} onClick={e => e.stopPropagation()} className="text-xs text-foreground/60 hover:text-foreground transition-colors truncate">
                                 {emp.phone}
                             </a>
                             {emp.extension && (
-                                <span className="ml-auto text-[10px] text-white/30 flex-shrink-0">доб. {emp.extension}</span>
+                                <span className="ml-auto text-[10px] text-foreground/30 flex-shrink-0">доб. {emp.extension}</span>
                             )}
                         </div>
                         <div className="flex items-center gap-2">
-                            <Mail size={11} className="text-white/30 flex-shrink-0" />
-                            <a href={`mailto:${emp.email}`} onClick={e => e.stopPropagation()} className="text-xs text-white/60 hover:text-white transition-colors truncate">
+                            <Mail size={11} className="text-foreground/30 flex-shrink-0" />
+                            <a href={`mailto:${emp.email}`} onClick={e => e.stopPropagation()} className="text-xs text-foreground/60 hover:text-foreground transition-colors truncate">
                                 {emp.email}
                             </a>
                         </div>
@@ -407,7 +407,7 @@ function EmployeeCard({
                             className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                                 emp.favorite
                                     ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400'
-                                    : 'bg-white/5 hover:bg-white/10 text-white/25 hover:text-white/60'
+                                    : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/25 hover:text-foreground/60'
                             }`}
                             title={emp.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}
                         >
@@ -437,11 +437,11 @@ function EmployeeCard({
                             <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${dept.avatarGradient} flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0`}>
                                 {initials(emp.name)}
                             </div>
-                            <p className="text-xs font-semibold text-white truncate">{emp.name.split(' ').slice(0, 2).join(' ')}</p>
+                            <p className="text-xs font-semibold text-foreground truncate">{emp.name.split(' ').slice(0, 2).join(' ')}</p>
                         </div>
                         <button
                             onClick={() => setFlipped(false)}
-                            className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors flex-shrink-0"
+                            className="p-1.5 rounded-lg hover:bg-foreground/10 text-foreground/40 hover:text-foreground transition-colors flex-shrink-0"
                         >
                             <X size={13} />
                         </button>
@@ -451,10 +451,10 @@ function EmployeeCard({
                         {RESPONSIBILITIES.map(r => (
                             <label
                                 key={r.key}
-                                className="flex items-center justify-between gap-3 py-2 px-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group/row"
+                                className="flex items-center justify-between gap-3 py-2 px-2 rounded-xl hover:bg-foreground/5 cursor-pointer transition-colors group/row"
                                 onClick={e => e.stopPropagation()}
                             >
-                                <span className="text-xs text-white/55 group-hover/row:text-white/80 transition-colors leading-tight">{r.label}</span>
+                                <span className="text-xs text-foreground/55 group-hover/row:text-foreground/80 transition-colors leading-tight">{r.label}</span>
                                 <Toggle
                                     checked={!!emp.responsibilities?.[r.key]}
                                     onChange={() => onToggleResponsibility(r.key)}
@@ -482,7 +482,7 @@ function TableRow({
     const isAbsent = !!emp.absence
 
     return (
-        <tr className={`group border-b border-white/5 hover:bg-white/3 transition-colors ${isAbsent ? 'opacity-65' : ''}`}>
+        <tr className={`group border-b border-foreground/5 hover:bg-foreground/5 transition-colors ${isAbsent ? 'opacity-65' : ''}`}>
             <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${dept.avatarGradient} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
@@ -490,7 +490,7 @@ function TableRow({
                     </div>
                     <div>
                         <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-medium text-white leading-tight">{emp.name}</p>
+                            <p className="text-sm font-medium text-foreground leading-tight">{emp.name}</p>
                             {emp.favorite && <Star size={9} className="text-amber-400 fill-amber-400 flex-shrink-0" />}
                         </div>
                         <p className={`text-xs ${dept.text}`}>{emp.position}</p>
@@ -510,15 +510,15 @@ function TableRow({
                     </span>
                 ) : (
                     <>
-                        <a href={`tel:${emp.phone}`} className="text-xs text-white/60 hover:text-white transition-colors">
+                        <a href={`tel:${emp.phone}`} className="text-xs text-foreground/60 hover:text-foreground transition-colors">
                             {emp.phone}
                         </a>
-                        {emp.extension && <span className="text-xs text-white/30 ml-2">доб. {emp.extension}</span>}
+                        {emp.extension && <span className="text-xs text-foreground/30 ml-2">доб. {emp.extension}</span>}
                     </>
                 )}
             </td>
             <td className="px-4 py-3">
-                <a href={`mailto:${emp.email}`} className="text-xs text-white/60 hover:text-white transition-colors">
+                <a href={`mailto:${emp.email}`} className="text-xs text-foreground/60 hover:text-foreground transition-colors">
                     {emp.email}
                 </a>
             </td>
@@ -528,7 +528,7 @@ function TableRow({
                         className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                             emp.favorite
                                 ? 'bg-amber-500/20 text-amber-400'
-                                : 'opacity-0 group-hover:opacity-100 bg-white/5 hover:bg-white/10 text-white/40'
+                                : 'opacity-0 group-hover:opacity-100 bg-foreground/5 hover:bg-foreground/10 text-foreground/40'
                         }`}>
                         <Star size={10} className={emp.favorite ? 'fill-amber-400' : ''} />
                     </button>
@@ -575,9 +575,9 @@ function VacancyCard({
                 </div>
             </div>
             {vacancy.description && (
-                <p className="text-xs text-white/45 leading-relaxed line-clamp-2">{vacancy.description}</p>
+                <p className="text-xs text-foreground/45 leading-relaxed line-clamp-2">{vacancy.description}</p>
             )}
-            <div className="mt-3 pt-3 border-t border-white/8">
+            <div className="mt-3 pt-3 border-t border-foreground/8">
                 <span className="text-[10px] text-teal-400 font-medium uppercase tracking-wide">Открытая вакансия</span>
             </div>
 
@@ -609,9 +609,9 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
     if (totalPages <= 1) return null
     const btnCls = (active: boolean, disabled?: boolean) =>
         `w-8 h-8 rounded-xl text-xs font-medium flex items-center justify-center transition-colors ${
-            disabled ? 'text-white/15 cursor-not-allowed' :
+            disabled ? 'text-foreground/15 cursor-not-allowed' :
             active   ? 'bg-sky-500 text-white shadow-lg' :
-                       'text-white/40 hover:text-white hover:bg-white/8'
+                       'text-foreground/40 hover:text-foreground hover:bg-foreground/8'
         }`
     return (
         <div className="flex items-center justify-center gap-1 mt-6">
@@ -620,7 +620,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
             </button>
             {getPageNums(page, totalPages).map((p, i) =>
                 p === '...'
-                    ? <span key={`e${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-white/25">…</span>
+                    ? <span key={`e${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-foreground/25">…</span>
                     : <button key={p} onClick={() => onChange(p)} className={btnCls(p === page)}>{p}</button>
             )}
             <button onClick={() => onChange(page + 1)} disabled={page === totalPages} className={btnCls(false, page === totalPages)}>
@@ -646,12 +646,12 @@ function SidebarBtn({
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 active
                     ? `bg-gradient-to-r ${dept.gradient} text-white shadow-lg`
-                    : 'text-white/50 hover:text-white hover:bg-white/5'
+                    : 'text-foreground/50 hover:text-foreground hover:bg-foreground/5'
             }`}
         >
             <span className="truncate">{dept.name}</span>
             <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-mono tabular-nums flex-shrink-0 ${
-                active ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40'
+                active ? 'bg-white/20 text-white' : 'bg-foreground/5 text-foreground/40'
             }`}>
                 {count}
             </span>
@@ -832,13 +832,13 @@ export default function PhoneBook() {
     const allFilters = [ALL_DEPT, FAVORITES_DEPT, ABSENT_DEPT, ...DEPARTMENTS, VACANCIES_DEPT]
 
     return (
-        <div className="min-h-screen pt-16 bg-[var(--background,#050d1f)]">
+        <div className="min-h-screen pt-16 bg-background">
 
             {/* ── Top bar ── */}
-            <div className="sticky top-16 z-50 border-b border-white/8 bg-[#060e22]/95 backdrop-blur-xl">
+            <div className="sticky top-16 z-50 border-b border-foreground/8 bg-background/95 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-3">
 
-                    <Link to="/examples" className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 transition-colors flex-shrink-0">
+                    <Link to="/examples" className="w-8 h-8 rounded-lg flex items-center justify-center bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-colors flex-shrink-0">
                         <ArrowLeft size={15} />
                     </Link>
 
@@ -847,25 +847,25 @@ export default function PhoneBook() {
                             <Users size={15} className="text-white" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-white leading-tight">Телефонный справочник</p>
-                            <p className="text-[10px] text-white/40">ООО «Цифровые решения»</p>
+                            <p className="text-xs font-bold text-foreground leading-tight">Телефонный справочник</p>
+                            <p className="text-[10px] text-foreground/40">ООО «Цифровые решения»</p>
                         </div>
                     </div>
 
-                    <div className="hidden sm:block w-px h-5 bg-white/10 mx-1" />
+                    <div className="hidden sm:block w-px h-5 bg-foreground/10 mx-1" />
 
                     {/* Search */}
                     <div className="relative flex-1">
-                        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/30" />
                         <input
                             type="text"
                             placeholder={isVacancyView ? 'Поиск по вакансиям...' : 'Поиск по имени, должности, телефону...'}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 focus:outline-none focus:border-sky-500/40 transition-colors"
+                            className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-white placeholder-foreground/25 focus:outline-none focus:border-sky-500/40 transition-colors"
                         />
                         {search && (
-                            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-white/30 hover:text-white transition-colors">
+                            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-foreground/30 hover:text-foreground transition-colors">
                                 <X size={11} />
                             </button>
                         )}
@@ -873,11 +873,11 @@ export default function PhoneBook() {
 
                     {/* View toggle — hidden in vacancy view */}
                     {!isVacancyView && (
-                        <div className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-xl p-1 gap-0.5">
-                            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-lg transition-colors ${viewMode === 'cards' ? 'bg-sky-500/30 text-sky-300' : 'text-white/40 hover:text-white'}`}>
+                        <div className="hidden sm:flex items-center bg-foreground/5 border border-foreground/10 rounded-xl p-1 gap-0.5">
+                            <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-lg transition-colors ${viewMode === 'cards' ? 'bg-sky-500/30 text-sky-300' : 'text-foreground/40 hover:text-foreground'}`}>
                                 <LayoutGrid size={14} />
                             </button>
-                            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-sky-500/30 text-sky-300' : 'text-white/40 hover:text-white'}`}>
+                            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-sky-500/30 text-sky-300' : 'text-foreground/40 hover:text-foreground'}`}>
                                 <List size={14} />
                             </button>
                         </div>
@@ -906,7 +906,7 @@ export default function PhoneBook() {
                     <div className="sticky top-32 space-y-0.5">
 
                         {/* Special filters */}
-                        <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold px-3 mb-2 mt-1">
+                        <p className="text-[10px] uppercase tracking-widest text-foreground/30 font-semibold px-3 mb-2 mt-1">
                             Фильтры
                         </p>
                         <SidebarBtn dept={ALL_DEPT}       count={counts.all}       active={activeFilter === 'all'}       onClick={() => setActiveFilter('all')} />
@@ -914,7 +914,7 @@ export default function PhoneBook() {
                         <SidebarBtn dept={ABSENT_DEPT}    count={counts.absent}    active={activeFilter === 'absent'}    onClick={() => setActiveFilter('absent')} />
 
                         {/* Departments */}
-                        <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold px-3 pt-4 pb-2 flex items-center gap-1.5">
+                        <p className="text-[10px] uppercase tracking-widest text-foreground/30 font-semibold px-3 pt-4 pb-2 flex items-center gap-1.5">
                             <Building2 size={10} /> Отделы
                         </p>
                         {DEPARTMENTS.map(dept => (
@@ -922,7 +922,7 @@ export default function PhoneBook() {
                         ))}
 
                         {/* Vacancies */}
-                        <div className="pt-3 mt-3 border-t border-white/8">
+                        <div className="pt-3 mt-3 border-t border-foreground/8">
                             <SidebarBtn dept={VACANCIES_DEPT} count={counts.vacancies} active={activeFilter === 'vacancies'} onClick={() => setActiveFilter('vacancies')} />
                         </div>
                     </div>
@@ -946,16 +946,16 @@ export default function PhoneBook() {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="overflow-hidden mt-1 bg-white/5 border border-white/10 rounded-xl p-1"
+                                    className="overflow-hidden mt-1 bg-foreground/5 border border-foreground/10 rounded-xl p-1"
                                 >
                                     {allFilters.map(dept => (
                                         <button
                                             key={dept.id}
                                             onClick={() => { setActiveFilter(dept.id); setSidebarOpen(false) }}
-                                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors"
+                                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm hover:bg-foreground/10 transition-colors"
                                         >
-                                            <span className="text-white/70">{dept.name}</span>
-                                            <span className="text-xs text-white/30">{counts[dept.id] ?? 0}</span>
+                                            <span className="text-foreground/70">{dept.name}</span>
+                                            <span className="text-xs text-foreground/30">{counts[dept.id] ?? 0}</span>
                                         </button>
                                     ))}
                                 </motion.div>
@@ -966,8 +966,8 @@ export default function PhoneBook() {
                     {/* Status bar */}
                     <div className="flex items-center justify-between mb-5">
                         <div>
-                            <h2 className="font-semibold text-base text-white">{activeFilterData.name}</h2>
-                            <p className="text-xs text-white/40 mt-0.5">
+                            <h2 className="font-semibold text-base text-foreground">{activeFilterData.name}</h2>
+                            <p className="text-xs text-foreground/40 mt-0.5">
                                 {isVacancyView
                                     ? (search ? `Найдено: ${filteredVacancies.length} вакансий` : `${vacancies.length} открытых вакансий`)
                                     : (search ? `Найдено: ${pluralEmployees(filtered.length)}` : pluralEmployees(filtered.length))
@@ -985,8 +985,8 @@ export default function PhoneBook() {
                     {isVacancyView ? (
                         filteredVacancies.length === 0 ? (
                             <div className="text-center py-24">
-                                <Briefcase size={36} className="mx-auto mb-3 text-white/15" />
-                                <p className="text-white/30 text-sm">{search ? 'Ничего не найдено' : 'Нет открытых вакансий'}</p>
+                                <Briefcase size={36} className="mx-auto mb-3 text-foreground/15" />
+                                <p className="text-foreground/30 text-sm">{search ? 'Ничего не найдено' : 'Нет открытых вакансий'}</p>
                                 {!search && (
                                     <button onClick={openAddVacancy} className="mt-4 text-xs text-teal-400 hover:text-teal-300 transition-colors">
                                         + Добавить первую вакансию
@@ -1006,8 +1006,8 @@ export default function PhoneBook() {
 
                         /* Empty state */
                         <div className="text-center py-24">
-                            <Users size={36} className="mx-auto mb-3 text-white/15" />
-                            <p className="text-white/30 text-sm">
+                            <Users size={36} className="mx-auto mb-3 text-foreground/15" />
+                            <p className="text-foreground/30 text-sm">
                                 {search
                                     ? 'Ничего не найдено'
                                     : activeFilter === 'favorites'
@@ -1047,14 +1047,14 @@ export default function PhoneBook() {
 
                         /* Table */
                         <>
-                            <div className="rounded-2xl overflow-hidden border border-white/8">
+                            <div className="rounded-2xl overflow-hidden border border-foreground/8">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="border-b border-white/8 bg-white/3">
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Сотрудник</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Отдел</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Телефон</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Email</th>
+                                        <tr className="border-b border-foreground/8 bg-foreground/5">
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-foreground/40 uppercase tracking-wider">Сотрудник</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-foreground/40 uppercase tracking-wider">Отдел</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-foreground/40 uppercase tracking-wider">Телефон</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-foreground/40 uppercase tracking-wider">Email</th>
                                             <th className="px-4 py-3 w-24" />
                                         </tr>
                                     </thead>
@@ -1081,7 +1081,7 @@ export default function PhoneBook() {
             <Dialog open={addModal} title="Добавить сотрудника" onClose={() => setAddModal(false)}>
                 <EmployeeForm values={form} onChange={(k, v) => setForm(p => ({ ...p, [k]: v }))} />
                 <div className="flex gap-2 mt-5">
-                    <button onClick={() => setAddModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+                    <button onClick={() => setAddModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-foreground/10 text-sm text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors">
                         Отмена
                     </button>
                     <button onClick={handleAdd} className="flex-1 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium transition-colors">
@@ -1093,7 +1093,7 @@ export default function PhoneBook() {
             <Dialog open={editModal} title="Редактировать сотрудника" onClose={() => setEditModal(false)}>
                 <EmployeeForm values={form} onChange={(k, v) => setForm(p => ({ ...p, [k]: v }))} />
                 <div className="flex gap-2 mt-5">
-                    <button onClick={() => setEditModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+                    <button onClick={() => setEditModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-foreground/10 text-sm text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors">
                         Отмена
                     </button>
                     <button onClick={handleEdit} className="flex-1 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm font-medium transition-colors">
@@ -1103,10 +1103,10 @@ export default function PhoneBook() {
             </Dialog>
 
             <Dialog open={deleteModal} title="Удалить сотрудника?" onClose={() => setDeleteModal(false)}>
-                <p className="text-white/50 text-sm mb-1">Это действие нельзя отменить. Удалить сотрудника:</p>
-                <p className="font-semibold text-white text-sm mb-6">{target?.name}</p>
+                <p className="text-foreground/50 text-sm mb-1">Это действие нельзя отменить. Удалить сотрудника:</p>
+                <p className="font-semibold text-foreground text-sm mb-6">{target?.name}</p>
                 <div className="flex gap-2">
-                    <button onClick={() => setDeleteModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+                    <button onClick={() => setDeleteModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-foreground/10 text-sm text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors">
                         Отмена
                     </button>
                     <button onClick={handleDelete} className="flex-1 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-medium transition-colors">
@@ -1119,7 +1119,7 @@ export default function PhoneBook() {
             <Dialog open={addVacancyModal} title="Добавить вакансию" onClose={() => setAddVacancyModal(false)}>
                 <VacancyForm values={vacancyForm} onChange={(k, v) => setVacancyForm(p => ({ ...p, [k]: v }))} />
                 <div className="flex gap-2 mt-5">
-                    <button onClick={() => setAddVacancyModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+                    <button onClick={() => setAddVacancyModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-foreground/10 text-sm text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors">
                         Отмена
                     </button>
                     <button onClick={handleAddVacancy} className="flex-1 px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium transition-colors">
@@ -1131,7 +1131,7 @@ export default function PhoneBook() {
             <Dialog open={editVacancyModal} title="Редактировать вакансию" onClose={() => setEditVacancyModal(false)}>
                 <VacancyForm values={vacancyForm} onChange={(k, v) => setVacancyForm(p => ({ ...p, [k]: v }))} />
                 <div className="flex gap-2 mt-5">
-                    <button onClick={() => setEditVacancyModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+                    <button onClick={() => setEditVacancyModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-foreground/10 text-sm text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors">
                         Отмена
                     </button>
                     <button onClick={handleEditVacancy} className="flex-1 px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium transition-colors">
@@ -1141,10 +1141,10 @@ export default function PhoneBook() {
             </Dialog>
 
             <Dialog open={deleteVacancyModal} title="Удалить вакансию?" onClose={() => setDeleteVacancyModal(false)}>
-                <p className="text-white/50 text-sm mb-1">Это действие нельзя отменить. Удалить вакансию:</p>
-                <p className="font-semibold text-white text-sm mb-6">{vacancyTarget?.position}</p>
+                <p className="text-foreground/50 text-sm mb-1">Это действие нельзя отменить. Удалить вакансию:</p>
+                <p className="font-semibold text-foreground text-sm mb-6">{vacancyTarget?.position}</p>
                 <div className="flex gap-2">
-                    <button onClick={() => setDeleteVacancyModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+                    <button onClick={() => setDeleteVacancyModal(false)} className="flex-1 px-4 py-2 rounded-xl border border-foreground/10 text-sm text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors">
                         Отмена
                     </button>
                     <button onClick={handleDeleteVacancy} className="flex-1 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-medium transition-colors">
