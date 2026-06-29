@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Folder, FolderOpen, ArrowLeft, ExternalLink, Plus, Pencil, Trash2, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ExternalLink, Plus, Pencil, Trash2, ChevronRight } from 'lucide-react'
 import {
     apiGetFolders, apiGetExamples,
     apiCreateFolder, apiUpdateFolder, apiDeleteFolder,
@@ -14,11 +14,30 @@ import { RootState } from '@/store'
 
 const FOLDER_FIELDS = [
     { key: 'name', label: 'Название', type: 'text' as const },
-    { key: 'description', label: 'Описание', type: 'text' as const },
-    { key: 'icon', label: 'Иконка (эмодзи)', type: 'text' as const, placeholder: '🎨' },
+    { key: 'description', label: 'Краткое описание (1 предложение)', type: 'text' as const },
     { key: 'color', label: 'Цвет (sky/purple/emerald/amber/rose/indigo)', type: 'text' as const, placeholder: 'sky' },
+    { key: 'screenshot_path', label: 'Путь к скриншоту', type: 'text' as const, placeholder: '/images/phonebook.jpg' },
+    { key: 'url', label: 'Ссылка на демо', type: 'text' as const, placeholder: '/examples/phone-book' },
     { key: 'sort_order', label: 'Порядок', type: 'text' as const },
 ]
+
+const GRADIENTS: Record<string, { from: string; to: string; accent: string }> = {
+    sky:     { from: 'from-sky-950',     to: 'to-sky-600',     accent: 'text-sky-300' },
+    purple:  { from: 'from-purple-950',  to: 'to-purple-600',  accent: 'text-purple-300' },
+    emerald: { from: 'from-emerald-950', to: 'to-emerald-600', accent: 'text-emerald-300' },
+    amber:   { from: 'from-amber-950',   to: 'to-amber-600',   accent: 'text-amber-300' },
+    rose:    { from: 'from-rose-950',    to: 'to-rose-600',    accent: 'text-rose-300' },
+    indigo:  { from: 'from-indigo-950',  to: 'to-indigo-600',  accent: 'text-indigo-300' },
+}
+
+const COLOR_CYCLE = ['sky', 'purple', 'emerald', 'amber', 'rose', 'indigo']
+
+function getGradient(color: string | null, index: number) {
+    const key = color && GRADIENTS[color] ? color : COLOR_CYCLE[index % COLOR_CYCLE.length]
+    return GRADIENTS[key]
+}
+
+function isExternal(url: string) { return url.startsWith('http') }
 
 const EXAMPLE_FIELDS = [
     { key: 'title', label: 'Название', type: 'text' as const },
@@ -29,13 +48,13 @@ const EXAMPLE_FIELDS = [
     { key: 'sort_order', label: 'Порядок', type: 'text' as const },
 ]
 
-const COLOR_MAP: Record<string, { card: string; badge: string; text: string }> = {
-    sky:    { card: 'from-sky-500/15 to-sky-600/5 border-sky-500/25',    badge: 'bg-sky-500/15 text-sky-400',    text: 'text-sky-400' },
-    purple: { card: 'from-purple-500/15 to-purple-600/5 border-purple-500/25', badge: 'bg-purple-500/15 text-purple-400', text: 'text-purple-400' },
-    emerald:{ card: 'from-emerald-500/15 to-emerald-600/5 border-emerald-500/25', badge: 'bg-emerald-500/15 text-emerald-400', text: 'text-emerald-400' },
-    amber:  { card: 'from-amber-500/15 to-amber-600/5 border-amber-500/25',  badge: 'bg-amber-500/15 text-amber-400',  text: 'text-amber-400' },
-    rose:   { card: 'from-rose-500/15 to-rose-600/5 border-rose-500/25',    badge: 'bg-rose-500/15 text-rose-400',    text: 'text-rose-400' },
-    indigo: { card: 'from-indigo-500/15 to-indigo-600/5 border-indigo-500/25', badge: 'bg-indigo-500/15 text-indigo-400', text: 'text-indigo-400' },
+const COLOR_MAP: Record<string, { text: string }> = {
+    sky:     { text: 'text-sky-400' },
+    purple:  { text: 'text-purple-400' },
+    emerald: { text: 'text-emerald-400' },
+    amber:   { text: 'text-amber-400' },
+    rose:    { text: 'text-rose-400' },
+    indigo:  { text: 'text-indigo-400' },
 }
 
 function folderTheme(color: string | null) {
@@ -85,13 +104,19 @@ export default function Examples() {
     }, [folderId, folders])
 
     const selectFolder = (folder: ExampleFolder) => {
-        navigate(`/examples/${folder.id}`)
+        const url = (folder as any).url
+        if (url) {
+            if (isExternal(url)) window.open(url, '_blank', 'noopener,noreferrer')
+            else navigate(url)
+        } else {
+            navigate(`/examples/${folder.id}`)
+        }
     }
 
     // Folder CRUD
     const openCreateFolder = () => {
         setEditingFolder(null)
-        setFolderForm({ name: '', description: '', icon: '', color: 'sky', sort_order: String(folders.length) })
+        setFolderForm({ name: '', description: '', color: 'sky', screenshot_path: '', url: '', sort_order: String(folders.length) })
         setFolderModal(true)
     }
 
@@ -101,8 +126,9 @@ export default function Examples() {
         setFolderForm({
             name: folder.name,
             description: folder.description ?? '',
-            icon: folder.icon ?? '',
             color: folder.color ?? 'sky',
+            screenshot_path: (folder as any).screenshot_path ?? '',
+            url: (folder as any).url ?? '',
             sort_order: String(folder.sort_order),
         })
         setFolderModal(true)
@@ -230,42 +256,63 @@ export default function Examples() {
                                 Скоро будет информация
                             </motion.p>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <AnimatePresence>
                                     {folders.map((folder, i) => {
-                                        const t = folderTheme(folder.color)
+                                        const g = getGradient(folder.color, i)
+                                        const screenshot = (folder as any).screenshot_path
+                                        const url = (folder as any).url
                                         return (
                                             <motion.div
                                                 key={folder.id}
-                                                initial={{ opacity: 0, y: 30 }}
+                                                initial={{ opacity: 0, y: 40 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95 }}
-                                                transition={{ delay: i * 0.07, duration: 0.4 }}
-                                                whileHover={{ y: -4 }}
+                                                transition={{ delay: i * 0.1, duration: 0.5 }}
+                                                whileHover={{ y: -6, transition: { duration: 0.22 } }}
                                                 className="relative group cursor-pointer"
                                                 onClick={() => selectFolder(folder)}
                                             >
-                                                <div className={`flex flex-col gap-3 p-5 rounded-2xl bg-gradient-to-br border card-block transition-all ${t.card}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${t.badge}`}>
-                                                            {folder.icon || <Folder size={20} />}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <h3 className="font-semibold text-sm truncate">{folder.name}</h3>
-                                                        </div>
-                                                        <ChevronRight size={15} className="opacity-0 group-hover:opacity-60 transition-opacity flex-shrink-0" />
+                                                <div className={`relative overflow-hidden rounded-2xl h-52 bg-gradient-to-br ${g.from} ${g.to} shadow-lg group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300`}>
+                                                    {screenshot && (
+                                                        <img
+                                                            src={screenshot}
+                                                            alt={folder.name}
+                                                            className="absolute inset-0 w-full h-full object-cover"
+                                                            style={{
+                                                                WebkitMaskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 38%, rgba(0,0,0,0) 65%)',
+                                                                maskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 38%, rgba(0,0,0,0) 65%)',
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/50" />
+                                                    <div className="absolute inset-0 flex items-center justify-center px-6">
+                                                        <h3 className="text-white font-bold text-lg text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                                                            {folder.name}
+                                                        </h3>
                                                     </div>
                                                     {folder.description && (
-                                                        <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2">{folder.description}</p>
+                                                        <div className="absolute bottom-4 right-4 max-w-[58%]">
+                                                            <p className={`text-xs text-right leading-relaxed drop-shadow ${g.accent} opacity-90 line-clamp-2`}>
+                                                                {folder.description}
+                                                            </p>
+                                                        </div>
                                                     )}
+                                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
+                                                        {url && isExternal(url)
+                                                            ? <ExternalLink size={15} className="text-white/70" />
+                                                            : <ChevronRight size={15} className="text-white/70" />
+                                                        }
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300 rounded-2xl" />
                                                 </div>
 
                                                 {isAuth && (
                                                     <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                        <button onClick={e => openEditFolder(folder, e)} className="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center text-white">
+                                                        <button onClick={e => openEditFolder(folder, e)} className="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center text-white shadow-lg">
                                                             <Pencil size={11} />
                                                         </button>
-                                                        <button onClick={e => handleDeleteFolder(folder.id, e)} className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center text-white">
+                                                        <button onClick={e => handleDeleteFolder(folder.id, e)} className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center text-white shadow-lg">
                                                             <Trash2 size={11} />
                                                         </button>
                                                     </div>
@@ -294,10 +341,7 @@ export default function Examples() {
                                     <ArrowLeft size={16} />
                                 </button>
                                 <div>
-                                    <div className="flex items-center gap-2">
-                                        {activeFolder.icon && <span className="text-2xl">{activeFolder.icon}</span>}
-                                        <h1 className="text-3xl md:text-4xl font-bold">{activeFolder.name}</h1>
-                                    </div>
+                                    <h1 className="text-3xl md:text-4xl font-bold">{activeFolder.name}</h1>
                                     {activeFolder.description && (
                                         <p className="text-muted-foreground text-sm mt-1">{activeFolder.description}</p>
                                     )}
