@@ -104,7 +104,7 @@ export default function Examples() {
     }, [folderId, folders])
 
     const selectFolder = (folder: ExampleFolder) => {
-        const url = (folder as any).url
+        const url = folder.url
         if (url) {
             if (isExternal(url)) window.open(url, '_blank', 'noopener,noreferrer')
             else navigate(url)
@@ -127,8 +127,8 @@ export default function Examples() {
             name: folder.name,
             description: folder.description ?? '',
             color: folder.color ?? 'sky',
-            screenshot_path: (folder as any).screenshot_path ?? '',
-            url: (folder as any).url ?? '',
+            screenshot_path: folder.screenshot_path ?? '',
+            url: folder.url ?? '',
             sort_order: String(folder.sort_order),
         })
         setFolderModal(true)
@@ -143,10 +143,12 @@ export default function Examples() {
                 setFolders(prev => prev.map(f => f.id === editingFolder.id ? r.data : f))
                 if (activeFolder?.id === editingFolder.id) setActiveFolder(r.data)
             } else {
-                const r = await apiCreateFolder(payload as any)
+                const r = await apiCreateFolder(payload)
                 setFolders(prev => [...prev, r.data])
             }
             setFolderModal(false)
+        } catch (e) {
+            console.error('Ошибка сохранения карточки:', e)
         } finally {
             setSaving(false)
         }
@@ -260,8 +262,8 @@ export default function Examples() {
                                 <AnimatePresence>
                                     {folders.map((folder, i) => {
                                         const g = getGradient(folder.color, i)
-                                        const screenshot = (folder as any).screenshot_path
-                                        const url = (folder as any).url
+                                        const screenshot = folder.screenshot_path
+                                        const url = folder.url
                                         return (
                                             <motion.div
                                                 key={folder.id}

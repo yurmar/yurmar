@@ -6,6 +6,8 @@ export interface ExampleFolder {
     description: string | null
     icon: string | null
     color: string | null
+    screenshot_path: string | null
+    url: string | null
     sort_order: number
     examples?: ExampleItem[]
 }
@@ -23,8 +25,8 @@ export interface ExampleItem {
 
 export const apiGetFolders = () => client.get<ExampleFolder[]>('/example-folders')
 export const apiGetFolder = (id: number) => client.get<ExampleFolder>(`/example-folders/${id}`)
-export const apiCreateFolder = (data: Omit<ExampleFolder, 'id' | 'examples'>) => client.post<ExampleFolder>('/example-folders', data)
-export const apiUpdateFolder = (id: number, data: Partial<ExampleFolder>) => client.put<ExampleFolder>(`/example-folders/${id}`, data)
+export const apiCreateFolder = (data: Record<string, unknown>) => client.post<ExampleFolder>('/example-folders', data)
+export const apiUpdateFolder = (id: number, data: Record<string, unknown>) => client.put<ExampleFolder>(`/example-folders/${id}`, data)
 export const apiDeleteFolder = (id: number) => client.delete(`/example-folders/${id}`)
 
 export const apiGetExamples = (folderId: number) => client.get<ExampleItem[]>(`/example-folders/${folderId}/examples`)
