@@ -21,13 +21,13 @@ const FOLDER_FIELDS = [
     { key: 'sort_order', label: 'Порядок', type: 'text' as const },
 ]
 
-const GRADIENTS: Record<string, { from: string; to: string; accent: string }> = {
-    sky:     { from: 'from-sky-950',     to: 'to-sky-600',     accent: 'text-sky-300' },
-    purple:  { from: 'from-purple-950',  to: 'to-purple-600',  accent: 'text-purple-300' },
-    emerald: { from: 'from-emerald-950', to: 'to-emerald-600', accent: 'text-emerald-300' },
-    amber:   { from: 'from-amber-950',   to: 'to-amber-600',   accent: 'text-amber-300' },
-    rose:    { from: 'from-rose-950',    to: 'to-rose-600',    accent: 'text-rose-300' },
-    indigo:  { from: 'from-indigo-950',  to: 'to-indigo-600',  accent: 'text-indigo-300' },
+const GRADIENTS: Record<string, { rgba: string; accent: string }> = {
+    sky:     { rgba: '14,165,233',  accent: 'text-sky-300' },
+    purple:  { rgba: '168,85,247',  accent: 'text-purple-300' },
+    emerald: { rgba: '16,185,129',  accent: 'text-emerald-300' },
+    amber:   { rgba: '245,158,11',  accent: 'text-amber-300' },
+    rose:    { rgba: '244,63,94',   accent: 'text-rose-300' },
+    indigo:  { rgba: '99,102,241',  accent: 'text-indigo-300' },
 }
 
 const COLOR_CYCLE = ['sky', 'purple', 'emerald', 'amber', 'rose', 'indigo']
@@ -275,19 +275,34 @@ export default function Examples() {
                                                 className="relative group cursor-pointer"
                                                 onClick={() => selectFolder(folder)}
                                             >
-                                                <div className={`relative overflow-hidden rounded-2xl h-52 bg-gradient-to-br ${g.from} ${g.to} shadow-lg group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300`}>
+                                                <div className="relative overflow-hidden rounded-2xl h-52 bg-[#080f1e] shadow-lg group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300">
+                                                    {/* Accent gradient — only bottom-right, starts from transparent */}
+                                                    <div
+                                                        className="absolute inset-0"
+                                                        style={{
+                                                            background: `linear-gradient(135deg, transparent 0%, transparent 30%, rgba(${g.rgba},0.45) 60%, rgba(${g.rgba},0.75) 100%)`,
+                                                        }}
+                                                    />
+                                                    {/* Screenshot — fully opaque on left, fades right */}
                                                     {screenshot && (
                                                         <img
                                                             src={screenshot}
                                                             alt={folder.name}
                                                             className="absolute inset-0 w-full h-full object-cover"
                                                             style={{
-                                                                WebkitMaskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 38%, rgba(0,0,0,0) 65%)',
-                                                                maskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 38%, rgba(0,0,0,0) 65%)',
+                                                                WebkitMaskImage: 'linear-gradient(135deg, black 0%, black 33%, transparent 65%)',
+                                                                maskImage: 'linear-gradient(135deg, black 0%, black 33%, transparent 65%)',
                                                             }}
                                                         />
                                                     )}
-                                                    <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/50" />
+                                                    {/* Subtle uniform darkening over image area */}
+                                                    <div
+                                                        className="absolute inset-0 bg-black/25"
+                                                        style={{
+                                                            WebkitMaskImage: 'linear-gradient(135deg, black 0%, black 33%, transparent 62%)',
+                                                            maskImage: 'linear-gradient(135deg, black 0%, black 33%, transparent 62%)',
+                                                        }}
+                                                    />
                                                     <div className="absolute inset-0 flex items-center justify-center px-6">
                                                         <h3 className="text-white font-bold text-lg text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                                                             {folder.name}
