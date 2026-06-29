@@ -94,7 +94,7 @@ export default function ExampleCard({
 
                 {/* Subtle uniform darkening over image area only */}
                 <div
-                    className="absolute inset-0 bg-black/25"
+                    className="absolute inset-0 bg-black/50"
                     style={{
                         WebkitMaskImage: DARK_MASK,
                         maskImage: DARK_MASK,
