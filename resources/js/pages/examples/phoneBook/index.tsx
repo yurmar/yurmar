@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     ArrowLeft, Search, Plus, Pencil, Trash2,
     Phone, Mail, X, Users, Building2, LayoutGrid, List, ChevronDown,
-    Star, Plane, Briefcase,
+    Star, Plane, Briefcase, ChevronLeft, ChevronRight,
 } from 'lucide-react'
+
+const PAGE_SIZE = 12
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -502,6 +504,43 @@ function VacancyCard({
     )
 }
 
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+function getPageNums(current: number, total: number): (number | '...')[] {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    const pages: (number | '...')[] = [1]
+    if (current > 3) pages.push('...')
+    for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p)
+    if (current < total - 2) pages.push('...')
+    pages.push(total)
+    return pages
+}
+
+function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
+    if (totalPages <= 1) return null
+    const btnCls = (active: boolean, disabled?: boolean) =>
+        `w-8 h-8 rounded-xl text-xs font-medium flex items-center justify-center transition-colors ${
+            disabled ? 'text-white/15 cursor-not-allowed' :
+            active   ? 'bg-sky-500 text-white shadow-lg' :
+                       'text-white/40 hover:text-white hover:bg-white/8'
+        }`
+    return (
+        <div className="flex items-center justify-center gap-1 mt-6">
+            <button onClick={() => onChange(page - 1)} disabled={page === 1} className={btnCls(false, page === 1)}>
+                <ChevronLeft size={14} />
+            </button>
+            {getPageNums(page, totalPages).map((p, i) =>
+                p === '...'
+                    ? <span key={`e${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-white/25">…</span>
+                    : <button key={p} onClick={() => onChange(p)} className={btnCls(p === page)}>{p}</button>
+            )}
+            <button onClick={() => onChange(page + 1)} disabled={page === totalPages} className={btnCls(false, page === totalPages)}>
+                <ChevronRight size={14} />
+            </button>
+        </div>
+    )
+}
+
 // ── Sidebar button ─────────────────────────────────────────────────────────────
 
 function SidebarBtn({
@@ -553,6 +592,8 @@ export default function PhoneBook() {
     const [vacancyTarget, setVacancyTarget]         = useState<Vacancy | null>(null)
     const [vacancyForm, setVacancyForm]             = useState<Record<string, string>>({})
 
+    const [page, setPage] = useState(1)
+
     const nextId = useMemo(() => Math.max(0, ...employees.map(e => e.id)) + 1, [employees])
     const nextVacancyId = useMemo(() => Math.max(0, ...vacancies.map(v => v.id)) + 1, [vacancies])
 
@@ -574,6 +615,14 @@ export default function PhoneBook() {
         }
         return list
     }, [employees, activeFilter, search])
+
+    useEffect(() => { setPage(1) }, [activeFilter, search])
+
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+    const paginated  = useMemo(
+        () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+        [filtered, page]
+    )
 
     const filteredVacancies = useMemo(() => {
         if (!search.trim()) return vacancies
@@ -882,45 +931,51 @@ export default function PhoneBook() {
                     ) : viewMode === 'cards' ? (
 
                         /* Cards grid */
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                            <AnimatePresence mode="popLayout">
-                                {filtered.map(emp => (
-                                    <EmployeeCard key={emp.id} emp={emp}
-                                        onEdit={() => openEdit(emp)}
-                                        onDelete={() => openDelete(emp)}
-                                        onToggleFavorite={() => toggleFavorite(emp.id)}
-                                    />
-                                ))}
-                            </AnimatePresence>
-                        </div>
+                        <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                <AnimatePresence mode="popLayout">
+                                    {paginated.map(emp => (
+                                        <EmployeeCard key={emp.id} emp={emp}
+                                            onEdit={() => openEdit(emp)}
+                                            onDelete={() => openDelete(emp)}
+                                            onToggleFavorite={() => toggleFavorite(emp.id)}
+                                        />
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+                        </>
 
                     ) : (
 
                         /* Table */
-                        <div className="rounded-2xl overflow-hidden border border-white/8">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-white/8 bg-white/3">
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Сотрудник</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Отдел</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Телефон</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Email</th>
-                                        <th className="px-4 py-3 w-24" />
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <AnimatePresence>
-                                        {filtered.map(emp => (
-                                            <TableRow key={emp.id} emp={emp}
-                                                onEdit={() => openEdit(emp)}
-                                                onDelete={() => openDelete(emp)}
-                                                onToggleFavorite={() => toggleFavorite(emp.id)}
-                                            />
-                                        ))}
-                                    </AnimatePresence>
-                                </tbody>
-                            </table>
-                        </div>
+                        <>
+                            <div className="rounded-2xl overflow-hidden border border-white/8">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-white/8 bg-white/3">
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Сотрудник</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Отдел</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Телефон</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Email</th>
+                                            <th className="px-4 py-3 w-24" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <AnimatePresence>
+                                            {paginated.map(emp => (
+                                                <TableRow key={emp.id} emp={emp}
+                                                    onEdit={() => openEdit(emp)}
+                                                    onDelete={() => openDelete(emp)}
+                                                    onToggleFavorite={() => toggleFavorite(emp.id)}
+                                                />
+                                            ))}
+                                        </AnimatePresence>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+                        </>
                     )}
                 </div>
             </div>
