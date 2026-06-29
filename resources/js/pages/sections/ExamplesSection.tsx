@@ -11,7 +11,7 @@ const FOLDER_FIELDS = [
     { key: 'name', label: 'Название', type: 'text' as const },
     { key: 'description', label: 'Краткое описание (1 предложение)', type: 'text' as const },
     { key: 'color', label: 'Цвет (sky/purple/emerald/amber/rose/indigo)', type: 'text' as const, placeholder: 'sky' },
-    { key: 'screenshot_path', label: 'Путь к скриншоту', type: 'text' as const, placeholder: '/images/phonebook.jpg' },
+    { key: 'screenshot_path', label: 'Картинка', type: 'image' as const },
     { key: 'url', label: 'Ссылка на демо (внутренняя или внешняя)', type: 'text' as const, placeholder: '/examples/phone-book' },
     { key: 'sort_order', label: 'Порядок', type: 'text' as const },
 ]

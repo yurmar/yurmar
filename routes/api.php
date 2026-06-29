@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BriefOrderController;
@@ -39,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{project}', [ProjectController::class, 'update']);
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+
+    Route::post('/upload', [ImageController::class, 'upload']);
 
     Route::post('/example-folders', [ExampleFolderController::class, 'store']);
     Route::put('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'update']);
