@@ -21,6 +21,7 @@ interface Employee {
     extension?: string
     favorite?: boolean
     absence?: { from: string; to: string }
+    responsibilities?: Partial<Record<ResponsibilityKey, boolean>>
 }
 
 interface Vacancy {
@@ -41,6 +42,7 @@ interface Department {
 
 type ViewMode = 'cards' | 'table'
 type ActiveFilter = string
+type ResponsibilityKey = 'news' | 'phoneBook' | 'documents' | 'portal'
 
 // ── Departments ────────────────────────────────────────────────────────────────
 
@@ -127,17 +129,17 @@ function filterToDept(f: ActiveFilter): Department {
 
 const INITIAL_EMPLOYEES: Employee[] = [
     // Руководство
-    { id: 1,  department: 'management', name: 'Иванов Дмитрий Сергеевич',   position: 'Генеральный директор',     phone: '+7 (495) 100-01-01', email: 'd.ivanov@digit-solutions.ru',     extension: '101', favorite: true },
+    { id: 1,  department: 'management', name: 'Иванов Дмитрий Сергеевич',   position: 'Генеральный директор',     phone: '+7 (495) 100-01-01', email: 'd.ivanov@digit-solutions.ru',     extension: '101', favorite: true, responsibilities: { portal: true } },
     { id: 2,  department: 'management', name: 'Смирнова Елена Викторовна',   position: 'Финансовый директор',      phone: '+7 (495) 100-01-02', email: 'e.smirnova@digit-solutions.ru',   extension: '102' },
-    { id: 3,  department: 'management', name: 'Козлов Антон Петрович',       position: 'Технический директор',     phone: '+7 (495) 100-01-03', email: 'a.kozlov@digit-solutions.ru',     extension: '103' },
+    { id: 3,  department: 'management', name: 'Козлов Антон Петрович',       position: 'Технический директор',     phone: '+7 (495) 100-01-03', email: 'a.kozlov@digit-solutions.ru',     extension: '103', responsibilities: { documents: true } },
     // Отдел разработки
-    { id: 4,  department: 'dev',        name: 'Новиков Алексей Иванович',    position: 'Руководитель отдела',      phone: '+7 (495) 100-02-01', email: 'a.novikov@digit-solutions.ru',    extension: '201', favorite: true },
+    { id: 4,  department: 'dev',        name: 'Новиков Алексей Иванович',    position: 'Руководитель отдела',      phone: '+7 (495) 100-02-01', email: 'a.novikov@digit-solutions.ru',    extension: '201', favorite: true, responsibilities: { phoneBook: true } },
     { id: 5,  department: 'dev',        name: 'Морозова Анна Дмитриевна',    position: 'Senior Backend Developer', phone: '+7 (495) 100-02-02', email: 'a.morozova@digit-solutions.ru',   extension: '202', favorite: true },
     { id: 6,  department: 'dev',        name: 'Волков Игорь Андреевич',      position: 'Senior Frontend Developer',phone: '+7 (495) 100-02-03', email: 'i.volkov@digit-solutions.ru',    extension: '203', absence: { from: '2026-06-25', to: '2026-07-09' } },
     { id: 7,  department: 'dev',        name: 'Соколова Мария Геннадьевна',  position: 'Middle Developer',         phone: '+7 (495) 100-02-04', email: 'm.sokolova@digit-solutions.ru',   extension: '204' },
     { id: 8,  department: 'dev',        name: 'Лебедев Роман Павлович',      position: 'Junior Developer',         phone: '+7 (495) 100-02-05', email: 'r.lebedev@digit-solutions.ru',    extension: '205', absence: { from: '2026-07-01', to: '2026-07-15' } },
     // Отдел дизайна
-    { id: 9,  department: 'design',     name: 'Попова Ирина Юрьевна',        position: 'Руководитель отдела',      phone: '+7 (495) 100-03-01', email: 'i.popova@digit-solutions.ru',     extension: '301', favorite: true },
+    { id: 9,  department: 'design',     name: 'Попова Ирина Юрьевна',        position: 'Руководитель отдела',      phone: '+7 (495) 100-03-01', email: 'i.popova@digit-solutions.ru',     extension: '301', favorite: true, responsibilities: { news: true } },
     { id: 10, department: 'design',     name: 'Зайцев Кирилл Михайлович',    position: 'UX/UI Designer',           phone: '+7 (495) 100-03-02', email: 'k.zaytsev@digit-solutions.ru',    extension: '302' },
     { id: 11, department: 'design',     name: 'Белова Наталья Сергеевна',    position: 'Graphic Designer',         phone: '+7 (495) 100-03-03', email: 'n.belova@digit-solutions.ru',     extension: '303' },
     // Служба поддержки
@@ -172,6 +174,26 @@ function pluralEmployees(n: number) {
 function formatAbsenceDate(iso: string) {
     const parts = iso.split('-')
     return `${parts[2]}.${parts[1]}`
+}
+
+const RESPONSIBILITIES: { key: ResponsibilityKey; label: string }[] = [
+    { key: 'news',      label: 'Ответственный за новости' },
+    { key: 'phoneBook', label: 'Ответственный за телефонный справочник' },
+    { key: 'documents', label: 'Ответственный за документооборот' },
+    { key: 'portal',    label: 'Администратор корп. портала' },
+]
+
+// ── Toggle switch ──────────────────────────────────────────────────────────────
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+    return (
+        <button
+            onClick={onChange}
+            className={`relative w-8 h-4 rounded-full transition-colors duration-200 flex-shrink-0 ${checked ? 'bg-sky-500' : 'bg-white/15 hover:bg-white/25'}`}
+        >
+            <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform duration-200 ${checked ? 'translate-x-4' : ''}`} />
+        </button>
+    )
 }
 
 // ── Employee Form ─────────────────────────────────────────────────────────────
@@ -290,15 +312,17 @@ function Dialog({ open, title, onClose, children }: { open: boolean; title: stri
 // ── Employee Card ──────────────────────────────────────────────────────────────
 
 function EmployeeCard({
-    emp, onEdit, onDelete, onToggleFavorite,
+    emp, onEdit, onDelete, onToggleFavorite, onToggleResponsibility,
 }: {
     emp: Employee
     onEdit: () => void
     onDelete: () => void
     onToggleFavorite: () => void
+    onToggleResponsibility: (key: ResponsibilityKey) => void
 }) {
     const dept = getDept(emp.department)
     const isAbsent = !!emp.absence
+    const [flipped, setFlipped] = useState(false)
 
     return (
         <motion.div
@@ -306,75 +330,131 @@ function EmployeeCard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className={`relative group card-block rounded-2xl p-5 hover:-translate-y-1 transition-all duration-200 ${isAbsent ? 'opacity-70' : ''}`}
+            whileHover={flipped ? {} : { y: -4 }}
+            className={isAbsent ? 'opacity-70' : ''}
+            style={{ perspective: '1200px' }}
         >
-            {/* Absence ribbon */}
-            {isAbsent && (
-                <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/15 border-b border-rose-500/20 rounded-t-2xl">
-                    <Plane size={10} className="text-rose-400 flex-shrink-0" />
-                    <span className="text-[10px] text-rose-300 font-medium">
-                        Отпуск {formatAbsenceDate(emp.absence!.from)} — {formatAbsenceDate(emp.absence!.to)}
-                    </span>
-                </div>
-            )}
-
-            {/* Avatar + name */}
-            <div className={`flex items-start gap-3 mb-4 ${isAbsent ? 'mt-6' : ''}`}>
-                <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${dept.avatarGradient} flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg`}>
-                    {initials(emp.name)}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm leading-tight line-clamp-2 pr-12">{emp.name}</p>
-                    <p className={`text-xs mt-0.5 ${dept.text}`}>{emp.position}</p>
-                </div>
-            </div>
-
-            {/* Contacts */}
-            <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                    <Phone size={11} className="text-white/30 flex-shrink-0" />
-                    <a href={`tel:${emp.phone}`} className="text-xs text-white/60 hover:text-white transition-colors truncate">
-                        {emp.phone}
-                    </a>
-                    {emp.extension && (
-                        <span className="ml-auto text-[10px] text-white/30 flex-shrink-0">доб. {emp.extension}</span>
-                    )}
-                </div>
-                <div className="flex items-center gap-2">
-                    <Mail size={11} className="text-white/30 flex-shrink-0" />
-                    <a href={`mailto:${emp.email}`} className="text-xs text-white/60 hover:text-white transition-colors truncate">
-                        {emp.email}
-                    </a>
-                </div>
-            </div>
-
-            {/* Department badge + favorite */}
-            <div className="mt-3 flex items-center justify-between">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${dept.badge}`}>
-                    {DEPARTMENTS.find(d => d.id === emp.department)?.name}
-                </span>
-                <button
-                    onClick={onToggleFavorite}
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
-                        emp.favorite
-                            ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400'
-                            : 'bg-white/5 hover:bg-white/10 text-white/25 hover:text-white/60'
-                    }`}
-                    title={emp.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+            <motion.div
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 200 }}
+                style={{ transformStyle: 'preserve-3d' }}
+                className="relative min-h-[232px]"
+            >
+                {/* ── Front ── */}
+                <div
+                    style={{ backfaceVisibility: 'hidden' }}
+                    onClick={() => setFlipped(true)}
+                    className="absolute inset-0 group card-block rounded-2xl p-5 flex flex-col cursor-pointer"
                 >
-                    <Star size={10} className={emp.favorite ? 'fill-amber-400' : ''} />
-                </button>
-            </div>
+                    {/* Absence ribbon */}
+                    {isAbsent && (
+                        <div className="absolute top-0 left-0 right-0 flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/15 border-b border-rose-500/20 rounded-t-2xl">
+                            <Plane size={10} className="text-rose-400 flex-shrink-0" />
+                            <span className="text-[10px] text-rose-300 font-medium">
+                                Отпуск {formatAbsenceDate(emp.absence!.from)} — {formatAbsenceDate(emp.absence!.to)}
+                            </span>
+                        </div>
+                    )}
 
-            {/* Controls */}
-            <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={onEdit} className="w-6 h-6 rounded-lg bg-sky-500/80 hover:bg-sky-500 flex items-center justify-center text-white transition-colors">
-                    <Pencil size={10} />
-                </button>
-                <button onClick={onDelete} className="w-6 h-6 rounded-lg bg-red-500/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors">
-                    <Trash2 size={10} />
-                </button>
-            </div>
+                    {/* Avatar + name */}
+                    <div className={`flex items-start gap-3 mb-4 ${isAbsent ? 'mt-6' : ''}`}>
+                        <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${dept.avatarGradient} flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg`}>
+                            {initials(emp.name)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm leading-tight line-clamp-2 pr-12">{emp.name}</p>
+                            <p className={`text-xs mt-0.5 ${dept.text}`}>{emp.position}</p>
+                        </div>
+                    </div>
+
+                    {/* Contacts */}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Phone size={11} className="text-white/30 flex-shrink-0" />
+                            <a href={`tel:${emp.phone}`} onClick={e => e.stopPropagation()} className="text-xs text-white/60 hover:text-white transition-colors truncate">
+                                {emp.phone}
+                            </a>
+                            {emp.extension && (
+                                <span className="ml-auto text-[10px] text-white/30 flex-shrink-0">доб. {emp.extension}</span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Mail size={11} className="text-white/30 flex-shrink-0" />
+                            <a href={`mailto:${emp.email}`} onClick={e => e.stopPropagation()} className="text-xs text-white/60 hover:text-white transition-colors truncate">
+                                {emp.email}
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Department badge + favorite */}
+                    <div className="mt-auto pt-3 flex items-center justify-between">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${dept.badge}`}>
+                            {DEPARTMENTS.find(d => d.id === emp.department)?.name}
+                        </span>
+                        <button
+                            onClick={e => { e.stopPropagation(); onToggleFavorite() }}
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                                emp.favorite
+                                    ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400'
+                                    : 'bg-white/5 hover:bg-white/10 text-white/25 hover:text-white/60'
+                            }`}
+                            title={emp.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+                        >
+                            <Star size={10} className={emp.favorite ? 'fill-amber-400' : ''} />
+                        </button>
+                    </div>
+
+                    {/* Edit / Delete */}
+                    <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={e => { e.stopPropagation(); onEdit() }} className="w-6 h-6 rounded-lg bg-sky-500/80 hover:bg-sky-500 flex items-center justify-center text-white transition-colors">
+                            <Pencil size={10} />
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); onDelete() }} className="w-6 h-6 rounded-lg bg-red-500/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors">
+                            <Trash2 size={10} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* ── Back ── */}
+                <div
+                    style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                    className="absolute inset-0 card-block rounded-2xl p-5 flex flex-col"
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${dept.avatarGradient} flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0`}>
+                                {initials(emp.name)}
+                            </div>
+                            <p className="text-xs font-semibold text-white truncate">{emp.name.split(' ').slice(0, 2).join(' ')}</p>
+                        </div>
+                        <button
+                            onClick={() => setFlipped(false)}
+                            className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors flex-shrink-0"
+                        >
+                            <X size={13} />
+                        </button>
+                    </div>
+
+                    <p className="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-3">Ответственности</p>
+
+                    <div className="space-y-0.5 flex-1">
+                        {RESPONSIBILITIES.map(r => (
+                            <label
+                                key={r.key}
+                                className="flex items-center justify-between gap-3 py-2 px-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group/row"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <span className="text-xs text-white/55 group-hover/row:text-white/80 transition-colors leading-tight">{r.label}</span>
+                                <Toggle
+                                    checked={!!emp.responsibilities?.[r.key]}
+                                    onChange={() => onToggleResponsibility(r.key)}
+                                />
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
         </motion.div>
     )
 }
@@ -682,7 +762,7 @@ export default function PhoneBook() {
 
     const handleEdit = () => {
         if (!target || !form.name?.trim()) return
-        setEmployees(prev => prev.map(e => e.id === target.id ? { ...buildEmployee(e.id, form), favorite: e.favorite } : e))
+        setEmployees(prev => prev.map(e => e.id === target.id ? { ...buildEmployee(e.id, form), favorite: e.favorite, responsibilities: e.responsibilities } : e))
         setEditModal(false)
     }
 
@@ -695,6 +775,13 @@ export default function PhoneBook() {
 
     const toggleFavorite = (id: number) => {
         setEmployees(prev => prev.map(e => e.id === id ? { ...e, favorite: !e.favorite } : e))
+    }
+
+    const toggleResponsibility = (id: number, key: ResponsibilityKey) => {
+        setEmployees(prev => prev.map(e => e.id === id ? {
+            ...e,
+            responsibilities: { ...e.responsibilities, [key]: !e.responsibilities?.[key] },
+        } : e))
     }
 
     // ── Vacancy actions ──
@@ -939,6 +1026,7 @@ export default function PhoneBook() {
                                             onEdit={() => openEdit(emp)}
                                             onDelete={() => openDelete(emp)}
                                             onToggleFavorite={() => toggleFavorite(emp.id)}
+                                            onToggleResponsibility={key => toggleResponsibility(emp.id, key)}
                                         />
                                     ))}
                                 </AnimatePresence>
