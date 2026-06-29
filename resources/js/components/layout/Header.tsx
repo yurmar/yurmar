@@ -11,6 +11,7 @@ import { logout } from '@/store/slice/authSlice'
 const NAV = [
     { label: 'Главная', to: '/', anchor: '#hero' },
     // { label: 'Портфолио', to: '/portfolio', anchor: null },
+    { label: 'Примеры', to: '/examples', anchor: null },
     { label: 'Блокнот', to: '/notebook', anchor: null },
     { label: 'Обо мне', to: '/#about', anchor: '#about' },
     { label: 'Контакты', to: '/#contacts', anchor: '#contacts' },

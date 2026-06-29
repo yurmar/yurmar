@@ -5,6 +5,8 @@ use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BriefOrderController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ExampleController;
+use App\Http\Controllers\ExampleFolderController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
@@ -37,6 +39,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{project}', [ProjectController::class, 'update']);
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+
+    Route::post('/example-folders', [ExampleFolderController::class, 'store']);
+    Route::put('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'update']);
+    Route::delete('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'destroy']);
+
+    Route::post('/example-folders/{exampleFolder}/examples', [ExampleController::class, 'store']);
+    Route::put('/example-folders/{exampleFolder}/examples/{example}', [ExampleController::class, 'update']);
+    Route::delete('/example-folders/{exampleFolder}/examples/{example}', [ExampleController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр
@@ -56,3 +66,6 @@ Route::get('/achievements', [AchievementController::class, 'index']);
 Route::get('/technologies', [TechnologyController::class, 'index']);
 Route::get('/projects', [ProjectController::class, 'index']);
 Route::get('/projects/{project}', [ProjectController::class, 'show']);
+Route::get('/example-folders', [ExampleFolderController::class, 'index']);
+Route::get('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'show']);
+Route::get('/example-folders/{exampleFolder}/examples', [ExampleController::class, 'index']);

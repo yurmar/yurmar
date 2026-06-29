@@ -4,6 +4,7 @@ import ServicesSection from './sections/ServicesSection'
 import AchievementsSection from './sections/AchievementsSection'
 import TechnologiesSection from './sections/TechnologiesSection'
 // import ProjectsSection from './sections/ProjectsSection'
+import ExamplesSection from './sections/ExamplesSection'
 import ContactsSection from './sections/ContactsSection'
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
             <AchievementsSection />
             <TechnologiesSection />
             {/*<ProjectsSection limit={3} />*/}
+            <ExamplesSection />
             <ContactsSection />
         </>
     )
