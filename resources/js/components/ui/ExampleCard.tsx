@@ -69,7 +69,7 @@ export default function ExampleCard({
             onClick={() => onClick(folder)}
         >
             {/* ── Visual card ── */}
-            <div className="relative overflow-hidden rounded-2xl h-52 bg-[#080f1e] shadow-lg group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300">
+            <div className="relative overflow-hidden rounded-2xl h-52 shadow-lg group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300">
 
                 {/* Accent gradient — starts from transparent, fills bottom-right */}
                 <div
