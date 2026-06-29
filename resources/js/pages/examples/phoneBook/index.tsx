@@ -346,15 +346,11 @@ function EmployeeCard({
                 </div>
             </div>
 
-            {/* Department badge */}
-            <div className="mt-3">
+            {/* Department badge + favorite */}
+            <div className="mt-3 flex items-center justify-between">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${dept.badge}`}>
                     {DEPARTMENTS.find(d => d.id === emp.department)?.name}
                 </span>
-            </div>
-
-            {/* Controls */}
-            <div className="absolute top-3 right-3 flex gap-1">
                 <button
                     onClick={onToggleFavorite}
                     className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
@@ -366,10 +362,14 @@ function EmployeeCard({
                 >
                     <Star size={10} className={emp.favorite ? 'fill-amber-400' : ''} />
                 </button>
-                <button onClick={onEdit} className="w-6 h-6 rounded-lg bg-sky-500/80 hover:bg-sky-500 flex items-center justify-center text-white transition-colors opacity-0 group-hover:opacity-100">
+            </div>
+
+            {/* Controls */}
+            <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={onEdit} className="w-6 h-6 rounded-lg bg-sky-500/80 hover:bg-sky-500 flex items-center justify-center text-white transition-colors">
                     <Pencil size={10} />
                 </button>
-                <button onClick={onDelete} className="w-6 h-6 rounded-lg bg-red-500/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors opacity-0 group-hover:opacity-100">
+                <button onClick={onDelete} className="w-6 h-6 rounded-lg bg-red-500/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors">
                     <Trash2 size={10} />
                 </button>
             </div>
