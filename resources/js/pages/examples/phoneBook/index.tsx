@@ -176,11 +176,11 @@ function formatAbsenceDate(iso: string) {
     return `${parts[2]}.${parts[1]}`
 }
 
-const RESPONSIBILITIES: { key: ResponsibilityKey; label: string }[] = [
-    { key: 'news',      label: 'Ответственный за новости' },
-    { key: 'phoneBook', label: 'Ответственный за телефонный справочник' },
-    { key: 'documents', label: 'Ответственный за документооборот' },
-    { key: 'portal',    label: 'Администратор корп. портала' },
+const RESPONSIBILITIES: { key: ResponsibilityKey; label: string; short: string }[] = [
+    { key: 'news',      label: 'Ответственный за новости',              short: 'Новости' },
+    { key: 'phoneBook', label: 'Ответственный за телефонный справочник', short: 'Справочник' },
+    { key: 'documents', label: 'Ответственный за документооборот',       short: 'Документооборот' },
+    { key: 'portal',    label: 'Администратор корп. портала',            short: 'Портал' },
 ]
 
 // ── Toggle switch ──────────────────────────────────────────────────────────────
@@ -385,6 +385,17 @@ function EmployeeCard({
                             </a>
                         </div>
                     </div>
+
+                    {/* Responsibility chips */}
+                    {RESPONSIBILITIES.some(r => emp.responsibilities?.[r.key]) && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                            {RESPONSIBILITIES.filter(r => emp.responsibilities?.[r.key]).map(r => (
+                                <span key={r.key} className="text-[9px] px-1.5 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/20 font-medium">
+                                    {r.short}
+                                </span>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Department badge + favorite */}
                     <div className="mt-auto pt-3 flex items-center justify-between">
