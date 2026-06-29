@@ -10,6 +10,7 @@ const Contacts = lazy(() => import('@/pages/contacts'))
 const Notebook = lazy(() => import('@/pages/notebook'))
 const Orders = lazy(() => import('@/pages/orders'))
 const Examples = lazy(() => import('@/pages/examples'))
+const PhoneBook = lazy(() => import('@/pages/examples/phoneBook'))
 const NotFound = lazy(() => import('@/pages/not-found'))
 
 const fallback = <div className="min-h-screen" />
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
             { path: 'contacts', element: <Suspense fallback={fallback}><Contacts /></Suspense> },
             { path: 'notebook', element: <Suspense fallback={fallback}><Notebook /></Suspense> },
             { path: 'orders', element: <Suspense fallback={fallback}><Orders /></Suspense> },
+            { path: 'examples/phone-book', element: <Suspense fallback={fallback}><PhoneBook /></Suspense> },
             { path: 'examples', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: 'examples/:folderId', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: '*', element: <Suspense fallback={fallback}><NotFound /></Suspense> },

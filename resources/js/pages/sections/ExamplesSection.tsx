@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Folder, FolderOpen, Plus, Pencil, Trash2, ArrowRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Plus, Pencil, Trash2, ArrowRight, ExternalLink } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { apiGetFolders, apiCreateFolder, apiUpdateFolder, apiDeleteFolder, ExampleFolder } from '@/api/examples'
 import Modal from '@/components/ui/Modal'
 import { useSelector } from 'react-redux'
@@ -9,35 +9,45 @@ import { RootState } from '@/store'
 
 const FOLDER_FIELDS = [
     { key: 'name', label: 'Название', type: 'text' as const },
-    { key: 'description', label: 'Описание', type: 'text' as const },
-    { key: 'icon', label: 'Иконка (эмодзи)', type: 'text' as const, placeholder: '🎨' },
-    { key: 'color', label: 'Цвет (Tailwind-класс)', type: 'text' as const, placeholder: 'sky' },
+    { key: 'description', label: 'Краткое описание (1 предложение)', type: 'text' as const },
+    { key: 'icon', label: 'Иконка (эмодзи)', type: 'text' as const, placeholder: '📞' },
+    { key: 'color', label: 'Цвет (sky/purple/emerald/amber/rose/indigo)', type: 'text' as const, placeholder: 'sky' },
+    { key: 'screenshot_path', label: 'Путь к скриншоту', type: 'text' as const, placeholder: '/images/phonebook.jpg' },
+    { key: 'url', label: 'Ссылка на демо (внутренняя или внешняя)', type: 'text' as const, placeholder: '/examples/phone-book' },
     { key: 'sort_order', label: 'Порядок', type: 'text' as const },
 ]
 
-const COLOR_MAP: Record<string, string> = {
-    sky:    'from-sky-500/20 to-sky-600/10 border-sky-500/30 text-sky-400',
-    purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400',
-    emerald:'from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-400',
-    amber:  'from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400',
-    rose:   'from-rose-500/20 to-rose-600/10 border-rose-500/30 text-rose-400',
-    indigo: 'from-indigo-500/20 to-indigo-600/10 border-indigo-500/30 text-indigo-400',
+const GRADIENTS: Record<string, { from: string; to: string; accent: string }> = {
+    sky:     { from: 'from-sky-950',     to: 'to-sky-600',     accent: 'text-sky-300' },
+    purple:  { from: 'from-purple-950',  to: 'to-purple-600',  accent: 'text-purple-300' },
+    emerald: { from: 'from-emerald-950', to: 'to-emerald-600', accent: 'text-emerald-300' },
+    amber:   { from: 'from-amber-950',   to: 'to-amber-600',   accent: 'text-amber-300' },
+    rose:    { from: 'from-rose-950',    to: 'to-rose-600',    accent: 'text-rose-300' },
+    indigo:  { from: 'from-indigo-950',  to: 'to-indigo-600',  accent: 'text-indigo-300' },
 }
 
-function folderColors(color: string | null) {
-    return COLOR_MAP[color ?? ''] ?? COLOR_MAP['sky']
+const COLOR_CYCLE = ['sky', 'purple', 'emerald', 'amber', 'rose', 'indigo']
+
+function getGradient(color: string | null, index: number) {
+    const key = color && GRADIENTS[color] ? color : COLOR_CYCLE[index % COLOR_CYCLE.length]
+    return GRADIENTS[key]
+}
+
+function isExternal(url: string) {
+    return url.startsWith('http')
 }
 
 export default function ExamplesSection() {
     const ref = useRef(null)
     const isInView = useInView(ref, { once: true, amount: 0.2 })
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
+    const navigate = useNavigate()
+
     const [folders, setFolders] = useState<ExampleFolder[]>([])
     const [modal, setModal] = useState(false)
     const [editing, setEditing] = useState<ExampleFolder | null>(null)
     const [form, setForm] = useState<Record<string, string>>({})
     const [saving, setSaving] = useState(false)
-    const [hovered, setHovered] = useState<number | null>(null)
 
     useEffect(() => {
         apiGetFolders().then(r => setFolders(r.data)).catch(() => {})
@@ -45,17 +55,21 @@ export default function ExamplesSection() {
 
     const openCreate = () => {
         setEditing(null)
-        setForm({ name: '', description: '', icon: '', color: 'sky', sort_order: String(folders.length) })
+        setForm({ name: '', description: '', icon: '', color: 'sky', screenshot_path: '', url: '', sort_order: String(folders.length) })
         setModal(true)
     }
 
-    const openEdit = (folder: ExampleFolder) => {
+    const openEdit = (folder: ExampleFolder, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
         setEditing(folder)
         setForm({
             name: folder.name,
             description: folder.description ?? '',
             icon: folder.icon ?? '',
             color: folder.color ?? 'sky',
+            screenshot_path: (folder as any).screenshot_path ?? '',
+            url: (folder as any).url ?? '',
             sort_order: String(folder.sort_order),
         })
         setModal(true)
@@ -78,9 +92,24 @@ export default function ExamplesSection() {
         }
     }
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: number, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
         await apiDeleteFolder(id)
         setFolders(prev => prev.filter(f => f.id !== id))
+    }
+
+    const handleCardClick = (folder: ExampleFolder) => {
+        const url = (folder as any).url
+        if (url) {
+            if (isExternal(url)) {
+                window.open(url, '_blank', 'noopener,noreferrer')
+            } else {
+                navigate(url)
+            }
+        } else {
+            navigate(`/examples/${folder.id}`)
+        }
     }
 
     return (
@@ -101,7 +130,7 @@ export default function ExamplesSection() {
                             onClick={openCreate}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 transition-colors"
                         >
-                            <Plus size={12} /> Добавить папку
+                            <Plus size={12} /> Добавить
                         </button>
                     )}
                 </motion.div>
@@ -115,63 +144,90 @@ export default function ExamplesSection() {
                         Скоро будет информация
                     </motion.p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence>
                             {folders.map((folder, i) => {
-                                const colors = folderColors(folder.color)
-                                const isHovered = hovered === folder.id
+                                const g = getGradient(folder.color, i)
+                                const screenshot = (folder as any).screenshot_path
+                                const url = (folder as any).url
+
                                 return (
                                     <motion.div
                                         key={folder.id}
-                                        initial={{ opacity: 0, y: 30 }}
+                                        initial={{ opacity: 0, y: 40 }}
                                         animate={isInView ? { opacity: 1, y: 0 } : {}}
                                         exit={{ opacity: 0, scale: 0.95 }}
-                                        transition={{ delay: i * 0.08, duration: 0.45 }}
-                                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                                        className="relative group"
-                                        onMouseEnter={() => setHovered(folder.id)}
-                                        onMouseLeave={() => setHovered(null)}
+                                        transition={{ delay: i * 0.1, duration: 0.5 }}
+                                        whileHover={{ y: -6, transition: { duration: 0.22 } }}
+                                        className="relative group cursor-pointer"
+                                        onClick={() => handleCardClick(folder)}
                                     >
-                                        <Link
-                                            to={`/examples/${folder.id}`}
-                                            className={`flex flex-col gap-3 p-5 rounded-2xl bg-gradient-to-br border card-block transition-all duration-300 ${colors}`}
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="text-3xl">
-                                                    {isHovered
-                                                        ? <FolderOpen size={36} className="opacity-90" />
-                                                        : <Folder size={36} className="opacity-70" />
-                                                    }
-                                                    {folder.icon && (
-                                                        <span className="absolute top-4 left-12 text-2xl">{folder.icon}</span>
-                                                    )}
-                                                </div>
-                                                <ArrowRight
-                                                    size={16}
-                                                    className={`mt-1 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isHovered ? 'translate-x-0' : '-translate-x-2'}`}
+                                        {/* Card */}
+                                        <div className={`relative overflow-hidden rounded-2xl h-52 bg-gradient-to-br ${g.from} ${g.to} shadow-lg group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300`}>
+
+                                            {/* Screenshot with diagonal mask */}
+                                            {screenshot && (
+                                                <img
+                                                    src={screenshot}
+                                                    alt={folder.name}
+                                                    className="absolute inset-0 w-full h-full object-cover"
+                                                    style={{
+                                                        WebkitMaskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 38%, rgba(0,0,0,0) 65%)',
+                                                        maskImage: 'linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 38%, rgba(0,0,0,0) 65%)',
+                                                    }}
                                                 />
+                                            )}
+
+                                            {/* Depth overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/50" />
+
+                                            {/* Icon top-left */}
+                                            {folder.icon && (
+                                                <div className="absolute top-4 left-4 text-2xl drop-shadow-lg select-none">
+                                                    {folder.icon}
+                                                </div>
+                                            )}
+
+                                            {/* Title — centered */}
+                                            <div className="absolute inset-0 flex items-center justify-center px-6">
+                                                <h3 className="text-white font-bold text-lg text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                                                    {folder.name}
+                                                </h3>
                                             </div>
-                                            <div>
-                                                <h3 className="font-semibold text-base">{folder.name}</h3>
-                                                {folder.description && (
-                                                    <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-2">
+
+                                            {/* Description — bottom-right (colored corner) */}
+                                            {folder.description && (
+                                                <div className="absolute bottom-4 right-4 max-w-[58%]">
+                                                    <p className={`text-xs text-right leading-relaxed drop-shadow ${g.accent} opacity-90 line-clamp-2`}>
                                                         {folder.description}
                                                     </p>
-                                                )}
-                                            </div>
-                                        </Link>
+                                                </div>
+                                            )}
 
+                                            {/* Hover arrow */}
+                                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
+                                                {url && isExternal(url)
+                                                    ? <ExternalLink size={15} className="text-white/70" />
+                                                    : <ArrowRight size={15} className="text-white/70" />
+                                                }
+                                            </div>
+
+                                            {/* Shine on hover */}
+                                            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300 rounded-2xl" />
+                                        </div>
+
+                                        {/* Admin controls */}
                                         {isAuth && (
                                             <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                                 <button
-                                                    onClick={e => { e.preventDefault(); openEdit(folder) }}
-                                                    className="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center text-white"
+                                                    onClick={e => openEdit(folder, e)}
+                                                    className="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center text-white shadow-lg"
                                                 >
                                                     <Pencil size={11} />
                                                 </button>
                                                 <button
-                                                    onClick={e => { e.preventDefault(); handleDelete(folder.id) }}
-                                                    className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center text-white"
+                                                    onClick={e => handleDelete(folder.id, e)}
+                                                    className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center text-white shadow-lg"
                                                 >
                                                     <Trash2 size={11} />
                                                 </button>
@@ -203,7 +259,7 @@ export default function ExamplesSection() {
 
             <Modal
                 open={modal}
-                title={editing ? 'Редактировать папку' : 'Новая папка'}
+                title={editing ? 'Редактировать карточку' : 'Новая карточка'}
                 fields={FOLDER_FIELDS}
                 values={form}
                 onChange={(k, v) => setForm(p => ({ ...p, [k]: v }))}

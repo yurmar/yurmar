@@ -21,11 +21,13 @@ class ExampleFolderController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'icon'        => 'nullable|string|max:100',
-            'color'       => 'nullable|string|max:50',
-            'sort_order'  => 'nullable|integer',
+            'name'            => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'icon'            => 'nullable|string|max:100',
+            'color'           => 'nullable|string|max:50',
+            'screenshot_path' => 'nullable|string',
+            'url'             => 'nullable|string',
+            'sort_order'      => 'nullable|integer',
         ]);
 
         return response()->json(ExampleFolder::create($data), 201);
@@ -34,11 +36,13 @@ class ExampleFolderController extends Controller
     public function update(Request $request, ExampleFolder $exampleFolder): JsonResponse
     {
         $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'icon'        => 'nullable|string|max:100',
-            'color'       => 'nullable|string|max:50',
-            'sort_order'  => 'nullable|integer',
+            'name'            => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'icon'            => 'nullable|string|max:100',
+            'color'           => 'nullable|string|max:50',
+            'screenshot_path' => 'nullable|string',
+            'url'             => 'nullable|string',
+            'sort_order'      => 'nullable|integer',
         ]);
 
         $exampleFolder->update($data);

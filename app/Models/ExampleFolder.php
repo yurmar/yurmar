@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExampleFolder extends Model
 {
-    protected $fillable = ['name', 'description', 'icon', 'color', 'sort_order'];
+    protected $fillable = ['name', 'description', 'icon', 'color', 'screenshot_path', 'url', 'sort_order'];
 
     public function examples(): HasMany
     {
