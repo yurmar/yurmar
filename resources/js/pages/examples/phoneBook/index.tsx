@@ -199,7 +199,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 // ── Employee Form ─────────────────────────────────────────────────────────────
 
 function EmployeeForm({ values, onChange }: { values: Record<string, string>; onChange: (k: string, v: string) => void }) {
-    const inputCls = 'w-full px-3 py-2 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-white placeholder-foreground/30 focus:outline-none focus:border-sky-500/50 transition-colors'
+    const inputCls = 'w-full px-3 py-2 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-sky-500/50 transition-colors'
 
     return (
         <div className="space-y-3">
@@ -252,7 +252,7 @@ function EmployeeForm({ values, onChange }: { values: Record<string, string>; on
 // ── Vacancy Form ───────────────────────────────────────────────────────────────
 
 function VacancyForm({ values, onChange }: { values: Record<string, string>; onChange: (k: string, v: string) => void }) {
-    const inputCls = 'w-full px-3 py-2 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-white placeholder-foreground/30 focus:outline-none focus:border-teal-500/50 transition-colors'
+    const inputCls = 'w-full px-3 py-2 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:border-teal-500/50 transition-colors'
 
     return (
         <div className="space-y-3">
@@ -862,7 +862,7 @@ export default function PhoneBook() {
                             placeholder={isVacancyView ? 'Поиск по вакансиям...' : 'Поиск по имени, должности, телефону...'}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-white placeholder-foreground/25 focus:outline-none focus:border-sky-500/40 transition-colors"
+                            className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-foreground/5 border border-foreground/10 text-sm text-foreground placeholder-foreground/25 focus:outline-none focus:border-sky-500/40 transition-colors"
                         />
                         {search && (
                             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-foreground/30 hover:text-foreground transition-colors">
