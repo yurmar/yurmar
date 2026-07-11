@@ -13,6 +13,7 @@ const Examples = lazy(() => import('@/pages/examples'))
 const PhoneBook = lazy(() => import('@/pages/examples/phoneBook'))
 const DailyReportList = lazy(() => import('@/pages/examples/dailyReport'))
 const DailyReportDetail = lazy(() => import('@/pages/examples/dailyReport/report'))
+const DocumentArchive = lazy(() => import('@/pages/examples/documentArchive'))
 const NotFound = lazy(() => import('@/pages/not-found'))
 
 const fallback = <div className="min-h-screen" />
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
             { path: 'examples/phone-book', element: <Suspense fallback={fallback}><PhoneBook /></Suspense> },
             { path: 'examples/daily-report', element: <Suspense fallback={fallback}><DailyReportList /></Suspense> },
             { path: 'examples/daily-report/:reportId', element: <Suspense fallback={fallback}><DailyReportDetail /></Suspense> },
+            { path: 'examples/document-archive', element: <Suspense fallback={fallback}><DocumentArchive /></Suspense> },
             { path: 'examples', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: 'examples/:folderId', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: '*', element: <Suspense fallback={fallback}><NotFound /></Suspense> },
