@@ -90,6 +90,8 @@ export default function ExamplesSection() {
         }
     }
 
+    const visibleFolders = folders.slice(0, 3)
+
     return (
         <section id="examples" ref={ref} className="py-24 px-4 section-alt">
             <div className="max-w-6xl mx-auto">
@@ -113,7 +115,7 @@ export default function ExamplesSection() {
                     )}
                 </motion.div>
 
-                {folders.length === 0 ? (
+                {visibleFolders.length === 0 ? (
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={isInView ? { opacity: 1 } : {}}
@@ -124,7 +126,7 @@ export default function ExamplesSection() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence>
-                            {folders.map((folder, i) => (
+                            {visibleFolders.map((folder, i) => (
                                 <ExampleCard
                                     key={folder.id}
                                     folder={folder}
