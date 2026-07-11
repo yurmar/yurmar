@@ -20,6 +20,8 @@ const HallOfHonorReport = lazy(() => import('@/pages/examples/hallOfHonor/report
 const BudgetOverview = lazy(() => import('@/pages/examples/budget'))
 const BudgetRegions = lazy(() => import('@/pages/examples/budget/regions'))
 const BudgetStructure = lazy(() => import('@/pages/examples/budget/structure'))
+const StatisticsOverview = lazy(() => import('@/pages/examples/statistics'))
+const StatisticsMonitoring = lazy(() => import('@/pages/examples/statistics/monitoring'))
 const NotFound = lazy(() => import('@/pages/not-found'))
 
 const fallback = <div className="min-h-screen" />
@@ -46,6 +48,8 @@ export const router = createBrowserRouter([
             { path: 'examples/budget', element: <Suspense fallback={fallback}><BudgetOverview /></Suspense> },
             { path: 'examples/budget/regions', element: <Suspense fallback={fallback}><BudgetRegions /></Suspense> },
             { path: 'examples/budget/structure', element: <Suspense fallback={fallback}><BudgetStructure /></Suspense> },
+            { path: 'examples/statistics', element: <Suspense fallback={fallback}><StatisticsOverview /></Suspense> },
+            { path: 'examples/statistics/monitoring', element: <Suspense fallback={fallback}><StatisticsMonitoring /></Suspense> },
             { path: 'examples', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: 'examples/:folderId', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: '*', element: <Suspense fallback={fallback}><NotFound /></Suspense> },
