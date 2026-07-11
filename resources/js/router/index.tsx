@@ -26,6 +26,7 @@ const BranchRating = lazy(() => import('@/pages/examples/branchRating/rating'))
 const BranchIndicators = lazy(() => import('@/pages/examples/branchRating/indicators'))
 const BranchComparison = lazy(() => import('@/pages/examples/branchRating/comparison'))
 const BranchesPage = lazy(() => import('@/pages/examples/branchRating/branches'))
+const MeetingCalendar = lazy(() => import('@/pages/examples/meetingCalendar'))
 const NotFound = lazy(() => import('@/pages/not-found'))
 
 const fallback = <div className="min-h-screen" />
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
             { path: 'examples/branch-rating/indicators', element: <Suspense fallback={fallback}><BranchIndicators /></Suspense> },
             { path: 'examples/branch-rating/comparison', element: <Suspense fallback={fallback}><BranchComparison /></Suspense> },
             { path: 'examples/branch-rating/branches', element: <Suspense fallback={fallback}><BranchesPage /></Suspense> },
+            { path: 'examples/meeting-calendar', element: <Suspense fallback={fallback}><MeetingCalendar /></Suspense> },
             { path: 'examples', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: 'examples/:folderId', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: '*', element: <Suspense fallback={fallback}><NotFound /></Suspense> },

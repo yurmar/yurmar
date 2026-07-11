@@ -12,9 +12,10 @@ export const GRADIENTS: Record<string, { rgba: string; accent: string }> = {
     rose:    { rgba: '244,63,94',   accent: 'text-rose-300' },
     indigo:  { rgba: '99,102,241',  accent: 'text-indigo-300' },
     teal:    { rgba: '20,184,166',  accent: 'text-teal-300' },
+    stone:   { rgba: '120,113,108', accent: 'text-stone-300' },
 }
 
-const COLOR_CYCLE = ['sky', 'purple', 'emerald', 'amber', 'rose', 'indigo', 'teal']
+const COLOR_CYCLE = ['sky', 'purple', 'emerald', 'amber', 'rose', 'indigo', 'teal', 'stone']
 
 export function getGradient(color: string | null, index: number) {
     const key = color && GRADIENTS[color] ? color : COLOR_CYCLE[index % COLOR_CYCLE.length]
