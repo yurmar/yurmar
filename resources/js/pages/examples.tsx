@@ -38,6 +38,7 @@ const COLOR_MAP: Record<string, { text: string }> = {
     amber:   { text: 'text-amber-400' },
     rose:    { text: 'text-rose-400' },
     indigo:  { text: 'text-indigo-400' },
+    teal:    { text: 'text-teal-400' },
 }
 
 function folderTheme(color: string | null) {
