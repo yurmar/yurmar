@@ -67,7 +67,7 @@ export function SealMark({ className = '' }: { className?: string }) {
             <path id="seal-arc" d="M 32,100 A 68,68 0 1,1 168,100" fill="none" />
             <text fontSize="11" letterSpacing="3" fill="var(--budget-gold)" opacity="0.75">
                 <textPath href="#seal-arc" startOffset="50%" textAnchor="middle">
-                    ИСПОЛНЕНИЕ БЮДЖЕТА · {new Date().getFullYear()}
+                    БЮДЖЕТ · {new Date().getFullYear()}
                 </textPath>
             </text>
             <text x="100" y="93" textAnchor="middle" fontSize="34" fontWeight="700" fill="var(--budget-gold)" opacity="0.8" style={PLAYFAIR}>₽</text>

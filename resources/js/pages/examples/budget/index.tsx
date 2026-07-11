@@ -90,8 +90,22 @@ export default function BudgetOverview() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <ChartCard title="Структура налоговых доходов" subtitle={`${REGION_NAME} · доля каждого источника, ${YEAR} год`}>
                         <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie data={PIE_ROWS} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={95} strokeWidth={0}>
+                            <PieChart margin={{ top: 10, right: 50, left: 50, bottom: 10 }}>
+                                <Pie
+                                    data={PIE_ROWS} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={80} strokeWidth={0}
+                                    labelLine={{ stroke: 'currentColor', strokeOpacity: 0.35 }}
+                                    label={({ cx, cy, midAngle, outerRadius, index }: any) => {
+                                        const RADIAN = Math.PI / 180
+                                        const r = outerRadius + 14
+                                        const x = cx + r * Math.cos(-midAngle * RADIAN)
+                                        const y = cy + r * Math.sin(-midAngle * RADIAN)
+                                        return (
+                                            <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fill="currentColor">
+                                                {fmtNum(PIE_ROWS[index].value)}
+                                            </text>
+                                        )
+                                    }}
+                                >
                                     {PIE_ROWS.map((r, i) => <Cell key={i} fill={r.color} />)}
                                 </Pie>
                                 <Tooltip content={({ active, payload }: any) => {
