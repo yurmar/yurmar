@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
+import PullToRefresh from './PullToRefresh'
 import ScrollToTop from '@/components/ScrollToTop'
 import { useEffect } from 'react'
 import { smoothScrollTo } from '@/utils/scroll'
@@ -21,6 +22,7 @@ export default function Layout() {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <PullToRefresh />
             <Header />
             <main className="flex-1">
                 <Outlet />

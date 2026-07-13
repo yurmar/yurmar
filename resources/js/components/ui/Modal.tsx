@@ -111,6 +111,7 @@ export default function Modal({ open, title, fields, values, onChange, onSave, o
         <AnimatePresence>
             {open && (
                 <motion.div
+                    data-no-ptr
                     className="fixed inset-0 z-[200] flex items-center justify-center p-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

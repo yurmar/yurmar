@@ -131,14 +131,16 @@ export default function TodoDayPage() {
                             <span className={`flex-1 min-w-0 text-sm break-words ${task.is_done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                                 {task.title}
                             </span>
-                            <button
-                                type="button"
-                                onClick={() => setTaskToDelete(task)}
-                                aria-label="Удалить задание"
-                                className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            {!task.is_done && (
+                                <button
+                                    type="button"
+                                    onClick={() => setTaskToDelete(task)}
+                                    aria-label="Удалить задание"
+                                    className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                         </motion.div>
                     ))}
                 </AnimatePresence>
