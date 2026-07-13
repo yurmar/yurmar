@@ -38,16 +38,48 @@ export default function TodoDayPage() {
     const [error, setError] = useState<string | null>(null)
     const [taskToDelete, setTaskToDelete] = useState<TodoTask | null>(null)
 
-    const load = () => {
+    const load = (silent = false) => {
         if (!dayId) return
-        setLoading(true)
+        if (!silent) setLoading(true)
         apiGetTodoDay(Number(dayId))
             .then(r => setDay(r.data))
             .catch(() => {})
-            .finally(() => setLoading(false))
+            .finally(() => { if (!silent) setLoading(false) })
     }
 
     useEffect(() => { if (isAuth) load() }, [isAuth, dayId])
+
+    // Периодически подтягиваем задачи (например, добавленные через Telegram-бота),
+    // пока страница дня открыта и видима.
+    useEffect(() => {
+        if (!isAuth || !dayId) return
+        const POLL_MS = 12000
+        let interval: ReturnType<typeof setInterval> | null = null
+
+        const start = () => {
+            if (interval) return
+            interval = setInterval(() => load(true), POLL_MS)
+        }
+        const stop = () => {
+            if (interval) { clearInterval(interval); interval = null }
+        }
+        const onVisibility = () => {
+            if (document.hidden) {
+                stop()
+            } else {
+                load(true)
+                start()
+            }
+        }
+
+        document.addEventListener('visibilitychange', onVisibility)
+        if (!document.hidden) start()
+
+        return () => {
+            stop()
+            document.removeEventListener('visibilitychange', onVisibility)
+        }
+    }, [isAuth, dayId])
 
     if (authLoading) return null
     if (!isAuth) return <Navigate to="/login" replace />
