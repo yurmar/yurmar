@@ -150,7 +150,7 @@ export default function TodoDayPage() {
                         onChange={e => setNewTasksText(e.target.value)}
                         rows={3}
                         placeholder={'Новое задание\nЕщё одно задание'}
-                        className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                        className="w-full px-3 py-2 rounded-lg bg-background border border-border text-base sm:text-sm text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                     />
                     {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
                     <div className="flex justify-end gap-2 mt-3">

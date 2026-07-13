@@ -158,7 +158,7 @@ export default function Modal({ open, title, fields, values, onChange, onSave, o
                                             onChange={(e) => onChange(field.key, e.target.value)}
                                             placeholder={field.placeholder}
                                             rows={field.type === 'json-array' ? 3 : 4}
-                                            className="w-full rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"
+                                            className="w-full rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"
                                         />
                                     ) : (
                                         <input
@@ -166,7 +166,7 @@ export default function Modal({ open, title, fields, values, onChange, onSave, o
                                             value={values[field.key] ?? ''}
                                             onChange={(e) => onChange(field.key, e.target.value)}
                                             placeholder={field.placeholder}
-                                            className="w-full rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                                            className="w-full rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50"
                                         />
                                     )}
                                     {field.type === 'json-array' && (
