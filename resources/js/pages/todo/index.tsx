@@ -2,9 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { ListChecks, LayoutGrid, List, ChevronRight, Loader2 } from 'lucide-react'
+import { ListChecks, LayoutGrid, List, ChevronRight, Loader2, Plus } from 'lucide-react'
 import { RootState } from '@/store'
 import { apiGetTodoDays, apiCreateTodoDay, TodoDay } from '@/api/todo'
+import Modal from '@/components/ui/Modal'
+
+const FIELDS = [
+    { key: 'date', label: 'Дата', type: 'date' as const },
+    {
+        key: 'tasks',
+        label: 'Задания (каждая строка — отдельное задание)',
+        type: 'textarea' as const,
+        placeholder: 'Позвонить клиенту\nПодготовить отчёт\nОплатить счёт',
+    },
+]
 
 type ViewMode = 'cards' | 'list'
 const VIEW_MODE_KEY = 'todoViewMode'
@@ -61,10 +72,9 @@ export default function TodoList() {
     const [loading, setLoading] = useState(true)
     const [viewMode, setViewModeState] = useState<ViewMode>(getSavedViewMode)
 
-    const [date, setDate] = useState(todayStr())
-    const [tasksText, setTasksText] = useState('')
+    const [modalOpen, setModalOpen] = useState(false)
+    const [form, setForm] = useState<Record<string, string>>({ date: todayStr(), tasks: '' })
     const [saving, setSaving] = useState(false)
-    const [error, setError] = useState<string | null>(null)
 
     const load = () => {
         setLoading(true)
@@ -83,16 +93,19 @@ export default function TodoList() {
         localStorage.setItem(VIEW_MODE_KEY, mode)
     }
 
+    const openCreate = () => {
+        setForm({ date: todayStr(), tasks: '' })
+        setModalOpen(true)
+    }
+
     const handleSave = () => {
-        if (!date || !tasksText.trim() || saving) return
+        if (!form.date || !form.tasks?.trim() || saving) return
         setSaving(true)
-        setError(null)
-        apiCreateTodoDay(date, tasksText)
+        apiCreateTodoDay(form.date, form.tasks)
             .then(() => {
-                setTasksText('')
+                setModalOpen(false)
                 load()
             })
-            .catch(() => setError('Не удалось сохранить. Проверьте данные.'))
             .finally(() => setSaving(false))
     }
 
@@ -102,55 +115,24 @@ export default function TodoList() {
 
     return (
         <div className="min-h-screen pt-24 pb-16 max-w-4xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                <div className="flex items-center gap-2.5 mb-2">
-                    <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center">
-                        <ListChecks className="text-sky-500 dark:text-sky-400" size={18} />
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-start justify-between gap-4 mb-8">
+                <div>
+                    <div className="flex items-center gap-2.5 mb-2">
+                        <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center">
+                            <ListChecks className="text-sky-500 dark:text-sky-400" size={18} />
+                        </div>
+                        <h1 className="text-3xl font-bold text-foreground">Надо сделать</h1>
                     </div>
-                    <h1 className="text-3xl font-bold text-foreground">Надо сделать</h1>
+                    <p className="text-muted-foreground text-sm">Планируйте задачи по дням и отмечайте выполненное</p>
                 </div>
-                <p className="text-muted-foreground text-sm mb-8">Планируйте задачи по дням и отмечайте выполненное</p>
+                <button
+                    type="button"
+                    onClick={openCreate}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-sky-500 text-white hover:bg-sky-600 transition-colors flex-shrink-0"
+                >
+                    <Plus size={16} /> Добавить день
+                </button>
             </motion.div>
-
-            {/* Форма добавления */}
-            <div className="card-block rounded-2xl p-5 mb-10">
-                <h2 className="text-sm font-semibold text-foreground mb-4">Новый день</h2>
-                <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
-                    <div>
-                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">Дата</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                            className="px-3 py-2 rounded-lg bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500/40"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                            Задания (каждая строка — отдельное задание)
-                        </label>
-                        <textarea
-                            value={tasksText}
-                            onChange={e => setTasksText(e.target.value)}
-                            rows={4}
-                            placeholder={'Позвонить клиенту\nПодготовить отчёт\nОплатить счёт'}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-sky-500/40"
-                        />
-                    </div>
-                </div>
-                {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
-                <div className="flex justify-end mt-4">
-                    <button
-                        type="button"
-                        onClick={handleSave}
-                        disabled={saving || !tasksText.trim()}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {saving && <Loader2 size={14} className="animate-spin" />}
-                        Сохранить
-                    </button>
-                </div>
-            </div>
 
             {/* Список дней */}
             <div className="flex items-end justify-between mb-4 gap-4">
@@ -161,7 +143,7 @@ export default function TodoList() {
             {loading ? (
                 <div className="flex justify-center py-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
             ) : sorted.length === 0 ? (
-                <p className="text-muted-foreground text-sm py-8 text-center">Пока нет ни одного дня — добавьте первый выше</p>
+                <p className="text-muted-foreground text-sm py-8 text-center">Пока нет ни одного дня — нажмите «Добавить день» выше</p>
             ) : viewMode === 'cards' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <AnimatePresence mode="popLayout">
@@ -213,6 +195,17 @@ export default function TodoList() {
                     </AnimatePresence>
                 </div>
             )}
+
+            <Modal
+                open={modalOpen}
+                title="Добавить день"
+                fields={FIELDS}
+                values={form}
+                onChange={(k, v) => setForm(p => ({ ...p, [k]: v }))}
+                onSave={handleSave}
+                onClose={() => setModalOpen(false)}
+                saving={saving}
+            />
         </div>
     )
 }

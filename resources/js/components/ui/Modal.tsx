@@ -7,7 +7,7 @@ import client from '@/api/client'
 interface FieldDef {
     key: string
     label: string
-    type?: 'text' | 'textarea' | 'url' | 'email' | 'json-array' | 'image'
+    type?: 'text' | 'textarea' | 'url' | 'email' | 'date' | 'json-array' | 'image'
     placeholder?: string
 }
 
