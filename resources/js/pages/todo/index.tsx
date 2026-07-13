@@ -18,8 +18,11 @@ function todayStr(): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function formatDate(str: string) {
-    return new Date(str).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'short' })
+function formatDate(str: string | null | undefined) {
+    if (!str) return '—'
+    const date = new Date(str)
+    if (Number.isNaN(date.getTime())) return '—'
+    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'short' })
 }
 
 function statusOf(day: TodoDay): 'done' | 'partial' | 'none' | 'empty' {
@@ -93,7 +96,9 @@ export default function TodoList() {
             .finally(() => setSaving(false))
     }
 
-    const sorted = [...days].sort((a, b) => b.date.localeCompare(a.date))
+    const sorted = (Array.isArray(days) ? days : [])
+        .filter(d => !!d?.date)
+        .sort((a, b) => b.date.localeCompare(a.date))
 
     return (
         <div className="min-h-screen pt-24 pb-16 max-w-4xl mx-auto px-4">

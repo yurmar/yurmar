@@ -6,8 +6,11 @@ import { ArrowLeft, CheckCircle2, Circle, Loader2, Plus, Trash2 } from 'lucide-r
 import { RootState } from '@/store'
 import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
 
-function formatDate(str: string) {
-    return new Date(str).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })
+function formatDate(str: string | null | undefined) {
+    if (!str) return '—'
+    const date = new Date(str)
+    if (Number.isNaN(date.getTime())) return '—'
+    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })
 }
 
 export default function TodoDayPage() {
