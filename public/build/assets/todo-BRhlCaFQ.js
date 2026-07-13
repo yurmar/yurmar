@@ -1,1 +1,0 @@
-import{n as a}from"./app-J3jdXMTH.js";const e=()=>a.get("/todo-days"),p=o=>a.get(`/todo-days/${o}`),y=(o,s)=>a.post("/todo-days",{date:o,tasks:s}),T=(o,s)=>a.post(`/todo-days/${o}/tasks`,{tasks:s}),c=(o,s,t)=>a.put(`/todo-days/${o}/tasks/${s}`,t),i=(o,s)=>a.delete(`/todo-days/${o}/tasks/${s}`);export{e as a,y as b,p as c,c as d,i as e,T as f};
