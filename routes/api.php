@@ -12,6 +12,8 @@ use App\Http\Controllers\HeroController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TechnologyController;
+use App\Http\Controllers\TodoDayController;
+use App\Http\Controllers\TodoTaskController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
@@ -50,6 +52,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/example-folders/{exampleFolder}/examples', [ExampleController::class, 'store']);
     Route::put('/example-folders/{exampleFolder}/examples/{example}', [ExampleController::class, 'update']);
     Route::delete('/example-folders/{exampleFolder}/examples/{example}', [ExampleController::class, 'destroy']);
+
+    Route::get('/todo-days', [TodoDayController::class, 'index']);
+    Route::post('/todo-days', [TodoDayController::class, 'store']);
+    Route::get('/todo-days/{todoDay}', [TodoDayController::class, 'show']);
+    Route::delete('/todo-days/{todoDay}', [TodoDayController::class, 'destroy']);
+
+    Route::post('/todo-days/{todoDay}/tasks', [TodoTaskController::class, 'store']);
+    Route::put('/todo-days/{todoDay}/tasks/{todoTask}', [TodoTaskController::class, 'update']);
+    Route::delete('/todo-days/{todoDay}/tasks/{todoTask}', [TodoTaskController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр

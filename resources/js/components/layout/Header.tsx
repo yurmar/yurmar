@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
 import { smoothScrollTo } from '@/utils/scroll'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogIn, LogOut, FileText } from 'lucide-react'
+import { Menu, X, LogIn, LogOut, FileText, ListChecks } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store'
@@ -83,6 +83,12 @@ export default function Header() {
                     {isAuth ? (
                         <div className="hidden md:flex items-center gap-2">
                             <Link
+                                to="/todo"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
+                            >
+                                <ListChecks size={13} /> Задачи
+                            </Link>
+                            <Link
                                 to="/orders"
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
                             >
@@ -143,6 +149,9 @@ export default function Header() {
                             <div className="pt-2 border-t border-white/10">
                                 {isAuth ? (
                                     <>
+                                        <Link to="/todo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
+                                            <ListChecks size={14} /> Задачи
+                                        </Link>
                                         <Link to="/orders" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
                                             <FileText size={14} /> Заказы
                                         </Link>

@@ -27,6 +27,8 @@ const BranchIndicators = lazy(() => import('@/pages/examples/branchRating/indica
 const BranchComparison = lazy(() => import('@/pages/examples/branchRating/comparison'))
 const BranchesPage = lazy(() => import('@/pages/examples/branchRating/branches'))
 const MeetingCalendar = lazy(() => import('@/pages/examples/meetingCalendar'))
+const TodoList = lazy(() => import('@/pages/todo'))
+const TodoDayPage = lazy(() => import('@/pages/todo/day'))
 const NotFound = lazy(() => import('@/pages/not-found'))
 
 const fallback = <div className="min-h-screen" />
@@ -43,6 +45,8 @@ export const router = createBrowserRouter([
             { path: 'contacts', element: <Suspense fallback={fallback}><Contacts /></Suspense> },
             { path: 'notebook', element: <Suspense fallback={fallback}><Notebook /></Suspense> },
             { path: 'orders', element: <Suspense fallback={fallback}><Orders /></Suspense> },
+            { path: 'todo', element: <Suspense fallback={fallback}><TodoList /></Suspense> },
+            { path: 'todo/:dayId', element: <Suspense fallback={fallback}><TodoDayPage /></Suspense> },
             { path: 'examples/phone-book', element: <Suspense fallback={fallback}><PhoneBook /></Suspense> },
             { path: 'examples/daily-report', element: <Suspense fallback={fallback}><DailyReportList /></Suspense> },
             { path: 'examples/daily-report/:reportId', element: <Suspense fallback={fallback}><DailyReportDetail /></Suspense> },

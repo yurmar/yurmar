@@ -1,1 +1,0 @@
-import{j as t}from"./vendor-motion-BtEwk5Qp.js";import{A as o}from"./app-Dq0oDfiv.js";import"./vendor-redux-Bf_jGU28.js";import"./vendor-router-B-Z7ZT8I.js";import"./vendor-http-C0Zqfgkc.js";import"./vendor-ui-OooYbOGE.js";function a(){return t.jsx("div",{className:"pt-20",children:t.jsx(o,{})})}export{a as default};
