@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2, Circle, Loader2, Plus, Trash2 } from 'lucide-r
 import { RootState } from '@/store'
 import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
 import ProgressBar from '@/components/ui/ProgressBar'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 function formatDate(str: string | null | undefined) {
     if (!str) return '—'
@@ -35,6 +36,7 @@ export default function TodoDayPage() {
     const [newTasksText, setNewTasksText] = useState('')
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [taskToDelete, setTaskToDelete] = useState<TodoTask | null>(null)
 
     const load = () => {
         if (!dayId) return
@@ -60,6 +62,7 @@ export default function TodoDayPage() {
         if (!day) return
         setDay({ ...day, tasks: day.tasks.filter(t => t.id !== task.id) })
         apiDeleteTodoTask(day.id, task.id).catch(() => load())
+        setTaskToDelete(null)
     }
 
     const handleAddTasks = () => {
@@ -130,7 +133,7 @@ export default function TodoDayPage() {
                             </span>
                             <button
                                 type="button"
-                                onClick={() => deleteTask(task)}
+                                onClick={() => setTaskToDelete(task)}
                                 aria-label="Удалить задание"
                                 className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
                             >
@@ -177,6 +180,14 @@ export default function TodoDayPage() {
                     <Plus size={16} /> Добавить ещё
                 </button>
             )}
+
+            <ConfirmModal
+                open={!!taskToDelete}
+                title="Удалить задание?"
+                message={taskToDelete ? `«${taskToDelete.title}» будет удалено безвозвратно.` : undefined}
+                onConfirm={() => taskToDelete && deleteTask(taskToDelete)}
+                onClose={() => setTaskToDelete(null)}
+            />
         </div>
     )
 }
