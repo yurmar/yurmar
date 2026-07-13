@@ -6,6 +6,7 @@ import { ListChecks, LayoutGrid, List, ChevronRight, Loader2, Plus } from 'lucid
 import { RootState } from '@/store'
 import { apiGetTodoDays, apiCreateTodoDay, TodoDay } from '@/api/todo'
 import Modal from '@/components/ui/Modal'
+import ProgressBar from '@/components/ui/ProgressBar'
 
 const FIELDS = [
     { key: 'date', label: 'Дата', type: 'date' as const },
@@ -33,7 +34,10 @@ function formatDate(str: string | null | undefined) {
     if (!str) return '—'
     const date = new Date(str)
     if (Number.isNaN(date.getTime())) return '—'
-    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'short' })
+    const formatted = date
+        .toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'short' })
+        .replace(/\s*г\.$/i, '')
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
 function statusOf(day: TodoDay): 'done' | 'partial' | 'none' | 'empty' {
@@ -41,6 +45,11 @@ function statusOf(day: TodoDay): 'done' | 'partial' | 'none' | 'empty' {
     if (day.done_tasks_count === day.tasks_count) return 'done'
     if (day.done_tasks_count === 0) return 'none'
     return 'partial'
+}
+
+function percentOf(day: TodoDay): number {
+    if (day.tasks_count === 0) return 0
+    return Math.round((day.done_tasks_count / day.tasks_count) * 100)
 }
 
 const STATUS_STYLES: Record<string, { bar: string; badge: string; label: string }> = {
@@ -117,24 +126,24 @@ export default function TodoList() {
 
     const sorted = (Array.isArray(days) ? days : [])
         .filter(d => !!d?.date)
-        .sort((a, b) => b.date.localeCompare(a.date))
+        .sort((a, b) => a.date.localeCompare(b.date))
 
     return (
         <div className="min-h-screen pt-24 pb-16 max-w-4xl mx-auto px-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-start justify-between gap-4 mb-8">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
                 <div>
                     <div className="flex items-center gap-2.5 mb-2">
-                        <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center flex-shrink-0">
                             <ListChecks className="text-sky-500 dark:text-sky-400" size={18} />
                         </div>
-                        <h1 className="text-3xl font-bold text-foreground">Надо сделать</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Надо сделать</h1>
                     </div>
                     <p className="text-muted-foreground text-sm">Планируйте задачи по дням и отмечайте выполненное</p>
                 </div>
                 <button
                     type="button"
                     onClick={openCreate}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-sky-500 text-white hover:bg-sky-600 transition-colors flex-shrink-0"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-sky-500 text-white hover:bg-sky-600 transition-colors flex-shrink-0 w-full sm:w-auto"
                 >
                     <Plus size={16} /> Добавить день
                 </button>
@@ -160,9 +169,13 @@ export default function TodoList() {
                                 <motion.div key={day.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.03, duration: 0.25 }}>
                                     <Link to={`/todo/${day.id}`} className="group relative flex flex-col card-block rounded-2xl p-5 pt-6 hover:-translate-y-1 transition-all duration-200 overflow-hidden h-full">
                                         <div className="absolute top-0 left-0 right-0 h-1" style={{ background: s.bar }} />
-                                        <div className="font-semibold text-foreground capitalize mb-2">{formatDate(day.date)}</div>
-                                        <div className="text-sm text-muted-foreground mb-3">
-                                            Выполнено {day.done_tasks_count} из {day.tasks_count}
+                                        <div className="font-semibold text-foreground mb-2 break-words">{formatDate(day.date)}</div>
+                                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
+                                            <span>Выполнено {day.done_tasks_count} из {day.tasks_count}</span>
+                                            <span className="font-mono text-xs tabular-nums flex-shrink-0 ml-2">{percentOf(day)}%</span>
+                                        </div>
+                                        <div className="mb-3">
+                                            <ProgressBar percent={percentOf(day)} color={s.bar} />
                                         </div>
                                         <span className={`self-start text-[10px] font-semibold px-2 py-1 rounded-full ${s.badge}`}>{s.label}</span>
                                         <div className="mt-4 pt-3 border-t border-border flex items-center justify-end gap-1 text-xs text-sky-500 dark:text-sky-400 font-medium">
@@ -182,16 +195,23 @@ export default function TodoList() {
                             const s = STATUS_STYLES[status]
                             return (
                                 <motion.div key={day.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ delay: i * 0.03, duration: 0.25 }}>
-                                    <Link to={`/todo/${day.id}`} className="group flex items-center rounded-2xl overflow-hidden card-block hover:-translate-y-0.5 transition-all duration-200">
+                                    <Link to={`/todo/${day.id}`} className="group flex rounded-2xl overflow-hidden card-block hover:-translate-y-0.5 transition-all duration-200">
                                         <div className="w-1.5 self-stretch flex-shrink-0" style={{ background: s.bar }} />
-                                        <div className="flex-1 flex items-center justify-between px-4 py-3.5 gap-4">
-                                            <div>
-                                                <div className="font-semibold text-foreground capitalize">{formatDate(day.date)}</div>
-                                                <div className="text-xs text-muted-foreground mt-0.5">Выполнено {day.done_tasks_count} из {day.tasks_count}</div>
+                                        <div className="flex-1 min-w-0 px-4 py-3.5">
+                                            <div className="flex items-center justify-between gap-3 mb-2">
+                                                <div className="font-semibold text-foreground truncate">{formatDate(day.date)}</div>
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap ${s.badge}`}>{s.label}</span>
+                                                    <ChevronRight size={16} className="text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-3 flex-shrink-0">
-                                                <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${s.badge}`}>{s.label}</span>
-                                                <ChevronRight size={16} className="text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-1">
+                                                    <ProgressBar percent={percentOf(day)} color={s.bar} />
+                                                </div>
+                                                <span className="text-xs text-muted-foreground flex-shrink-0 tabular-nums font-mono">
+                                                    {day.done_tasks_count}/{day.tasks_count} · {percentOf(day)}%
+                                                </span>
                                             </div>
                                         </div>
                                     </Link>

@@ -62,3 +62,4 @@ Laravel 10 (API) + React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + Red
 
 ### Текущее состояние
 `ProjectsSection` и страница `/portfolio` временно закомментированы в `router/index.tsx` и `pages/home.tsx`.
+Страница `/notebook` временно закомментирована в `router/index.tsx`, `Header.tsx` и `Footer.tsx`.

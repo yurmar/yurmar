@@ -5,12 +5,23 @@ import { useSelector } from 'react-redux'
 import { ArrowLeft, CheckCircle2, Circle, Loader2, Plus, Trash2 } from 'lucide-react'
 import { RootState } from '@/store'
 import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
+import ProgressBar from '@/components/ui/ProgressBar'
 
 function formatDate(str: string | null | undefined) {
     if (!str) return '—'
     const date = new Date(str)
     if (Number.isNaN(date.getTime())) return '—'
-    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })
+    const formatted = date
+        .toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })
+        .replace(/\s*г\.$/i, '')
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+}
+
+function progressColor(done: number, total: number): string {
+    if (total === 0) return '#94a3b8'
+    if (done === total) return '#10b981'
+    if (done === 0) return '#ef4444'
+    return '#f59e0b'
 }
 
 export default function TodoDayPage() {
@@ -80,6 +91,8 @@ export default function TodoDayPage() {
 
     const total = day.tasks.length
     const done = day.tasks.filter(t => t.is_done).length
+    const percent = total === 0 ? 0 : Math.round((done / total) * 100)
+    const color = progressColor(done, total)
 
     return (
         <div className="min-h-screen pt-24 pb-16 max-w-2xl mx-auto px-4">
@@ -87,9 +100,13 @@ export default function TodoDayPage() {
                 <ArrowLeft size={13} /> Все дни
             </Link>
 
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-2xl font-bold text-foreground capitalize mb-1">{formatDate(day.date)}</h1>
-                <p className="text-muted-foreground text-sm mb-8">Выполнено {done} из {total}</p>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-8">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1 break-words">{formatDate(day.date)}</h1>
+                <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground mb-2">
+                    <span>Выполнено {done} из {total}</span>
+                    <span className="font-mono text-xs tabular-nums flex-shrink-0">{percent}%</span>
+                </div>
+                <ProgressBar percent={percent} color={color} />
             </motion.div>
 
             <div className="space-y-2 mb-6">
@@ -108,14 +125,14 @@ export default function TodoDayPage() {
                                     ? <CheckCircle2 className="text-emerald-500" size={20} />
                                     : <Circle className="text-muted-foreground" size={20} />}
                             </button>
-                            <span className={`flex-1 text-sm ${task.is_done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                            <span className={`flex-1 min-w-0 text-sm break-words ${task.is_done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                                 {task.title}
                             </span>
                             <button
                                 type="button"
                                 onClick={() => deleteTask(task)}
                                 aria-label="Удалить задание"
-                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
+                                className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
                             >
                                 <Trash2 size={16} />
                             </button>
