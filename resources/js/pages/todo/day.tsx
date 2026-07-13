@@ -15,6 +15,7 @@ function formatDate(str: string | null | undefined) {
 
 export default function TodoDayPage() {
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
+    const authLoading = useSelector((s: RootState) => s.auth.loading)
     const { dayId } = useParams()
 
     const [day, setDay] = useState<TodoDayDetail | null>(null)
@@ -22,6 +23,7 @@ export default function TodoDayPage() {
     const [adding, setAdding] = useState(false)
     const [newTasksText, setNewTasksText] = useState('')
     const [saving, setSaving] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const load = () => {
         if (!dayId) return
@@ -34,6 +36,7 @@ export default function TodoDayPage() {
 
     useEffect(() => { if (isAuth) load() }, [isAuth, dayId])
 
+    if (authLoading) return null
     if (!isAuth) return <Navigate to="/login" replace />
 
     const toggleTask = (task: TodoTask) => {
@@ -51,12 +54,14 @@ export default function TodoDayPage() {
     const handleAddTasks = () => {
         if (!day || !newTasksText.trim() || saving) return
         setSaving(true)
+        setError(null)
         apiAddTodoTasks(day.id, newTasksText)
             .then(r => {
                 setDay(r.data)
                 setNewTasksText('')
                 setAdding(false)
             })
+            .catch(() => setError('Не удалось сохранить. Попробуйте ещё раз.'))
             .finally(() => setSaving(false))
     }
 
@@ -130,6 +135,7 @@ export default function TodoDayPage() {
                         placeholder={'Новое задание\nЕщё одно задание'}
                         className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                     />
+                    {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
                     <div className="flex justify-end gap-2 mt-3">
                         <button type="button" onClick={() => { setAdding(false); setNewTasksText('') }} className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors">
                             Отмена

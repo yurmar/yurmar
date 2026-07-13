@@ -20,6 +20,7 @@ interface ModalProps {
     onSave: () => void
     onClose: () => void
     saving?: boolean
+    error?: string | null
 }
 
 function ImageUploadField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
@@ -99,7 +100,7 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (url: 
     )
 }
 
-export default function Modal({ open, title, fields, values, onChange, onSave, onClose, saving }: ModalProps) {
+export default function Modal({ open, title, fields, values, onChange, onSave, onClose, saving, error }: ModalProps) {
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
         document.addEventListener('keydown', onKey)
@@ -174,6 +175,8 @@ export default function Modal({ open, title, fields, values, onChange, onSave, o
                                 </div>
                             ))}
                         </div>
+
+                        {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
 
                         <div className="flex gap-3 mt-6 justify-end">
                             <button

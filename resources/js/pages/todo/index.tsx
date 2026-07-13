@@ -67,6 +67,7 @@ function ViewToggle({ mode, onChange }: { mode: ViewMode; onChange: (m: ViewMode
 
 export default function TodoList() {
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
+    const authLoading = useSelector((s: RootState) => s.auth.loading)
 
     const [days, setDays] = useState<TodoDay[]>([])
     const [loading, setLoading] = useState(true)
@@ -75,6 +76,7 @@ export default function TodoList() {
     const [modalOpen, setModalOpen] = useState(false)
     const [form, setForm] = useState<Record<string, string>>({ date: todayStr(), tasks: '' })
     const [saving, setSaving] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const load = () => {
         setLoading(true)
@@ -86,6 +88,7 @@ export default function TodoList() {
 
     useEffect(() => { if (isAuth) load() }, [isAuth])
 
+    if (authLoading) return null
     if (!isAuth) return <Navigate to="/login" replace />
 
     const setViewMode = (mode: ViewMode) => {
@@ -95,17 +98,20 @@ export default function TodoList() {
 
     const openCreate = () => {
         setForm({ date: todayStr(), tasks: '' })
+        setError(null)
         setModalOpen(true)
     }
 
     const handleSave = () => {
         if (!form.date || !form.tasks?.trim() || saving) return
         setSaving(true)
+        setError(null)
         apiCreateTodoDay(form.date, form.tasks)
             .then(() => {
                 setModalOpen(false)
                 load()
             })
+            .catch(() => setError('Не удалось сохранить. Попробуйте ещё раз.'))
             .finally(() => setSaving(false))
     }
 
@@ -205,6 +211,7 @@ export default function TodoList() {
                 onSave={handleSave}
                 onClose={() => setModalOpen(false)}
                 saving={saving}
+                error={error}
             />
         </div>
     )
