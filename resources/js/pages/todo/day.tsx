@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { ArrowLeft, CheckCircle2, Circle, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarDays, CheckCircle2, Circle, Loader2, Plus, Trash2, X } from 'lucide-react'
 import { RootState } from '@/store'
-import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
+import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, apiMoveTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
 import ProgressBar from '@/components/ui/ProgressBar'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 
@@ -16,6 +16,13 @@ function formatDate(str: string | null | undefined) {
         .toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })
         .replace(/\s*г\.$/i, '')
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+}
+
+function nextDay(str: string): string {
+    const d = new Date(str + 'T00:00:00')
+    d.setDate(d.getDate() + 1)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 function progressColor(done: number, total: number): string {
@@ -37,6 +44,10 @@ export default function TodoDayPage() {
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [taskToDelete, setTaskToDelete] = useState<TodoTask | null>(null)
+    const [taskToMove, setTaskToMove] = useState<TodoTask | null>(null)
+    const [moveDate, setMoveDate] = useState('')
+    const [moving, setMoving] = useState(false)
+    const [moveError, setMoveError] = useState<string | null>(null)
 
     const load = (silent = false) => {
         if (!dayId) return
@@ -95,6 +106,27 @@ export default function TodoDayPage() {
         setDay({ ...day, tasks: day.tasks.filter(t => t.id !== task.id) })
         apiDeleteTodoTask(day.id, task.id).catch(() => load())
         setTaskToDelete(null)
+    }
+
+    const openMove = (task: TodoTask) => {
+        if (!day) return
+        setMoveError(null)
+        setMoveDate(nextDay(day.date))
+        setTaskToMove(task)
+    }
+
+    const handleMoveTask = () => {
+        if (!day || !taskToMove || !moveDate || moving) return
+        if (moveDate === day.date) { setTaskToMove(null); return }
+        setMoving(true)
+        setMoveError(null)
+        apiMoveTodoTask(day.id, taskToMove.id, moveDate)
+            .then(r => {
+                setDay(r.data)
+                setTaskToMove(null)
+            })
+            .catch(() => setMoveError('Не удалось перенести. Попробуйте ещё раз.'))
+            .finally(() => setMoving(false))
     }
 
     const handleAddTasks = () => {
@@ -164,14 +196,24 @@ export default function TodoDayPage() {
                                 {task.title}
                             </span>
                             {!task.is_done && (
-                                <button
-                                    type="button"
-                                    onClick={() => setTaskToDelete(task)}
-                                    aria-label="Удалить задание"
-                                    className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => openMove(task)}
+                                        aria-label="Перенести задание на другой день"
+                                        className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-sky-500 transition-opacity"
+                                    >
+                                        <CalendarDays size={16} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setTaskToDelete(task)}
+                                        aria-label="Удалить задание"
+                                        className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </>
                             )}
                         </motion.div>
                     ))}
@@ -214,6 +256,67 @@ export default function TodoDayPage() {
                     <Plus size={16} /> Добавить ещё
                 </button>
             )}
+
+            <AnimatePresence>
+                {taskToMove && (
+                    <motion.div
+                        data-no-ptr
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            onClick={() => setTaskToMove(null)}
+                        />
+                        <motion.div
+                            className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d1a30] shadow-2xl p-6 light:bg-white light:border-gray-200"
+                            initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.92, opacity: 0, y: 20 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-lg font-semibold text-white">Перенести задание</h3>
+                                <button
+                                    onClick={() => setTaskToMove(null)}
+                                    className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            <p className="text-sm text-gray-400 mb-4 break-words">«{taskToMove.title}» будет перенесено на выбранный день. Если такого дня ещё нет, он будет создан.</p>
+
+                            <input
+                                type="date"
+                                value={moveDate}
+                                onChange={e => setMoveDate(e.target.value)}
+                                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-base text-white focus:outline-none focus:ring-2 focus:ring-sky-500/40 [color-scheme:dark]"
+                            />
+                            {moveError && <p className="text-xs text-red-500 mt-2">{moveError}</p>}
+
+                            <div className="flex gap-3 mt-6 justify-end">
+                                <button
+                                    onClick={() => setTaskToMove(null)}
+                                    className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                >
+                                    Отмена
+                                </button>
+                                <button
+                                    onClick={handleMoveTask}
+                                    disabled={moving || !moveDate}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-sky-500 hover:bg-sky-400 transition-colors disabled:opacity-60"
+                                >
+                                    {moving && <Loader2 size={14} className="animate-spin" />}
+                                    Перенести
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <ConfirmModal
                 open={!!taskToDelete}

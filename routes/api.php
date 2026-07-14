@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AboutController;
-use App\Http\Controllers\ImageController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BriefOrderController;
@@ -9,6 +8,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\ExampleFolderController;
 use App\Http\Controllers\HeroController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TechnologyController;
@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/todo-days/{todoDay}/tasks', [TodoTaskController::class, 'store']);
     Route::put('/todo-days/{todoDay}/tasks/{todoTask}', [TodoTaskController::class, 'update']);
     Route::delete('/todo-days/{todoDay}/tasks/{todoTask}', [TodoTaskController::class, 'destroy']);
+    Route::post('/todo-days/{todoDay}/tasks/{todoTask}/move', [TodoTaskController::class, 'move']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр

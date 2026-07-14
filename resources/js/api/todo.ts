@@ -38,3 +38,6 @@ export const apiUpdateTodoTask = (dayId: number, taskId: number, data: Partial<P
 
 export const apiDeleteTodoTask = (dayId: number, taskId: number) =>
     client.delete(`/todo-days/${dayId}/tasks/${taskId}`)
+
+export const apiMoveTodoTask = (dayId: number, taskId: number, date: string) =>
+    client.post<TodoDayDetail>(`/todo-days/${dayId}/tasks/${taskId}/move`, { date })
