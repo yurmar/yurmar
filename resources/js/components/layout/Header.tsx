@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { smoothScrollTo } from '@/utils/scroll'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogIn, LogOut, FileText, ListChecks } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { LogIn, LogOut, FileText, ListChecks } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store'
@@ -18,10 +18,8 @@ const NAV = [
 ]
 
 export default function Header() {
-    const [open, setOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
     const location = useLocation()
-    const navigate = useNavigate()
     const dispatch = useDispatch<AppDispatch>()
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
 
@@ -31,14 +29,11 @@ export default function Header() {
         return () => window.removeEventListener('scroll', fn)
     }, [])
 
-    useEffect(() => { setOpen(false) }, [location])
-
     const handleNavClick = (item: typeof NAV[0]) => {
         if (item.anchor && location.pathname === '/') {
             const el = document.querySelector(item.anchor)
             if (el) smoothScrollTo(el)
         }
-        setOpen(false)
     }
 
     const handleLogout = () => dispatch(logout())
@@ -79,18 +74,17 @@ export default function Header() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                    <ThemeToggle />
                     {isAuth ? (
-                        <div className="hidden md:flex items-center gap-2">
+                        <>
                             <Link
                                 to="/todo"
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
+                                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
                             >
                                 <ListChecks size={13} /> Задачи
                             </Link>
                             <Link
                                 to="/orders"
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
+                                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
                             >
                                 <FileText size={13} /> Заказы
                             </Link>
@@ -102,73 +96,15 @@ export default function Header() {
                             >
                                 <LogOut size={13} /> Выйти
                             </motion.button>
-                        </div>
+                        </>
                     ) : (
-                        <Link to="/login" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors">
+                        <Link to="/login" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors">
                             <LogIn size={13} /> Войти
                         </Link>
                     )}
-
-                    {/* Burger */}
-                    <button
-                        onClick={() => setOpen(!open)}
-                        aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
-                        aria-expanded={open}
-                        className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
-                    >
-                        {open ? <X size={20} /> : <Menu size={20} />}
-                    </button>
+                    <ThemeToggle />
                 </div>
             </div>
-
-            {/* Mobile menu */}
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden border-t border-white/10 bg-[#050d1f]/95 backdrop-blur-xl overflow-hidden"
-                    >
-                        <div className="px-4 py-4 space-y-1">
-                            {NAV.map(item => (
-                                <NavLink
-                                    key={item.label}
-                                    to={item.to}
-                                    onClick={() => handleNavClick(item)}
-                                    className={({ isActive }) =>
-                                        `block px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                                            isActive ? 'text-sky-400 bg-sky-500/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                                        }`
-                                    }
-                                    end={item.to === '/'}
-                                >
-                                    {item.label}
-                                </NavLink>
-                            ))}
-                            <div className="pt-2 border-t border-white/10">
-                                {isAuth ? (
-                                    <>
-                                        <Link to="/todo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
-                                            <ListChecks size={14} /> Задачи
-                                        </Link>
-                                        <Link to="/orders" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
-                                            <FileText size={14} /> Заказы
-                                        </Link>
-                                        <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 w-full">
-                                            <LogOut size={14} /> Выйти
-                                        </button>
-                                    </>
-                                ) : (
-                                    <Link to="/login" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-sky-400 hover:bg-sky-500/10">
-                                        <LogIn size={14} /> Войти
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </header>
     )
 }

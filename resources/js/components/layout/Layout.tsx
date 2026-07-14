@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
+import BottomNav from './BottomNav'
 import PullToRefresh from './PullToRefresh'
 import ScrollToTop from '@/components/ScrollToTop'
 import { useEffect } from 'react'
@@ -21,7 +22,7 @@ export default function Layout() {
     }, [pathname])
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
             <PullToRefresh />
             <Header />
             <main className="flex-1">
@@ -29,6 +30,7 @@ export default function Layout() {
             </main>
             <Footer />
             <ScrollToTop />
+            <BottomNav />
         </div>
     )
 }

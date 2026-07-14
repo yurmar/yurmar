@@ -24,7 +24,7 @@ export default function ScrollToTop() {
                     exit={{ opacity: 0, scale: 0.8, y: 10 }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    className="fixed bottom-6 right-6 z-[100] w-11 h-11 rounded-full
+                    className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-[100] w-11 h-11 rounded-full
                         bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-500/30
                         flex items-center justify-center transition-colors"
                     aria-label="Наверх"
