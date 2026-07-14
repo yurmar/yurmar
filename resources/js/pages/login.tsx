@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { AppDispatch, RootState } from '@/store'
 import { login } from '@/store/slice/authSlice'
-import { Eye, EyeOff, LogIn } from 'lucide-react'
+import { Eye, EyeOff, LogIn, X } from 'lucide-react'
 
 export default function Login() {
     const dispatch = useDispatch<AppDispatch>()
@@ -14,6 +14,7 @@ export default function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPw, setShowPw] = useState(false)
+    const [remember, setRemember] = useState(false)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -26,7 +27,7 @@ export default function Login() {
         setError('')
         setLoading(true)
         try {
-            await dispatch(login({ email, password })).unwrap()
+            await dispatch(login({ email, password, remember })).unwrap()
             navigate('/')
         } catch {
             setError('Неверный email или пароль')
@@ -52,7 +53,16 @@ export default function Login() {
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md"
             >
-                <div className="card-block rounded-2xl p-8 border border-white/10 shadow-2xl">
+                <div className="card-block relative rounded-2xl p-8 border border-white/10 shadow-2xl">
+                    <button
+                        type="button"
+                        onClick={() => navigate('/')}
+                        aria-label="Закрыть"
+                        className="absolute right-4 top-4 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+
                     {/* Header */}
                     <div className="text-center mb-8">
                         <motion.div
@@ -101,6 +111,16 @@ export default function Login() {
                             </div>
                         </div>
 
+                        <label className="flex items-center gap-2.5 cursor-pointer select-none text-sm">
+                            <input
+                                type="checkbox"
+                                checked={remember}
+                                onChange={e => setRemember(e.target.checked)}
+                                className="w-4 h-4 rounded accent-sky-500"
+                            />
+                            Запомнить меня
+                        </label>
+
                         {error && (
                             <motion.p
                                 initial={{ opacity: 0, x: -10 }}
@@ -111,15 +131,26 @@ export default function Login() {
                             </motion.p>
                         )}
 
-                        <motion.button
-                            type="submit"
-                            disabled={loading}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition-colors disabled:opacity-60 mt-2"
-                        >
-                            {loading ? 'Вход...' : 'Войти'}
-                        </motion.button>
+                        <div className="flex gap-3 mt-2">
+                            <motion.button
+                                type="button"
+                                onClick={() => navigate('/')}
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex-1 py-3 rounded-xl border border-white/15 text-muted-foreground hover:text-foreground hover:bg-white/5 font-semibold text-sm transition-colors"
+                            >
+                                Отмена
+                            </motion.button>
+                            <motion.button
+                                type="submit"
+                                disabled={loading}
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-semibold text-sm transition-colors disabled:opacity-60"
+                            >
+                                {loading ? 'Вход...' : 'Войти'}
+                            </motion.button>
+                        </div>
                     </form>
                 </div>
             </motion.div>

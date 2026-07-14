@@ -14,21 +14,28 @@ const initialState: AuthState = {
 }
 
 export const initAuth = createAsyncThunk('auth/init', async () => {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
     if (!token) return null
     const res = await apiGetUser()
     return res.data
 })
 
-export const login = createAsyncThunk('auth/login', async ({ email, password }: { email: string; password: string }) => {
+export const login = createAsyncThunk('auth/login', async ({ email, password, remember }: { email: string; password: string; remember: boolean }) => {
     const res = await apiLogin(email, password)
-    localStorage.setItem('auth_token', res.data.token)
+    if (remember) {
+        localStorage.setItem('auth_token', res.data.token)
+        sessionStorage.removeItem('auth_token')
+    } else {
+        sessionStorage.setItem('auth_token', res.data.token)
+        localStorage.removeItem('auth_token')
+    }
     return res.data.user
 })
 
 export const logout = createAsyncThunk('auth/logout', async () => {
     await apiLogout()
     localStorage.removeItem('auth_token')
+    sessionStorage.removeItem('auth_token')
 })
 
 const authSlice = createSlice({
@@ -48,6 +55,7 @@ const authSlice = createSlice({
                 state.user = null
                 state.isAuthenticated = false
                 localStorage.removeItem('auth_token')
+                sessionStorage.removeItem('auth_token')
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.user = action.payload
