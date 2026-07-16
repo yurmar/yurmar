@@ -48,15 +48,22 @@ class TodoTaskController extends Controller
     public function move(Request $request, TodoDay $todoDay, TodoTask $todoTask): JsonResponse
     {
         $data = $request->validate([
-            'date' => 'required|date',
+            'date' => 'nullable|date',
         ]);
 
-        $targetDay = TodoDay::firstOrCreate(['date' => $data['date']]);
+        if ($data['date'] ?? null) {
+            $targetDay = TodoDay::firstOrCreate(['date' => $data['date']]);
 
-        if ($targetDay->id !== $todoDay->id) {
+            if ($targetDay->id !== $todoDay->id) {
+                $todoTask->update([
+                    'todo_day_id' => $targetDay->id,
+                    'sort_order' => $targetDay->tasks()->max('sort_order') + 1,
+                ]);
+            }
+        } else {
             $todoTask->update([
-                'todo_day_id' => $targetDay->id,
-                'sort_order' => $targetDay->tasks()->max('sort_order') + 1,
+                'todo_day_id' => null,
+                'sort_order' => TodoTask::whereNull('todo_day_id')->max('sort_order') + 1,
             ]);
         }
 

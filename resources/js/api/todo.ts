@@ -2,7 +2,7 @@ import client from './client'
 
 export interface TodoTask {
     id: number
-    todo_day_id: number
+    todo_day_id: number | null
     title: string
     is_done: boolean
     sort_order: number
@@ -39,5 +39,18 @@ export const apiUpdateTodoTask = (dayId: number, taskId: number, data: Partial<P
 export const apiDeleteTodoTask = (dayId: number, taskId: number) =>
     client.delete(`/todo-days/${dayId}/tasks/${taskId}`)
 
-export const apiMoveTodoTask = (dayId: number, taskId: number, date: string) =>
+export const apiMoveTodoTask = (dayId: number, taskId: number, date: string | null) =>
     client.post<TodoDayDetail>(`/todo-days/${dayId}/tasks/${taskId}/move`, { date })
+
+export const apiGetGeneralTasks = () => client.get<TodoTask[]>('/todo-general-tasks')
+
+export const apiAddGeneralTasks = (tasks: string) =>
+    client.post<TodoTask[]>('/todo-general-tasks', { tasks })
+
+export const apiUpdateGeneralTask = (taskId: number, data: Partial<Pick<TodoTask, 'title' | 'is_done'>>) =>
+    client.put<TodoTask>(`/todo-general-tasks/${taskId}`, data)
+
+export const apiDeleteGeneralTask = (taskId: number) => client.delete(`/todo-general-tasks/${taskId}`)
+
+export const apiMoveGeneralTaskToDay = (taskId: number, date: string) =>
+    client.post<TodoTask>(`/todo-general-tasks/${taskId}/move`, { date })

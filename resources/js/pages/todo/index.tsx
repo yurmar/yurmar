@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { ListChecks, LayoutGrid, List, ChevronRight, Loader2, Plus } from 'lucide-react'
+import { ListChecks, LayoutGrid, List, ChevronRight, Layers, Loader2, Plus } from 'lucide-react'
 import { RootState } from '@/store'
-import { apiGetTodoDays, apiCreateTodoDay, TodoDay } from '@/api/todo'
+import { apiGetTodoDays, apiCreateTodoDay, apiGetGeneralTasks, TodoDay } from '@/api/todo'
 import Modal from '@/components/ui/Modal'
 import ProgressBar from '@/components/ui/ProgressBar'
 
@@ -81,6 +81,8 @@ export default function TodoList() {
     const [days, setDays] = useState<TodoDay[]>([])
     const [loading, setLoading] = useState(true)
     const [viewMode, setViewModeState] = useState<ViewMode>(getSavedViewMode)
+    const [generalTotal, setGeneralTotal] = useState(0)
+    const [generalDone, setGeneralDone] = useState(0)
 
     const [modalOpen, setModalOpen] = useState(false)
     const [form, setForm] = useState<Record<string, string>>({ date: todayStr(), tasks: '' })
@@ -93,6 +95,12 @@ export default function TodoList() {
             .then(r => setDays(r.data))
             .catch(() => {})
             .finally(() => { if (!silent) setLoading(false) })
+        apiGetGeneralTasks()
+            .then(r => {
+                setGeneralTotal(r.data.length)
+                setGeneralDone(r.data.filter(t => t.is_done).length)
+            })
+            .catch(() => {})
     }
 
     useEffect(() => { if (isAuth) load() }, [isAuth])
@@ -180,6 +188,23 @@ export default function TodoList() {
                     <Plus size={16} /> Добавить день
                 </button>
             </motion.div>
+
+            {/* Общие задачи — без привязки к дню */}
+            <Link
+                to="/todo/general"
+                className="group relative flex items-center gap-4 card-block rounded-2xl p-5 mb-6 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+            >
+                <div className="w-11 h-11 rounded-xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center flex-shrink-0">
+                    <Layers className="text-violet-500 dark:text-violet-400" size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-foreground mb-0.5">Общие задачи</div>
+                    <div className="text-sm text-muted-foreground">
+                        {generalTotal === 0 ? 'Задачи без привязки к дню' : `Выполнено ${generalDone} из ${generalTotal}`}
+                    </div>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+            </Link>
 
             {/* Список дней */}
             <div className="flex items-end justify-between mb-4 gap-4">

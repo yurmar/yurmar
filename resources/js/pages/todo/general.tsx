@@ -1,28 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
 import { ArrowLeft, CalendarDays, CheckCircle2, Circle, Layers, Loader2, Plus, Trash2, X } from 'lucide-react'
 import { RootState } from '@/store'
-import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, apiMoveTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
-import ProgressBar from '@/components/ui/ProgressBar'
+import { apiGetGeneralTasks, apiAddGeneralTasks, apiUpdateGeneralTask, apiDeleteGeneralTask, apiMoveGeneralTaskToDay, TodoTask } from '@/api/todo'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 
-function formatDate(str: string | null | undefined) {
-    if (!str) return '—'
-    const date = new Date(str)
-    if (Number.isNaN(date.getTime())) return '—'
-    const formatted = date
-        .toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })
-        .replace(/\s*г\.$/i, '')
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-}
-
-function nextDay(str: string): string {
-    const d = new Date(str + 'T00:00:00')
-    d.setDate(d.getDate() + 1)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+function todayStr(): string {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function progressColor(done: number, total: number): string {
@@ -32,12 +19,11 @@ function progressColor(done: number, total: number): string {
     return '#f59e0b'
 }
 
-export default function TodoDayPage() {
+export default function TodoGeneralPage() {
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const authLoading = useSelector((s: RootState) => s.auth.loading)
-    const { dayId } = useParams()
 
-    const [day, setDay] = useState<TodoDayDetail | null>(null)
+    const [tasks, setTasks] = useState<TodoTask[]>([])
     const [loading, setLoading] = useState(true)
     const [adding, setAdding] = useState(false)
     const [newTasksText, setNewTasksText] = useState('')
@@ -50,20 +36,19 @@ export default function TodoDayPage() {
     const [moveError, setMoveError] = useState<string | null>(null)
 
     const load = (silent = false) => {
-        if (!dayId) return
         if (!silent) setLoading(true)
-        apiGetTodoDay(Number(dayId))
-            .then(r => setDay(r.data))
+        apiGetGeneralTasks()
+            .then(r => setTasks(r.data))
             .catch(() => {})
             .finally(() => { if (!silent) setLoading(false) })
     }
 
-    useEffect(() => { if (isAuth) load() }, [isAuth, dayId])
+    useEffect(() => { if (isAuth) load() }, [isAuth])
 
     // Периодически подтягиваем задачи (например, добавленные через Telegram-бота),
-    // пока страница дня открыта и видима.
+    // пока страница открыта и видима.
     useEffect(() => {
-        if (!isAuth || !dayId) return
+        if (!isAuth) return
         const POLL_MS = 12000
         let interval: ReturnType<typeof setInterval> | null = null
 
@@ -90,52 +75,35 @@ export default function TodoDayPage() {
             stop()
             document.removeEventListener('visibilitychange', onVisibility)
         }
-    }, [isAuth, dayId])
+    }, [isAuth])
 
     if (authLoading) return null
     if (!isAuth) return <Navigate to="/login" replace />
 
     const toggleTask = (task: TodoTask) => {
-        if (!day) return
-        setDay({ ...day, tasks: day.tasks.map(t => t.id === task.id ? { ...t, is_done: !t.is_done } : t) })
-        apiUpdateTodoTask(day.id, task.id, { is_done: !task.is_done }).catch(() => load())
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, is_done: !t.is_done } : t))
+        apiUpdateGeneralTask(task.id, { is_done: !task.is_done }).catch(() => load())
     }
 
     const deleteTask = (task: TodoTask) => {
-        if (!day) return
-        setDay({ ...day, tasks: day.tasks.filter(t => t.id !== task.id) })
-        apiDeleteTodoTask(day.id, task.id).catch(() => load())
+        setTasks(prev => prev.filter(t => t.id !== task.id))
+        apiDeleteGeneralTask(task.id).catch(() => load())
         setTaskToDelete(null)
     }
 
     const openMove = (task: TodoTask) => {
-        if (!day) return
         setMoveError(null)
-        setMoveDate(nextDay(day.date))
+        setMoveDate(todayStr())
         setTaskToMove(task)
     }
 
     const handleMoveTask = () => {
-        if (!day || !taskToMove || !moveDate || moving) return
-        if (moveDate === day.date) { setTaskToMove(null); return }
+        if (!taskToMove || !moveDate || moving) return
         setMoving(true)
         setMoveError(null)
-        apiMoveTodoTask(day.id, taskToMove.id, moveDate)
-            .then(r => {
-                setDay(r.data)
-                setTaskToMove(null)
-            })
-            .catch(() => setMoveError('Не удалось перенести. Попробуйте ещё раз.'))
-            .finally(() => setMoving(false))
-    }
-
-    const handleMoveTaskToGeneral = () => {
-        if (!day || !taskToMove || moving) return
-        setMoving(true)
-        setMoveError(null)
-        apiMoveTodoTask(day.id, taskToMove.id, null)
-            .then(r => {
-                setDay(r.data)
+        apiMoveGeneralTaskToDay(taskToMove.id, moveDate)
+            .then(() => {
+                setTasks(prev => prev.filter(t => t.id !== taskToMove.id))
                 setTaskToMove(null)
             })
             .catch(() => setMoveError('Не удалось перенести. Попробуйте ещё раз.'))
@@ -143,12 +111,12 @@ export default function TodoDayPage() {
     }
 
     const handleAddTasks = () => {
-        if (!day || !newTasksText.trim() || saving) return
+        if (!newTasksText.trim() || saving) return
         setSaving(true)
         setError(null)
-        apiAddTodoTasks(day.id, newTasksText)
+        apiAddGeneralTasks(newTasksText)
             .then(r => {
-                setDay(r.data)
+                setTasks(r.data)
                 setNewTasksText('')
                 setAdding(false)
             })
@@ -156,22 +124,8 @@ export default function TodoDayPage() {
             .finally(() => setSaving(false))
     }
 
-    if (loading) {
-        return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-muted-foreground" /></div>
-    }
-
-    if (!day) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-                <p className="text-muted-foreground">День не найден</p>
-                <Link to="/todo" className="text-sky-500 dark:text-sky-400 text-sm">Вернуться к списку</Link>
-            </div>
-        )
-    }
-
-    const total = day.tasks.length
-    const done = day.tasks.filter(t => t.is_done).length
-    const percent = total === 0 ? 0 : Math.round((done / total) * 100)
+    const total = tasks.length
+    const done = tasks.filter(t => t.is_done).length
     const color = progressColor(done, total)
 
     return (
@@ -181,58 +135,70 @@ export default function TodoDayPage() {
             </Link>
 
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-8">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1 break-words">{formatDate(day.date)}</h1>
+                <div className="flex items-center gap-2.5 mb-2">
+                    <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center flex-shrink-0">
+                        <Layers className="text-sky-500 dark:text-sky-400" size={18} />
+                    </div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-foreground">Общие задачи</h1>
+                </div>
                 <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground mb-2">
                     <span>Выполнено {done} из {total}</span>
-                    <span className="font-mono text-xs tabular-nums flex-shrink-0">{percent}%</span>
                 </div>
-                <ProgressBar percent={percent} color={color} />
+                {total > 0 && (
+                    <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${total === 0 ? 0 : Math.round((done / total) * 100)}%`, background: color }} />
+                    </div>
+                )}
             </motion.div>
 
-            <div className="space-y-2 mb-6">
-                <AnimatePresence initial={false}>
-                    {day.tasks.map(task => (
-                        <motion.div
-                            key={task.id}
-                            layout
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -12 }}
-                            className="group flex items-center gap-3 card-block rounded-xl px-4 py-3"
-                        >
-                            <button type="button" onClick={() => toggleTask(task)} className="flex-shrink-0" aria-label={task.is_done ? 'Отметить невыполненным' : 'Отметить выполненным'}>
-                                {task.is_done
-                                    ? <CheckCircle2 className="text-emerald-500" size={20} />
-                                    : <Circle className="text-muted-foreground" size={20} />}
-                            </button>
-                            <span className={`flex-1 min-w-0 text-sm break-words ${task.is_done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                                {task.title}
-                            </span>
-                            {!task.is_done && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={() => openMove(task)}
-                                        aria-label="Перенести задание на другой день"
-                                        className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-sky-500 transition-opacity"
-                                    >
-                                        <CalendarDays size={16} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setTaskToDelete(task)}
-                                        aria-label="Удалить задание"
-                                        className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </>
-                            )}
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-                {total === 0 && <p className="text-muted-foreground text-sm text-center py-6">Заданий пока нет</p>}
-            </div>
+            {loading ? (
+                <div className="flex justify-center py-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
+            ) : (
+                <div className="space-y-2 mb-6">
+                    <AnimatePresence initial={false}>
+                        {tasks.map(task => (
+                            <motion.div
+                                key={task.id}
+                                layout
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, x: -12 }}
+                                className="group flex items-center gap-3 card-block rounded-xl px-4 py-3"
+                            >
+                                <button type="button" onClick={() => toggleTask(task)} className="flex-shrink-0" aria-label={task.is_done ? 'Отметить невыполненным' : 'Отметить выполненным'}>
+                                    {task.is_done
+                                        ? <CheckCircle2 className="text-emerald-500" size={20} />
+                                        : <Circle className="text-muted-foreground" size={20} />}
+                                </button>
+                                <span className={`flex-1 min-w-0 text-sm break-words ${task.is_done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                    {task.title}
+                                </span>
+                                {!task.is_done && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => openMove(task)}
+                                            aria-label="Перенести задание на день"
+                                            className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-sky-500 transition-opacity"
+                                        >
+                                            <CalendarDays size={16} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTaskToDelete(task)}
+                                            aria-label="Удалить задание"
+                                            className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-opacity"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </>
+                                )}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                    {total === 0 && <p className="text-muted-foreground text-sm text-center py-6">Общих заданий пока нет</p>}
+                </div>
+            )}
 
             {adding ? (
                 <div className="card-block rounded-2xl p-4">
@@ -291,7 +257,7 @@ export default function TodoDayPage() {
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                         >
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-lg font-semibold text-white">Перенести задание</h3>
+                                <h3 className="text-lg font-semibold text-white">Перенести на день</h3>
                                 <button
                                     onClick={() => setTaskToMove(null)}
                                     className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
@@ -309,14 +275,6 @@ export default function TodoDayPage() {
                                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-base text-white focus:outline-none focus:ring-2 focus:ring-sky-500/40 [color-scheme:dark]"
                             />
                             {moveError && <p className="text-xs text-red-500 mt-2">{moveError}</p>}
-
-                            <button
-                                onClick={handleMoveTaskToGeneral}
-                                disabled={moving}
-                                className="flex items-center gap-1.5 mt-4 text-sm text-sky-400 hover:text-sky-300 transition-colors disabled:opacity-60"
-                            >
-                                <Layers size={14} /> Без даты, в Общие задачи
-                            </button>
 
                             <div className="flex gap-3 mt-6 justify-end">
                                 <button

@@ -13,6 +13,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\TodoDayController;
+use App\Http\Controllers\TodoGeneralTaskController;
 use App\Http\Controllers\TodoTaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/todo-days/{todoDay}/tasks/{todoTask}', [TodoTaskController::class, 'update']);
     Route::delete('/todo-days/{todoDay}/tasks/{todoTask}', [TodoTaskController::class, 'destroy']);
     Route::post('/todo-days/{todoDay}/tasks/{todoTask}/move', [TodoTaskController::class, 'move']);
+
+    Route::get('/todo-general-tasks', [TodoGeneralTaskController::class, 'index']);
+    Route::post('/todo-general-tasks', [TodoGeneralTaskController::class, 'store']);
+    Route::put('/todo-general-tasks/{todoTask}', [TodoGeneralTaskController::class, 'update']);
+    Route::delete('/todo-general-tasks/{todoTask}', [TodoGeneralTaskController::class, 'destroy']);
+    Route::post('/todo-general-tasks/{todoTask}/move', [TodoGeneralTaskController::class, 'move']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр
