@@ -30,6 +30,7 @@ const MeetingCalendar = lazy(() => import('@/pages/examples/meetingCalendar'))
 const TodoList = lazy(() => import('@/pages/todo'))
 const TodoDayPage = lazy(() => import('@/pages/todo/day'))
 const TodoGeneralPage = lazy(() => import('@/pages/todo/general'))
+const TodoArchivePage = lazy(() => import('@/pages/todo/archive'))
 const NotFound = lazy(() => import('@/pages/not-found'))
 
 const fallback = <div className="min-h-screen" />
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
             { path: 'orders', element: <Suspense fallback={fallback}><Orders /></Suspense> },
             { path: 'todo', element: <Suspense fallback={fallback}><TodoList /></Suspense> },
             { path: 'todo/general', element: <Suspense fallback={fallback}><TodoGeneralPage /></Suspense> },
+            { path: 'todo/archive', element: <Suspense fallback={fallback}><TodoArchivePage /></Suspense> },
             { path: 'todo/:dayId', element: <Suspense fallback={fallback}><TodoDayPage /></Suspense> },
             { path: 'examples/phone-book', element: <Suspense fallback={fallback}><PhoneBook /></Suspense> },
             { path: 'examples/daily-report', element: <Suspense fallback={fallback}><DailyReportList /></Suspense> },
