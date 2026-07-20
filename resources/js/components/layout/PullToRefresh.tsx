@@ -3,6 +3,12 @@ import { ArrowDown, Loader2 } from 'lucide-react'
 
 const THRESHOLD = 70
 const MAX_PULL = 90
+const RUBBERBAND_CONSTANT = 0.55
+
+/** Прогрессивное сопротивление: тянуть тем тяжелее, чем ближе к MAX_PULL, без жёсткого упора. */
+function rubberband(diff: number): number {
+    return (diff * MAX_PULL * RUBBERBAND_CONSTANT) / (MAX_PULL + RUBBERBAND_CONSTANT * diff)
+}
 
 function isStandalone() {
     return (
@@ -29,14 +35,20 @@ export default function PullToRefresh() {
 
         const onTouchMove = (e: TouchEvent) => {
             if (!active.current || startY.current === null) return
-            const diff = e.touches[0].clientY - startY.current
-            if (diff <= 0 || window.scrollY > 0) {
+            if (window.scrollY > 0) {
                 active.current = false
                 setPull(0)
                 return
             }
+            const diff = e.touches[0].clientY - startY.current
+            if (diff <= 0) {
+                // Дрожание пальца у самого начала жеста — не прерывать трекинг,
+                // просто увести индикатор к 0 и ждать, вдруг палец снова потянет вниз.
+                setPull(0)
+                return
+            }
             e.preventDefault()
-            setPull(Math.min(diff * 0.45, MAX_PULL))
+            setPull(rubberband(diff))
         }
 
         const onTouchEnd = () => {

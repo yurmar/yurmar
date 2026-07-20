@@ -9,6 +9,7 @@ import {
     ExampleFolder, ExampleItem,
 } from '@/api/examples'
 import Modal from '@/components/ui/Modal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import ExampleCard, { isExternal } from '@/components/ui/ExampleCard'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
@@ -63,6 +64,10 @@ export default function Examples() {
     const [exampleForm, setExampleForm] = useState<Record<string, string>>({})
 
     const [saving, setSaving] = useState(false)
+
+    const [folderToDelete, setFolderToDelete] = useState<ExampleFolder | null>(null)
+    const [exampleToDelete, setExampleToDelete] = useState<ExampleItem | null>(null)
+    const [deleting, setDeleting] = useState(false)
 
     useEffect(() => {
         apiGetFolders().then(r => {
@@ -138,11 +143,23 @@ export default function Examples() {
         }
     }
 
-    const handleDeleteFolder = async (id: number, e: React.MouseEvent) => {
+    const handleDeleteFolder = (id: number, e: React.MouseEvent) => {
         e.stopPropagation()
-        await apiDeleteFolder(id)
-        setFolders(prev => prev.filter(f => f.id !== id))
-        if (activeFolder?.id === id) navigate('/examples')
+        const folder = folders.find(f => f.id === id)
+        if (folder) setFolderToDelete(folder)
+    }
+
+    const confirmDeleteFolder = async () => {
+        if (!folderToDelete) return
+        setDeleting(true)
+        try {
+            await apiDeleteFolder(folderToDelete.id)
+            setFolders(prev => prev.filter(f => f.id !== folderToDelete.id))
+            if (activeFolder?.id === folderToDelete.id) navigate('/examples')
+            setFolderToDelete(null)
+        } finally {
+            setDeleting(false)
+        }
     }
 
     // Example CRUD
@@ -183,10 +200,21 @@ export default function Examples() {
         }
     }
 
-    const handleDeleteExample = async (id: number) => {
-        if (!activeFolder) return
-        await apiDeleteExample(activeFolder.id, id)
-        setExamples(prev => prev.filter(e => e.id !== id))
+    const handleDeleteExample = (id: number) => {
+        const item = examples.find(e => e.id === id)
+        if (item) setExampleToDelete(item)
+    }
+
+    const confirmDeleteExample = async () => {
+        if (!activeFolder || !exampleToDelete) return
+        setDeleting(true)
+        try {
+            await apiDeleteExample(activeFolder.id, exampleToDelete.id)
+            setExamples(prev => prev.filter(e => e.id !== exampleToDelete.id))
+            setExampleToDelete(null)
+        } finally {
+            setDeleting(false)
+        }
     }
 
     const theme = folderTheme(activeFolder?.color ?? null)
@@ -355,6 +383,23 @@ export default function Examples() {
 
             <Modal open={folderModal} title={editingFolder ? 'Редактировать папку' : 'Новая папка'} fields={FOLDER_FIELDS} values={folderForm} onChange={(k, v) => setFolderForm(p => ({ ...p, [k]: v }))} onSave={handleSaveFolder} onClose={() => setFolderModal(false)} saving={saving} />
             <Modal open={exampleModal} title={editingExample ? 'Редактировать пример' : 'Добавить пример'} fields={EXAMPLE_FIELDS} values={exampleForm} onChange={(k, v) => setExampleForm(p => ({ ...p, [k]: v }))} onSave={handleSaveExample} onClose={() => setExampleModal(false)} saving={saving} />
+
+            <ConfirmModal
+                open={!!folderToDelete}
+                title="Удалить папку?"
+                message={folderToDelete ? `«${folderToDelete.name}» и все примеры внутри будут удалены безвозвратно.` : undefined}
+                confirming={deleting}
+                onConfirm={confirmDeleteFolder}
+                onClose={() => setFolderToDelete(null)}
+            />
+            <ConfirmModal
+                open={!!exampleToDelete}
+                title="Удалить пример?"
+                message={exampleToDelete ? `«${exampleToDelete.title}» будет удалён безвозвратно.` : undefined}
+                confirming={deleting}
+                onConfirm={confirmDeleteExample}
+                onClose={() => setExampleToDelete(null)}
+            />
         </div>
     )
 }

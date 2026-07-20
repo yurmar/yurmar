@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { Provider, useDispatch } from 'react-redux'
 import { store, AppDispatch } from './store'
 import { RouterProvider } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
 import { router } from './router'
 import { ThemeInitializer } from '@/components/ThemeInitializer'
 import { initAuth } from '@/store/slice/authSlice'
@@ -18,9 +19,11 @@ if (container) {
     ReactDOM.createRoot(container).render(
         <React.StrictMode>
             <Provider store={store}>
-                <ThemeInitializer />
-                <AppInit />
-                <RouterProvider router={router} />
+                <MotionConfig reducedMotion="user">
+                    <ThemeInitializer />
+                    <AppInit />
+                    <RouterProvider router={router} />
+                </MotionConfig>
             </Provider>
         </React.StrictMode>
     )

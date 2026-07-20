@@ -82,6 +82,12 @@ const STEPS = [
     { title: 'Реклама и хостинг', subtitle: 'Технические детали' },
 ]
 
+const stepVariants = {
+    enter: (direction: number) => ({ opacity: 0, x: direction * 20 }),
+    center: { opacity: 1, x: 0 },
+    exit: (direction: number) => ({ opacity: 0, x: direction * -20 }),
+}
+
 function Field({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
     return (
         <div>
@@ -230,6 +236,7 @@ function validateStep(step: number, form: BriefFormData): Errors {
 
 export default function BriefOrderModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     const [step, setStep] = useState(0)
+    const [direction, setDirection] = useState(1)
     const [form, setForm] = useState<BriefFormData>(EMPTY)
     const [errors, setErrors] = useState<Errors>({})
     const [submitting, setSubmitting] = useState(false)
@@ -245,10 +252,11 @@ export default function BriefOrderModal({ open, onClose }: { open: boolean; onCl
         const errs = validateStep(step, form)
         if (Object.keys(errs).length > 0) { setErrors(errs); return }
         setErrors({})
+        setDirection(1)
         setStep(s => s + 1)
     }
 
-    const handleBack = () => { setErrors({}); setStep(s => s - 1) }
+    const handleBack = () => { setErrors({}); setDirection(-1); setStep(s => s - 1) }
 
     const handleSubmit = async () => {
         const errs = validateStep(step, form)
@@ -346,12 +354,14 @@ export default function BriefOrderModal({ open, onClose }: { open: boolean; onCl
 
                             {/* Body */}
                             <div className="flex-1 overflow-y-auto p-6 space-y-5">
-                                <AnimatePresence mode="wait">
+                                <AnimatePresence mode="wait" custom={direction}>
                                     <motion.div
                                         key={step}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
+                                        custom={direction}
+                                        variants={stepVariants}
+                                        initial="enter"
+                                        animate="center"
+                                        exit="exit"
                                         transition={{ duration: 0.2 }}
                                         className="space-y-5"
                                     >
