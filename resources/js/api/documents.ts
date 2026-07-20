@@ -17,6 +17,9 @@ export const apiCreateDocument = (data: FormData) =>
         headers: { 'Content-Type': 'multipart/form-data' },
     })
 
+export const apiUpdateDocument = (id: number, data: { title: string; description: string }) =>
+    client.put<DocumentItem>(`/documents/${id}`, data)
+
 export const apiDeleteDocument = (id: number) => client.delete(`/documents/${id}`)
 
 export const apiDocumentDownloadUrl = (id: number) => `/api/documents/${id}/download`

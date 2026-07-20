@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [ImageController::class, 'upload']);
 
     Route::post('/documents', [DocumentController::class, 'store']);
+    Route::put('/documents/{document}', [DocumentController::class, 'update']);
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
 
     Route::post('/example-folders', [ExampleFolderController::class, 'store']);

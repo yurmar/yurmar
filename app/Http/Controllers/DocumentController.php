@@ -39,6 +39,18 @@ class DocumentController extends Controller
         return response()->json($document, 201);
     }
 
+    public function update(Request $request, Document $document): JsonResponse
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $document->update($data);
+
+        return response()->json($document);
+    }
+
     public function download(Document $document): StreamedResponse|Response
     {
         return Storage::disk('public')->download($document->path, $document->original_name);

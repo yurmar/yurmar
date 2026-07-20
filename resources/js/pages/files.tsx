@@ -1,17 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileDown, FileText, Plus, Trash2, UploadCloud, X } from 'lucide-react'
+import { FileDown, FileText, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import {
     apiGetDocuments,
     apiCreateDocument,
+    apiUpdateDocument,
     apiDeleteDocument,
     apiDocumentDownloadUrl,
     DocumentItem,
 } from '@/api/documents'
+import Modal from '@/components/ui/Modal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import { cn } from '@/lib/utils'
+
+const EDIT_FIELDS = [
+    { key: 'title', label: 'Название', type: 'text' as const },
+    { key: 'description', label: 'Описание', type: 'textarea' as const },
+]
 
 function formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} Б`
@@ -190,6 +197,10 @@ export default function Files() {
     const [modal, setModal] = useState(false)
     const [toDelete, setToDelete] = useState<DocumentItem | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const [editing, setEditing] = useState<DocumentItem | null>(null)
+    const [editForm, setEditForm] = useState<Record<string, string>>({})
+    const [editSaving, setEditSaving] = useState(false)
+    const [editError, setEditError] = useState<string | null>(null)
 
     useEffect(() => {
         apiGetDocuments()
@@ -199,6 +210,27 @@ export default function Files() {
     }, [])
 
     const handleUploaded = (doc: DocumentItem) => setItems(prev => [doc, ...prev])
+
+    const openEdit = (doc: DocumentItem) => {
+        setEditing(doc)
+        setEditForm({ title: doc.title, description: doc.description ?? '' })
+        setEditError(null)
+    }
+
+    const handleEditSave = async () => {
+        if (!editing || !editForm.title?.trim()) return
+        setEditSaving(true)
+        setEditError(null)
+        try {
+            const r = await apiUpdateDocument(editing.id, { title: editForm.title, description: editForm.description ?? '' })
+            setItems(prev => prev.map(d => (d.id === editing.id ? r.data : d)))
+            setEditing(null)
+        } catch {
+            setEditError('Не удалось сохранить изменения. Попробуйте ещё раз.')
+        } finally {
+            setEditSaving(false)
+        }
+    }
 
     const handleDelete = async () => {
         if (!toDelete) return
@@ -280,12 +312,20 @@ export default function Files() {
                                         <FileDown size={13} /> Скачать
                                     </a>
                                     {isAuth && (
-                                        <button
-                                            onClick={() => setToDelete(doc)}
-                                            className="p-2 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={() => openEdit(doc)}
+                                                className="p-2 rounded-lg hover:bg-sky-500/20 text-sky-400 transition-colors"
+                                            >
+                                                <Pencil size={14} />
+                                            </button>
+                                            <button
+                                                onClick={() => setToDelete(doc)}
+                                                className="p-2 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </>
                                     )}
                                 </div>
                             </motion.div>
@@ -295,6 +335,18 @@ export default function Files() {
             </div>
 
             <UploadModal open={modal} onClose={() => setModal(false)} onUploaded={handleUploaded} />
+
+            <Modal
+                open={!!editing}
+                title="Редактировать файл"
+                fields={EDIT_FIELDS}
+                values={editForm}
+                onChange={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
+                onSave={handleEditSave}
+                onClose={() => setEditing(null)}
+                saving={editSaving}
+                error={editError}
+            />
 
             <ConfirmModal
                 open={!!toDelete}
