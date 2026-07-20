@@ -9,6 +9,7 @@ const About = lazy(() => import('@/pages/about'))
 const Contacts = lazy(() => import('@/pages/contacts'))
 // const Notebook = lazy(() => import('@/pages/notebook'))
 const Orders = lazy(() => import('@/pages/orders'))
+const Files = lazy(() => import('@/pages/files'))
 const Examples = lazy(() => import('@/pages/examples'))
 const PhoneBook = lazy(() => import('@/pages/examples/phoneBook'))
 const DailyReportList = lazy(() => import('@/pages/examples/dailyReport'))
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
             { path: 'contacts', element: <Suspense fallback={fallback}><Contacts /></Suspense> },
             // { path: 'notebook', element: <Suspense fallback={fallback}><Notebook /></Suspense> },
             { path: 'orders', element: <Suspense fallback={fallback}><Orders /></Suspense> },
+            { path: 'files', element: <Suspense fallback={fallback}><Files /></Suspense> },
             { path: 'todo', element: <Suspense fallback={fallback}><TodoList /></Suspense> },
             { path: 'todo/general', element: <Suspense fallback={fallback}><TodoGeneralPage /></Suspense> },
             { path: 'todo/archive', element: <Suspense fallback={fallback}><TodoArchivePage /></Suspense> },

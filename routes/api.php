@@ -5,6 +5,7 @@ use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BriefOrderController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\ExampleFolderController;
 use App\Http\Controllers\HeroController;
@@ -45,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
 
     Route::post('/upload', [ImageController::class, 'upload']);
+
+    Route::post('/documents', [DocumentController::class, 'store']);
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
 
     Route::post('/example-folders', [ExampleFolderController::class, 'store']);
     Route::put('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'update']);
@@ -91,3 +95,5 @@ Route::get('/projects/{project}', [ProjectController::class, 'show']);
 Route::get('/example-folders', [ExampleFolderController::class, 'index']);
 Route::get('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'show']);
 Route::get('/example-folders/{exampleFolder}/examples', [ExampleController::class, 'index']);
+Route::get('/documents', [DocumentController::class, 'index']);
+Route::get('/documents/{document}/download', [DocumentController::class, 'download']);

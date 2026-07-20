@@ -7,6 +7,7 @@ import { smoothScrollTo } from '@/utils/scroll'
 const ITEMS = [
     { label: 'Главная', to: '/', anchor: '#hero', icon: Home },
     { label: 'Примеры', to: '/examples', anchor: null, icon: LayoutGrid },
+    { label: 'Файлы', to: '/files', anchor: null, icon: FileText },
     { label: 'Контакты', to: '/#contacts', anchor: '#contacts', icon: Mail },
 ]
 
