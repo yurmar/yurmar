@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileDown, FileText, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, FileDown, FileText, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import {
@@ -201,6 +201,7 @@ export default function Files() {
     const [editForm, setEditForm] = useState<Record<string, string>>({})
     const [editSaving, setEditSaving] = useState(false)
     const [editError, setEditError] = useState<string | null>(null)
+    const [expanded, setExpanded] = useState<Set<number>>(new Set())
 
     useEffect(() => {
         apiGetDocuments()
@@ -210,6 +211,16 @@ export default function Files() {
     }, [])
 
     const handleUploaded = (doc: DocumentItem) => setItems(prev => [doc, ...prev])
+
+    const toggleExpanded = (id: number) =>
+        setExpanded(prev => {
+            const next = new Set(prev)
+            next.has(id) ? next.delete(id) : next.add(id)
+            return next
+        })
+
+    const handleDownloadClick = (id: number) =>
+        setItems(prev => prev.map(d => (d.id === id ? { ...d, downloads_count: d.downloads_count + 1 } : d)))
 
     const openEdit = (doc: DocumentItem) => {
         setEditing(doc)
@@ -289,7 +300,7 @@ export default function Files() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.97 }}
                                 transition={{ delay: i * 0.04, duration: 0.4 }}
-                                className="card-block rounded-2xl p-5 flex items-center gap-4"
+                                className="card-block rounded-2xl p-5 flex items-start gap-4"
                             >
                                 <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
                                     <FileText size={18} />
@@ -297,16 +308,44 @@ export default function Files() {
                                 <div className="min-w-0 flex-1">
                                     <h3 className="font-semibold text-sm truncate">{doc.title}</h3>
                                     {doc.description && (
-                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{doc.description}</p>
+                                        <>
+                                            <p
+                                                className={cn(
+                                                    'text-xs text-muted-foreground mt-0.5',
+                                                    !expanded.has(doc.id) && 'line-clamp-2'
+                                                )}
+                                            >
+                                                {doc.description}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleExpanded(doc.id)}
+                                                className="flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 mt-1 font-medium"
+                                            >
+                                                {expanded.has(doc.id) ? (
+                                                    <>
+                                                        Свернуть <ChevronUp size={12} />
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Раскрыть описание <ChevronDown size={12} />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </>
                                     )}
                                     <p className="text-[11px] text-muted-foreground/60 mt-1.5 truncate">
                                         {doc.original_name} · {formatSize(doc.size)} · {formatDate(doc.created_at)}
+                                    </p>
+                                    <p className="flex items-center gap-1 text-[11px] text-muted-foreground/60 mt-0.5">
+                                        <Download size={11} /> {doc.downloads_count} скачиваний
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-1.5 shrink-0">
                                     <a
                                         href={apiDocumentDownloadUrl(doc.id)}
                                         download
+                                        onClick={() => handleDownloadClick(doc.id)}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/25 transition-colors"
                                     >
                                         <FileDown size={13} /> Скачать

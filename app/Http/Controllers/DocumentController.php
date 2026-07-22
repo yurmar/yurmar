@@ -53,6 +53,8 @@ class DocumentController extends Controller
 
     public function download(Document $document): StreamedResponse|Response
     {
+        $document->increment('downloads_count');
+
         return Storage::disk('public')->download($document->path, $document->original_name);
     }
 

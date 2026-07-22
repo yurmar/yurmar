@@ -7,6 +7,7 @@ export interface DocumentItem {
     original_name: string
     mime_type: string | null
     size: number
+    downloads_count: number
     created_at: string
 }
 
