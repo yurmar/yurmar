@@ -443,10 +443,11 @@ export default function Files() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.97 }}
                                 transition={{ delay: i * 0.04, duration: 0.4 }}
-                                className="card-block rounded-2xl p-5 flex items-start gap-4"
+                                className="card-block rounded-2xl p-4 sm:p-5 flex flex-wrap items-start gap-x-2.5 sm:gap-x-4 gap-y-3"
                             >
-                                <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
-                                    <FileText size={18} />
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+                                    <FileText size={16} className="sm:hidden" />
+                                    <FileText size={18} className="hidden sm:block" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <h3 className="font-semibold text-sm truncate">{doc.title}</h3>
@@ -484,7 +485,7 @@ export default function Files() {
                                         <Download size={11} /> {doc.downloads_count} скачиваний
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
+                                <div className="flex items-center gap-1.5 w-full sm:w-auto sm:shrink-0 pl-[42px] sm:pl-0">
                                     <a
                                         href={apiDocumentDownloadUrl(doc.id)}
                                         download
