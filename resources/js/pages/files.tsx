@@ -11,14 +11,8 @@ import {
     apiDocumentDownloadUrl,
     DocumentItem,
 } from '@/api/documents'
-import Modal from '@/components/ui/Modal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import { cn } from '@/lib/utils'
-
-const EDIT_FIELDS = [
-    { key: 'title', label: 'Название', type: 'text' as const },
-    { key: 'description', label: 'Описание', type: 'textarea' as const },
-]
 
 function formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} Б`
@@ -190,6 +184,172 @@ function UploadModal({ open, onClose, onUploaded }: { open: boolean; onClose: ()
     )
 }
 
+function EditModal({
+    open,
+    doc,
+    onClose,
+    onSaved,
+}: {
+    open: boolean
+    doc: DocumentItem | null
+    onClose: () => void
+    onSaved: (doc: DocumentItem) => void
+}) {
+    const inputRef = useRef<HTMLInputElement>(null)
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
+    const [newFile, setNewFile] = useState<File | null>(null)
+    const [saving, setSaving] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (open && doc) {
+            setTitle(doc.title)
+            setDescription(doc.description ?? '')
+            setNewFile(null)
+            setError(null)
+        }
+    }, [open, doc])
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+        window.document.addEventListener('keydown', onKey)
+        return () => window.document.removeEventListener('keydown', onKey)
+    }, [onClose])
+
+    const handleSave = async () => {
+        if (!doc || !title.trim()) return
+        setSaving(true)
+        setError(null)
+        try {
+            const r = await apiUpdateDocument(doc.id, { title, description, file: newFile })
+            onSaved(r.data)
+            onClose()
+        } catch {
+            setError('Не удалось сохранить изменения. Попробуйте ещё раз.')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    return (
+        <AnimatePresence>
+            {open && doc && (
+                <motion.div
+                    data-no-ptr
+                    className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+                    <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+                    <motion.div
+                        className={cn(
+                            'relative z-10 w-full max-w-lg rounded-2xl border border-white/10',
+                            'bg-[#0d1a30] dark:bg-[#0d1a30] shadow-2xl p-6',
+                            'light:bg-white light:border-gray-200'
+                        )}
+                        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.92, opacity: 0, y: 20 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    >
+                        <div className="flex items-center justify-between mb-5">
+                            <h3 className="text-lg font-semibold text-white">Редактировать файл</h3>
+                            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-1">Название</label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={e => setTitle(e.target.value)}
+                                    className="w-full rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-1">Описание</label>
+                                <textarea
+                                    value={description}
+                                    onChange={e => setDescription(e.target.value)}
+                                    placeholder="Необязательно"
+                                    rows={3}
+                                    className="w-full rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-1">Файл</label>
+                                {newFile ? (
+                                    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <FileText size={18} className="text-sky-400 shrink-0" />
+                                            <div className="min-w-0">
+                                                <p className="text-sm text-white truncate">{newFile.name}</p>
+                                                <p className="text-xs text-gray-500">{formatSize(newFile.size)} · новый файл</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewFile(null)}
+                                            className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 shrink-0"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <FileText size={18} className="text-sky-400 shrink-0" />
+                                            <div className="min-w-0">
+                                                <p className="text-sm text-white truncate">{doc.original_name}</p>
+                                                <p className="text-xs text-gray-500">{formatSize(doc.size)}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => inputRef.current?.click()}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/25 transition-colors shrink-0"
+                                        >
+                                            <UploadCloud size={13} /> Заменить
+                                        </button>
+                                    </div>
+                                )}
+                                <input
+                                    ref={inputRef}
+                                    type="file"
+                                    className="hidden"
+                                    onChange={e => setNewFile(e.target.files?.[0] ?? null)}
+                                />
+                            </div>
+                        </div>
+
+                        {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
+
+                        <div className="flex gap-3 mt-6 justify-end">
+                            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                                Отмена
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={saving || !title.trim()}
+                                className="px-4 py-2 rounded-lg text-sm bg-sky-500 hover:bg-sky-400 text-white font-medium transition-colors disabled:opacity-60"
+                            >
+                                {saving ? 'Сохранение...' : 'Сохранить'}
+                            </button>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
+}
+
 export default function Files() {
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const [items, setItems] = useState<DocumentItem[]>([])
@@ -198,9 +358,6 @@ export default function Files() {
     const [toDelete, setToDelete] = useState<DocumentItem | null>(null)
     const [deleting, setDeleting] = useState(false)
     const [editing, setEditing] = useState<DocumentItem | null>(null)
-    const [editForm, setEditForm] = useState<Record<string, string>>({})
-    const [editSaving, setEditSaving] = useState(false)
-    const [editError, setEditError] = useState<string | null>(null)
     const [expanded, setExpanded] = useState<Set<number>>(new Set())
 
     useEffect(() => {
@@ -222,25 +379,11 @@ export default function Files() {
     const handleDownloadClick = (id: number) =>
         setItems(prev => prev.map(d => (d.id === id ? { ...d, downloads_count: d.downloads_count + 1 } : d)))
 
-    const openEdit = (doc: DocumentItem) => {
-        setEditing(doc)
-        setEditForm({ title: doc.title, description: doc.description ?? '' })
-        setEditError(null)
-    }
+    const openEdit = (doc: DocumentItem) => setEditing(doc)
 
-    const handleEditSave = async () => {
-        if (!editing || !editForm.title?.trim()) return
-        setEditSaving(true)
-        setEditError(null)
-        try {
-            const r = await apiUpdateDocument(editing.id, { title: editForm.title, description: editForm.description ?? '' })
-            setItems(prev => prev.map(d => (d.id === editing.id ? r.data : d)))
-            setEditing(null)
-        } catch {
-            setEditError('Не удалось сохранить изменения. Попробуйте ещё раз.')
-        } finally {
-            setEditSaving(false)
-        }
+    const handleEditSaved = (doc: DocumentItem) => {
+        setItems(prev => prev.map(d => (d.id === doc.id ? doc : d)))
+        setEditing(null)
     }
 
     const handleDelete = async () => {
@@ -375,17 +518,7 @@ export default function Files() {
 
             <UploadModal open={modal} onClose={() => setModal(false)} onUploaded={handleUploaded} />
 
-            <Modal
-                open={!!editing}
-                title="Редактировать файл"
-                fields={EDIT_FIELDS}
-                values={editForm}
-                onChange={(key, value) => setEditForm(prev => ({ ...prev, [key]: value }))}
-                onSave={handleEditSave}
-                onClose={() => setEditing(null)}
-                saving={editSaving}
-                error={editError}
-            />
+            <EditModal open={!!editing} doc={editing} onClose={() => setEditing(null)} onSaved={handleEditSaved} />
 
             <ConfirmModal
                 open={!!toDelete}

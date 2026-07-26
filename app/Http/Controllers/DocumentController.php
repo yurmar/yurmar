@@ -44,7 +44,20 @@ class DocumentController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'file' => 'nullable|file|max:51200',
         ]);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('documents', 'public');
+
+            Storage::disk('public')->delete($document->path);
+
+            $data['path'] = $path;
+            $data['original_name'] = $file->getClientOriginalName();
+            $data['mime_type'] = $file->getMimeType();
+            $data['size'] = $file->getSize();
+        }
 
         $document->update($data);
 
