@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { ArrowLeft, CalendarDays, CheckCircle2, Circle, Layers, Loader2, Plus, Trash2, X } from 'lucide-react'
+import { ArrowLeft, CalendarDays, CheckCircle2, Circle, Flag, Layers, Loader2, Plus, Trash2, X } from 'lucide-react'
 import { RootState } from '@/store'
 import { apiGetTodoDay, apiAddTodoTasks, apiUpdateTodoTask, apiDeleteTodoTask, apiMoveTodoTask, TodoDayDetail, TodoTask } from '@/api/todo'
 import ProgressBar from '@/components/ui/ProgressBar'
@@ -99,6 +99,12 @@ export default function TodoDayPage() {
         if (!day) return
         setDay({ ...day, tasks: day.tasks.map(t => t.id === task.id ? { ...t, is_done: !t.is_done } : t) })
         apiUpdateTodoTask(day.id, task.id, { is_done: !task.is_done }).catch(() => load())
+    }
+
+    const togglePriority = (task: TodoTask) => {
+        if (!day) return
+        setDay({ ...day, tasks: day.tasks.map(t => t.id === task.id ? { ...t, is_priority: !t.is_priority } : t) })
+        apiUpdateTodoTask(day.id, task.id, { is_priority: !task.is_priority }).catch(() => load())
     }
 
     const deleteTask = (task: TodoTask) => {
@@ -198,18 +204,26 @@ export default function TodoDayPage() {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, x: -12 }}
-                            className="group flex items-center gap-3 card-block rounded-xl px-4 py-3"
+                            className={`group flex items-center gap-3 card-block rounded-xl px-4 py-3 ${task.is_priority && !task.is_done ? 'border-red-500/40 bg-red-500/5' : ''}`}
                         >
                             <button type="button" onClick={() => toggleTask(task)} className="flex-shrink-0" aria-label={task.is_done ? 'Отметить невыполненным' : 'Отметить выполненным'}>
                                 {task.is_done
                                     ? <CheckCircle2 className="text-emerald-500" size={20} />
                                     : <Circle className="text-muted-foreground" size={20} />}
                             </button>
-                            <span className={`flex-1 min-w-0 text-sm break-words ${task.is_done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                            <span className={`flex-1 min-w-0 text-sm break-words ${task.is_done ? 'line-through text-muted-foreground' : task.is_priority ? 'text-red-500' : 'text-foreground'}`}>
                                 {task.title}
                             </span>
                             {!task.is_done && (
                                 <>
+                                    <button
+                                        type="button"
+                                        onClick={() => togglePriority(task)}
+                                        aria-label={task.is_priority ? 'Снять приоритет' : 'Отметить приоритетным'}
+                                        className={`flex-shrink-0 transition-opacity ${task.is_priority ? 'opacity-100 text-red-500' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-red-500'}`}
+                                    >
+                                        <Flag size={16} className={task.is_priority ? 'fill-red-500' : ''} />
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => openMove(task)}

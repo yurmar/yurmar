@@ -38,6 +38,7 @@ class TodoTaskController extends Controller
         $data = $request->validate([
             'title' => 'sometimes|string|max:500',
             'is_done' => 'sometimes|boolean',
+            'is_priority' => 'sometimes|boolean',
         ]);
 
         $todoTask->update($data);
