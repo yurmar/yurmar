@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { smoothScrollTo } from '@/utils/scroll'
 import { motion } from 'framer-motion'
-import { LogIn, LogOut, FileText, ListChecks } from 'lucide-react'
+import { LogIn, LogOut, FileText, ListChecks, BookOpen } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store'
@@ -13,7 +13,6 @@ const NAV = [
     // { label: 'Портфолио', to: '/portfolio', anchor: null },
     { label: 'Примеры', to: '/examples', anchor: null },
     { label: 'Файлы', to: '/files', anchor: null },
-    // { label: 'Блокнот', to: '/notebook', anchor: null },
     { label: 'Обо мне', to: '/#about', anchor: '#about' },
     { label: 'Контакты', to: '/#contacts', anchor: '#contacts' },
 ]
@@ -77,6 +76,12 @@ export default function Header() {
                 <div className="flex items-center gap-2">
                     {isAuth ? (
                         <>
+                            <Link
+                                to="/notebook"
+                                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"
+                            >
+                                <BookOpen size={13} /> Блокнот
+                            </Link>
                             <Link
                                 to="/todo"
                                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition-colors"

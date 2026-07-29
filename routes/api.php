@@ -10,6 +10,7 @@ use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\ExampleFolderController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TechnologyController;
@@ -74,6 +75,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/todo-general-tasks/{todoTask}', [TodoGeneralTaskController::class, 'update']);
     Route::delete('/todo-general-tasks/{todoTask}', [TodoGeneralTaskController::class, 'destroy']);
     Route::post('/todo-general-tasks/{todoTask}/move', [TodoGeneralTaskController::class, 'move']);
+
+    Route::get('/notes', [NoteController::class, 'index']);
+    Route::post('/notes', [NoteController::class, 'store']);
+    Route::put('/notes/{note}', [NoteController::class, 'update']);
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр

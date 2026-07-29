@@ -62,4 +62,6 @@ Laravel 10 (API) + React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + Red
 
 ### Текущее состояние
 `ProjectsSection` и страница `/portfolio` временно закомментированы в `router/index.tsx` и `pages/home.tsx`.
-Страница `/notebook` временно закомментирована в `router/index.tsx`, `Header.tsx` и `Footer.tsx`.
+
+### Блокнот (`/notebook`)
+Доступен только авторизованному пользователю (редирект на `/login` иначе). Master-detail: список заметок слева, редактор справа. Правки сохраняются "на лету" — без кнопки "Сохранить", debounce ~700мс на изменение заголовка/текста (`pages/notebook.tsx`, `api/notes.ts`, `NoteController`, таблица `notes`).
