@@ -94,7 +94,7 @@ export default function HeroSection() {
                     <img
                         src={data.photo_path ?? '/images/logo.png'}
                         alt={data.name}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${data.photo_path ? '' : 'scale-[1.35] translate-y-2.5'}`}
                         fetchPriority="high"
                         loading="eager"
                     />

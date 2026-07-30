@@ -84,7 +84,7 @@ function buildPrintHTML(order: BriefOrder): string {
       ${row('Дополнительные пожелания', order.additional_wishes)}
     </div>
   </div>
-  <div class="footer">Заявка с сайта YurMar Portfolio</div>
+  <div class="footer">Заявка с сайта Плюсуй Portfolio</div>
 </div>
 <script>window.onload = () => { window.print(); }</script>
 </body></html>`

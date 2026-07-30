@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>YurMar</title>
+    <title>Плюсуй</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="YurMarDev — Fullstack Web Developer. Разработка корпоративных сайтов, React SPA, Laravel API, Bitrix и WordPress. Более 12 лет опыта.">
+    <meta name="description" content="Плюсуй — Fullstack Web Developer. Разработка корпоративных сайтов, React SPA, Laravel API, Bitrix и WordPress. Более 12 лет опыта.">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" href="/images/logo.png" sizes="any">
     <link rel="apple-touch-icon" href="/images/logo-180.png">
@@ -12,7 +12,7 @@
     <meta name="theme-color" content="#0ea5e9">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="YurMar">
+    <meta name="apple-mobile-web-app-title" content="Плюсуй">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">

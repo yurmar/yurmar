@@ -188,7 +188,7 @@ body { font-family: Arial, sans-serif; color: #1e293b; line-height: 1.6; margin:
   </div>
 
   <div class="footer">
-    Этот запрос поступил с сайта YurMar Portfolio · {{ config('app.url') }}
+    Этот запрос поступил с сайта Плюсуй Portfolio · {{ config('app.url') }}
   </div>
 </div>
 </body>
