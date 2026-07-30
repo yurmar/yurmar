@@ -44,8 +44,8 @@ export default function Header() {
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2.5 group">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-sky-400/30">
-                        <img src="/images/logo.png" alt="" className="w-full h-full object-cover scale-150 translate-y-1" onError={e => (e.currentTarget.style.display = 'none')} />
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-sky-400/30 bg-[#050b14] p-1.5">
+                        <img src="/images/logo.png" alt="" className="w-full h-full object-contain" onError={e => (e.currentTarget.style.display = 'none')} />
                     </div>
                     <Brand className="text-lg text-gray-600 group-hover:text-sky-400 transition-colors" />
                 </Link>

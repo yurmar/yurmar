@@ -89,12 +89,12 @@ export default function HeroSection() {
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.1 }}
-                    className="mx-auto mb-6 w-24 h-24 rounded-full overflow-hidden border-2 border-sky-400/50 shadow-lg shadow-sky-500/20"
+                    className={`mx-auto mb-6 w-24 h-24 rounded-full overflow-hidden border-2 border-sky-400/50 shadow-lg shadow-sky-500/20 ${data.photo_path ? '' : 'bg-[#050b14] p-3.5'}`}
                 >
                     <img
                         src={data.photo_path ?? '/images/logo.png'}
                         alt={data.name}
-                        className={`w-full h-full object-cover ${data.photo_path ? '' : 'scale-[1.35] translate-y-2.5'}`}
+                        className={`w-full h-full ${data.photo_path ? 'object-cover' : 'object-contain'}`}
                         fetchPriority="high"
                         loading="eager"
                     />
