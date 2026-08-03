@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { BookOpen, Loader2, Plus, Search, Trash2, X } from 'lucide-react'
+import { BookOpen, Loader2, Plus, Search, Trash, Trash2, X } from 'lucide-react'
 import { RootState } from '@/store'
 import { apiGetNotes, apiCreateNote, apiUpdateNote, apiDeleteNote, Note } from '@/api/notes'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import NoteEditorPanel from '@/components/notebook/NoteEditorPanel'
+import TrashModal from '@/components/notebook/TrashModal'
 
 const UNTITLED = 'Без названия'
 
@@ -43,6 +44,7 @@ export default function Notebook() {
     const [deleting, setDeleting] = useState(false)
     const [justCreatedId, setJustCreatedId] = useState<number | null>(null)
     const [search, setSearch] = useState('')
+    const [trashOpen, setTrashOpen] = useState(false)
 
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -157,14 +159,24 @@ export default function Notebook() {
                                 </div>
                                 <h1 className="text-xl font-bold text-foreground">Блокнот</h1>
                             </div>
-                            <button
-                                type="button"
-                                onClick={handleCreate}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 transition-colors flex-shrink-0"
-                                aria-label="Добавить запись"
-                            >
-                                <Plus size={16} />
-                            </button>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setTrashOpen(true)}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-sky-500/10 transition-colors"
+                                    aria-label="Корзина"
+                                >
+                                    <Trash size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCreate}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 transition-colors"
+                                    aria-label="Добавить запись"
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="relative mb-3 flex-shrink-0">
@@ -260,10 +272,17 @@ export default function Notebook() {
             <ConfirmModal
                 open={!!noteToDelete}
                 title="Удалить запись?"
-                message={noteToDelete ? `«${noteToDelete.title.trim() || UNTITLED}» будет удалена безвозвратно.` : undefined}
+                message={noteToDelete ? `«${noteToDelete.title.trim() || UNTITLED}» будет перемещена в корзину.` : undefined}
+                confirmLabel="Удалить"
                 confirming={deleting}
                 onConfirm={confirmDelete}
                 onClose={() => setNoteToDelete(null)}
+            />
+
+            <TrashModal
+                open={trashOpen}
+                onClose={() => setTrashOpen(false)}
+                onRestored={note => setNotes(prev => [note, ...prev])}
             />
         </div>
     )

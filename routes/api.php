@@ -78,8 +78,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/notes', [NoteController::class, 'index']);
     Route::post('/notes', [NoteController::class, 'store']);
+    Route::get('/notes/trash', [NoteController::class, 'trashed']);
     Route::put('/notes/{note}', [NoteController::class, 'update']);
     Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
+    Route::post('/notes/{note}/restore', [NoteController::class, 'restore']);
+    Route::delete('/notes/{note}/force', [NoteController::class, 'forceDestroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр

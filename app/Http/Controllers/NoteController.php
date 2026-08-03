@@ -23,7 +23,7 @@ class NoteController extends Controller
     public function update(Request $request, Note $note): JsonResponse
     {
         $data = $request->validate([
-            'title'   => 'sometimes|string|max:255',
+            'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|nullable|string',
         ]);
 
@@ -39,6 +39,26 @@ class NoteController extends Controller
     public function destroy(Note $note): JsonResponse
     {
         $note->delete();
+
+        return response()->json(null, 204);
+    }
+
+    public function trashed(): JsonResponse
+    {
+        return response()->json(Note::onlyTrashed()->orderByDesc('deleted_at')->get());
+    }
+
+    public function restore(int $note): JsonResponse
+    {
+        $note = Note::onlyTrashed()->findOrFail($note);
+        $note->restore();
+
+        return response()->json($note);
+    }
+
+    public function forceDestroy(int $note): JsonResponse
+    {
+        Note::onlyTrashed()->findOrFail($note)->forceDelete();
 
         return response()->json(null, 204);
     }

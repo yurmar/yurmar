@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('todo:prune-archive')->daily();
+        $schedule->command('notes:prune-trash')->daily();
     }
 
     /**
