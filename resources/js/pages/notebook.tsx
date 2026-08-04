@@ -47,8 +47,13 @@ export default function Notebook() {
     const [trashOpen, setTrashOpen] = useState(false)
 
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const activeIdRef = useRef<number | null>(null)
+    const saveStateRef = useRef<SaveState>('idle')
 
     const POLL_INTERVAL = 20000
+
+    useEffect(() => { activeIdRef.current = activeId }, [activeId])
+    useEffect(() => { saveStateRef.current = saveState }, [saveState])
 
     useEffect(() => {
         if (!isAuth) return
@@ -66,12 +71,22 @@ export default function Notebook() {
             .finally(() => setLoading(false))
     }, [isAuth])
 
-    // Периодически подтягиваем список — заметки могут меняться из приложения на Mac
+    // Периодически подтягиваем список — заметки могут меняться из приложения на Mac.
+    // Открытую запись обновляем в редакторе, только если её сейчас не редактируют на сайте.
     useEffect(() => {
         if (!isAuth) return
         const timer = setInterval(() => {
             apiGetNotes()
-                .then(r => setNotes(r.data))
+                .then(r => {
+                    setNotes(r.data)
+                    if (saveStateRef.current !== 'saving') {
+                        const current = r.data.find(n => n.id === activeIdRef.current)
+                        if (current) {
+                            setTitle(current.title)
+                            setContent(current.content ?? '')
+                        }
+                    }
+                })
                 .catch(() => {})
         }, POLL_INTERVAL)
         return () => clearInterval(timer)
