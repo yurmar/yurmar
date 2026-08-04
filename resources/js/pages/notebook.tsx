@@ -48,6 +48,8 @@ export default function Notebook() {
 
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+    const POLL_INTERVAL = 20000
+
     useEffect(() => {
         if (!isAuth) return
         apiGetNotes()
@@ -62,6 +64,17 @@ export default function Notebook() {
             })
             .catch(() => {})
             .finally(() => setLoading(false))
+    }, [isAuth])
+
+    // Периодически подтягиваем список — заметки могут меняться из приложения на Mac
+    useEffect(() => {
+        if (!isAuth) return
+        const timer = setInterval(() => {
+            apiGetNotes()
+                .then(r => setNotes(r.data))
+                .catch(() => {})
+        }, POLL_INTERVAL)
+        return () => clearInterval(timer)
     }, [isAuth])
 
     const activeNote = useMemo(() => notes.find(n => n.id === activeId) ?? null, [notes, activeId])
