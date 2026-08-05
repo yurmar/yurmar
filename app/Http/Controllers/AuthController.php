@@ -25,7 +25,8 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $user->createToken('spa-token')->plainTextToken;
+        $deviceName = $request->input('device_name', $request->userAgent() ?? 'unknown-device');
+        $token = $user->createToken($deviceName)->plainTextToken;
 
         return response()->json([
             'user' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],

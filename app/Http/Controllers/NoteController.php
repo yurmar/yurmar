@@ -8,20 +8,22 @@ use Illuminate\Http\Request;
 
 class NoteController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Note::orderByDesc('updated_at')->get());
+        return response()->json($request->user()->notes()->orderByDesc('updated_at')->get());
     }
 
-    public function store(): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $note = Note::create(['title' => '', 'content' => null]);
+        $note = $request->user()->notes()->create(['title' => '', 'content' => null]);
 
         return response()->json($note, 201);
     }
 
     public function update(Request $request, Note $note): JsonResponse
     {
+        $this->authorize('update', $note);
+
         $data = $request->validate([
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|nullable|string',
@@ -36,29 +38,34 @@ class NoteController extends Controller
         return response()->json($note);
     }
 
-    public function destroy(Note $note): JsonResponse
+    public function destroy(Request $request, Note $note): JsonResponse
     {
+        $this->authorize('delete', $note);
+
         $note->delete();
 
         return response()->json(null, 204);
     }
 
-    public function trashed(): JsonResponse
+    public function trashed(Request $request): JsonResponse
     {
-        return response()->json(Note::onlyTrashed()->orderByDesc('deleted_at')->get());
+        return response()->json($request->user()->notes()->onlyTrashed()->orderByDesc('deleted_at')->get());
     }
 
-    public function restore(int $note): JsonResponse
+    public function restore(Request $request, int $note): JsonResponse
     {
-        $note = Note::onlyTrashed()->findOrFail($note);
+        $note = $request->user()->notes()->onlyTrashed()->findOrFail($note);
+        $this->authorize('restore', $note);
         $note->restore();
 
         return response()->json($note);
     }
 
-    public function forceDestroy(int $note): JsonResponse
+    public function forceDestroy(Request $request, int $note): JsonResponse
     {
-        Note::onlyTrashed()->findOrFail($note)->forceDelete();
+        $note = $request->user()->notes()->onlyTrashed()->findOrFail($note);
+        $this->authorize('forceDelete', $note);
+        $note->forceDelete();
 
         return response()->json(null, 204);
     }
