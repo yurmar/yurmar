@@ -3,6 +3,7 @@ import client from './client'
 export interface TodoTask {
     id: number
     todo_day_id: number | null
+    todo_list_id: number | null
     title: string
     is_done: boolean
     is_priority: boolean
@@ -55,3 +56,40 @@ export const apiDeleteGeneralTask = (taskId: number) => client.delete(`/todo-gen
 
 export const apiMoveGeneralTaskToDay = (taskId: number, date: string) =>
     client.post<TodoTask>(`/todo-general-tasks/${taskId}/move`, { date })
+
+export interface TodoList {
+    id: number
+    name: string
+    tasks_count: number
+    done_tasks_count: number
+}
+
+export interface TodoListDetail {
+    id: number
+    name: string
+    tasks: TodoTask[]
+}
+
+export const apiGetTodoLists = () => client.get<TodoList[]>('/todo-lists')
+
+export const apiGetTodoList = (id: number) => client.get<TodoListDetail>(`/todo-lists/${id}`)
+
+export const apiCreateTodoList = (name: string, tasks?: string) =>
+    client.post<TodoListDetail>('/todo-lists', { name, tasks })
+
+export const apiRenameTodoList = (id: number, name: string) =>
+    client.put<TodoList>(`/todo-lists/${id}`, { name })
+
+export const apiDeleteTodoList = (id: number) => client.delete(`/todo-lists/${id}`)
+
+export const apiAddTodoListTasks = (listId: number, tasks: string) =>
+    client.post<TodoListDetail>(`/todo-lists/${listId}/tasks`, { tasks })
+
+export const apiUpdateTodoListTask = (listId: number, taskId: number, data: Partial<Pick<TodoTask, 'title' | 'is_done' | 'is_priority'>>) =>
+    client.put<TodoTask>(`/todo-lists/${listId}/tasks/${taskId}`, data)
+
+export const apiDeleteTodoListTask = (listId: number, taskId: number) =>
+    client.delete(`/todo-lists/${listId}/tasks/${taskId}`)
+
+export const apiMoveTodoListTask = (listId: number, taskId: number, date: string) =>
+    client.post<TodoTask>(`/todo-lists/${listId}/tasks/${taskId}/move`, { date })

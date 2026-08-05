@@ -16,6 +16,8 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\TodoDayController;
 use App\Http\Controllers\TodoGeneralTaskController;
+use App\Http\Controllers\TodoListController;
+use App\Http\Controllers\TodoListTaskController;
 use App\Http\Controllers\TodoTaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -75,6 +77,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/todo-general-tasks/{todoTask}', [TodoGeneralTaskController::class, 'update']);
     Route::delete('/todo-general-tasks/{todoTask}', [TodoGeneralTaskController::class, 'destroy']);
     Route::post('/todo-general-tasks/{todoTask}/move', [TodoGeneralTaskController::class, 'move']);
+
+    Route::get('/todo-lists', [TodoListController::class, 'index']);
+    Route::post('/todo-lists', [TodoListController::class, 'store']);
+    Route::get('/todo-lists/{todoList}', [TodoListController::class, 'show']);
+    Route::put('/todo-lists/{todoList}', [TodoListController::class, 'update']);
+    Route::delete('/todo-lists/{todoList}', [TodoListController::class, 'destroy']);
+
+    Route::post('/todo-lists/{todoList}/tasks', [TodoListTaskController::class, 'store']);
+    Route::put('/todo-lists/{todoList}/tasks/{todoTask}', [TodoListTaskController::class, 'update']);
+    Route::delete('/todo-lists/{todoList}/tasks/{todoTask}', [TodoListTaskController::class, 'destroy']);
+    Route::post('/todo-lists/{todoList}/tasks/{todoTask}/move', [TodoListTaskController::class, 'move']);
 
     Route::get('/notes', [NoteController::class, 'index']);
     Route::post('/notes', [NoteController::class, 'store']);
