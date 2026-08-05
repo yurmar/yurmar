@@ -212,14 +212,17 @@ export default function NoteFormatButton({ editor }: { editor: Editor | null }) 
 
                         {/* Стили абзаца */}
                         <div className="space-y-0.5">
-                            <button type="button" onClick={() => setHeading(1)} className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-2xl font-extrabold transition-colors">
-                                Название
+                            <button type="button" onClick={() => setHeading(1)} className="w-full flex items-center gap-1.5 text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-2xl font-extrabold transition-colors">
+                                {editor.isActive('heading', { level: 1 }) && <Check size={13} className="text-sky-400 flex-shrink-0" />}
+                                <span className={editor.isActive('heading', { level: 1 }) ? '' : 'ml-[19px]'}>Название</span>
                             </button>
-                            <button type="button" onClick={() => setHeading(2)} className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-lg font-bold transition-colors">
-                                Заголовок
+                            <button type="button" onClick={() => setHeading(2)} className="w-full flex items-center gap-1.5 text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-lg font-bold transition-colors">
+                                {editor.isActive('heading', { level: 2 }) && <Check size={13} className="text-sky-400 flex-shrink-0" />}
+                                <span className={editor.isActive('heading', { level: 2 }) ? '' : 'ml-[19px]'}>Заголовок</span>
                             </button>
-                            <button type="button" onClick={() => setHeading(3)} className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-base font-bold transition-colors">
-                                Подзаголовок
+                            <button type="button" onClick={() => setHeading(3)} className="w-full flex items-center gap-1.5 text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-base font-bold transition-colors">
+                                {editor.isActive('heading', { level: 3 }) && <Check size={13} className="text-sky-400 flex-shrink-0" />}
+                                <span className={editor.isActive('heading', { level: 3 }) ? '' : 'ml-[19px]'}>Подзаголовок</span>
                             </button>
                             <button type="button" onClick={setBody} className="w-full flex items-center gap-1.5 text-left px-2 py-1.5 rounded-lg hover:bg-white/10 text-white text-sm transition-colors">
                                 {isParagraph('body') && <Check size={13} className="text-sky-400 flex-shrink-0" />}
