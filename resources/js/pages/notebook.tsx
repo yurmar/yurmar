@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { BookOpen, Loader2, Pin, PinOff, Plus, Search, Trash, Trash2, X } from 'lucide-react'
+import { BookOpen, Loader2, Pin, Plus, Search, Trash, Trash2, X } from 'lucide-react'
 import { RootState } from '@/store'
 import { apiGetNotes, apiCreateNote, apiUpdateNote, apiDeleteNote, Note } from '@/api/notes'
 import ConfirmModal from '@/components/ui/ConfirmModal'
@@ -139,10 +139,10 @@ export default function Notebook() {
         scheduleSave(activeNote.id, { title, content: value })
     }
 
-    const handleTogglePin = async () => {
-        if (!activeNote) return
+    const handleTogglePin = async (note: Note, e: React.MouseEvent) => {
+        e.stopPropagation()
         try {
-            const r = await apiUpdateNote(activeNote.id, { is_pinned: !activeNote.is_pinned })
+            const r = await apiUpdateNote(note.id, { is_pinned: !note.is_pinned })
             setNotes(prev => prev.map(n => (n.id === r.data.id ? r.data : n)))
         } catch {}
     }
@@ -198,22 +198,35 @@ export default function Notebook() {
         >
             <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                    <div className="font-medium text-foreground truncate flex items-center gap-1.5">
-                        {note.is_pinned && <Pin size={12} className="text-sky-500 flex-shrink-0" />}
-                        <span className="truncate">{note.title.trim() || UNTITLED}</span>
+                    <div className="font-medium text-foreground truncate">
+                        {note.title.trim() || UNTITLED}
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5 truncate">
                         {formatDate(note.updated_at)} · {snippet(note.content)}
                     </div>
                 </div>
-                <button
-                    type="button"
-                    onClick={e => handleDeleteRequest(note, e)}
-                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-opacity flex-shrink-0 p-1"
-                    aria-label="Удалить запись"
-                >
-                    <Trash2 size={14} />
-                </button>
+                <div className="flex items-center gap-0.5 flex-shrink-0">
+                    <button
+                        type="button"
+                        onClick={e => handleTogglePin(note, e)}
+                        className={`transition-opacity p-1 ${
+                            note.is_pinned
+                                ? 'text-sky-500'
+                                : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-sky-500'
+                        }`}
+                        aria-label={note.is_pinned ? 'Открепить запись' : 'Закрепить запись'}
+                    >
+                        <Pin size={14} fill={note.is_pinned ? 'currentColor' : 'none'} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={e => handleDeleteRequest(note, e)}
+                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-opacity p-1"
+                        aria-label="Удалить запись"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
             </div>
         </motion.button>
     )
@@ -235,15 +248,6 @@ export default function Notebook() {
                                 <h1 className="text-xl font-bold text-foreground">Блокнот</h1>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={handleTogglePin}
-                                    disabled={!activeNote}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-sky-500/10 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                                    aria-label={activeNote?.is_pinned ? 'Открепить запись' : 'Закрепить запись'}
-                                >
-                                    {activeNote?.is_pinned ? <PinOff size={16} /> : <Pin size={16} />}
-                                </button>
                                 <button
                                     type="button"
                                     onClick={() => setTrashOpen(true)}
