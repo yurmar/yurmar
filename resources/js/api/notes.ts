@@ -4,6 +4,7 @@ export interface Note {
     id: number
     title: string
     content: string | null
+    is_pinned: boolean
     created_at: string
     updated_at: string
     deleted_at?: string | null
@@ -11,7 +12,7 @@ export interface Note {
 
 export const apiGetNotes = () => client.get<Note[]>('/notes')
 export const apiCreateNote = () => client.post<Note>('/notes')
-export const apiUpdateNote = (id: number, data: Partial<Pick<Note, 'title' | 'content'>>) =>
+export const apiUpdateNote = (id: number, data: Partial<Pick<Note, 'title' | 'content' | 'is_pinned'>>) =>
     client.put<Note>(`/notes/${id}`, data)
 export const apiDeleteNote = (id: number) => client.delete(`/notes/${id}`)
 

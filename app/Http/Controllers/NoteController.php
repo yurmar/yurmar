@@ -10,7 +10,7 @@ class NoteController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        return response()->json($request->user()->notes()->orderByDesc('updated_at')->get());
+        return response()->json($request->user()->notes()->orderByDesc('is_pinned')->orderByDesc('updated_at')->get());
     }
 
     public function store(Request $request): JsonResponse
@@ -27,6 +27,7 @@ class NoteController extends Controller
         $data = $request->validate([
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|nullable|string',
+            'is_pinned' => 'sometimes|boolean',
         ]);
 
         if (array_key_exists('title', $data) && trim($data['title']) === '') {

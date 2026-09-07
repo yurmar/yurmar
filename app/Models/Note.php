@@ -10,7 +10,9 @@ class Note extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['title', 'content', 'user_id'];
+    protected $fillable = ['title', 'content', 'user_id', 'is_pinned'];
+
+    protected $casts = ['is_pinned' => 'boolean'];
 
     public function user(): BelongsTo
     {

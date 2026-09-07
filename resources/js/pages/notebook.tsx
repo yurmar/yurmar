@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { BookOpen, Loader2, Plus, Search, Trash, Trash2, X } from 'lucide-react'
+import { BookOpen, Loader2, Pin, PinOff, Plus, Search, Trash, Trash2, X } from 'lucide-react'
 import { RootState } from '@/store'
 import { apiGetNotes, apiCreateNote, apiUpdateNote, apiDeleteNote, Note } from '@/api/notes'
 import ConfirmModal from '@/components/ui/ConfirmModal'
@@ -102,6 +102,9 @@ export default function Notebook() {
         )
     }, [notes, search])
 
+    const pinnedNotes = useMemo(() => filteredNotes.filter(n => n.is_pinned), [filteredNotes])
+    const unpinnedNotes = useMemo(() => filteredNotes.filter(n => !n.is_pinned), [filteredNotes])
+
     const selectNote = (note: Note) => {
         if (saveTimer.current) clearTimeout(saveTimer.current)
         setSaveState('idle')
@@ -134,6 +137,14 @@ export default function Notebook() {
         setContent(value)
         if (!activeNote) return
         scheduleSave(activeNote.id, { title, content: value })
+    }
+
+    const handleTogglePin = async () => {
+        if (!activeNote) return
+        try {
+            const r = await apiUpdateNote(activeNote.id, { is_pinned: !activeNote.is_pinned })
+            setNotes(prev => prev.map(n => (n.id === r.data.id ? r.data : n)))
+        } catch {}
     }
 
     const handleCreate = async () => {
@@ -171,6 +182,42 @@ export default function Notebook() {
         }
     }, [])
 
+    const renderNoteCard = (note: Note) => (
+        <motion.button
+            key={note.id}
+            type="button"
+            layout="position"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ layout: { type: 'spring', damping: 40, stiffness: 180, mass: 0.9 } }}
+            onClick={() => selectNote(note)}
+            className={`group w-full text-left card-block rounded-xl p-3.5 transition-colors ${
+                activeId === note.id ? 'border-sky-500/50 bg-sky-500/5' : ''
+            }`}
+        >
+            <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                    <div className="font-medium text-foreground truncate flex items-center gap-1.5">
+                        {note.is_pinned && <Pin size={12} className="text-sky-500 flex-shrink-0" />}
+                        <span className="truncate">{note.title.trim() || UNTITLED}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {formatDate(note.updated_at)} · {snippet(note.content)}
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={e => handleDeleteRequest(note, e)}
+                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-opacity flex-shrink-0 p-1"
+                    aria-label="Удалить запись"
+                >
+                    <Trash2 size={14} />
+                </button>
+            </div>
+        </motion.button>
+    )
+
     if (authLoading) return null
     if (!isAuth) return <Navigate to="/login" replace />
 
@@ -188,6 +235,15 @@ export default function Notebook() {
                                 <h1 className="text-xl font-bold text-foreground">Блокнот</h1>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={handleTogglePin}
+                                    disabled={!activeNote}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-sky-500/10 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                    aria-label={activeNote?.is_pinned ? 'Открепить запись' : 'Закрепить запись'}
+                                >
+                                    {activeNote?.is_pinned ? <PinOff size={16} /> : <Pin size={16} />}
+                                </button>
                                 <button
                                     type="button"
                                     onClick={() => setTrashOpen(true)}
@@ -235,42 +291,21 @@ export default function Notebook() {
                             ) : filteredNotes.length === 0 ? (
                                 <p className="text-muted-foreground text-sm text-center py-8">Ничего не найдено</p>
                             ) : (
-                                <AnimatePresence mode="popLayout">
-                                    {filteredNotes.map(note => (
-                                        <motion.button
-                                            key={note.id}
-                                            type="button"
-                                            layout="position"
-                                            initial={{ opacity: 0, y: 8 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.97 }}
-                                            transition={{ layout: { type: 'spring', damping: 40, stiffness: 180, mass: 0.9 } }}
-                                            onClick={() => selectNote(note)}
-                                            className={`group w-full text-left card-block rounded-xl p-3.5 transition-colors ${
-                                                activeId === note.id ? 'border-sky-500/50 bg-sky-500/5' : ''
-                                            }`}
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="font-medium text-foreground truncate">
-                                                        {note.title.trim() || UNTITLED}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                                                        {formatDate(note.updated_at)} · {snippet(note.content)}
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={e => handleDeleteRequest(note, e)}
-                                                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-opacity flex-shrink-0 p-1"
-                                                    aria-label="Удалить запись"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </motion.button>
-                                    ))}
-                                </AnimatePresence>
+                                <>
+                                    {pinnedNotes.length > 0 && (
+                                        <>
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
+                                                Закреплённые
+                                            </p>
+                                            <AnimatePresence mode="popLayout">
+                                                {pinnedNotes.map(note => renderNoteCard(note))}
+                                            </AnimatePresence>
+                                        </>
+                                    )}
+                                    <AnimatePresence mode="popLayout">
+                                        {unpinnedNotes.map(note => renderNoteCard(note))}
+                                    </AnimatePresence>
+                                </>
                             )}
                         </div>
                     </div>
