@@ -15,7 +15,17 @@ class NoteController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $note = $request->user()->notes()->create(['title' => '', 'content' => null]);
+        $data = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'content' => 'sometimes|nullable|string',
+            'is_pinned' => 'sometimes|boolean',
+        ]);
+
+        $note = $request->user()->notes()->create([
+            'title' => $data['title'] ?? '',
+            'content' => $data['content'] ?? null,
+            'is_pinned' => $data['is_pinned'] ?? false,
+        ]);
 
         return response()->json($note, 201);
     }
