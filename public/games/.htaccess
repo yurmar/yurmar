@@ -1,0 +1,12 @@
+# Unity WebGL: файлы без хеша в имени — не кэшируем «навсегда», как ассеты Vite
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|data|wasm|html)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+<IfModule mod_mime.c>
+    AddType application/wasm .wasm
+</IfModule>
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/wasm application/octet-stream
+</IfModule>
