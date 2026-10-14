@@ -37,13 +37,13 @@ type Kind = 'images' | 'video' | 'docs' | 'audio' | 'archives' | 'other'
 const MAX_BYTES = 50 * 1024 * 1024
 const QUOTA_BYTES = 500 * 1024 * 1024
 
-const KINDS: { value: Kind; label: string; icon: typeof FileIcon; tone: string }[] = [
-    { value: 'images', label: 'Изображения', icon: ImageIcon, tone: 'bg-violet-500/15 text-violet-500' },
-    { value: 'video', label: 'Видео', icon: Video, tone: 'bg-sky-500/15 text-sky-500' },
-    { value: 'docs', label: 'Документы', icon: FileText, tone: 'bg-amber-500/15 text-amber-500' },
-    { value: 'audio', label: 'Музыка', icon: Music, tone: 'bg-emerald-500/15 text-emerald-500' },
-    { value: 'archives', label: 'Архивы', icon: Archive, tone: 'bg-fuchsia-500/15 text-fuchsia-500' },
-    { value: 'other', label: 'Прочее', icon: FileIcon, tone: 'bg-slate-500/15 text-slate-400' },
+const KINDS: { value: Kind; label: string; short: string; icon: typeof FileIcon; tone: string }[] = [
+    { value: 'images', label: 'Изображения', short: 'Изобр.', icon: ImageIcon, tone: 'bg-violet-500/15 text-violet-500' },
+    { value: 'video', label: 'Видео', short: 'Видео', icon: Video, tone: 'bg-sky-500/15 text-sky-500' },
+    { value: 'docs', label: 'Документы', short: 'Докум.', icon: FileText, tone: 'bg-amber-500/15 text-amber-500' },
+    { value: 'audio', label: 'Музыка', short: 'Музыка', icon: Music, tone: 'bg-emerald-500/15 text-emerald-500' },
+    { value: 'archives', label: 'Архивы', short: 'Архивы', icon: Archive, tone: 'bg-fuchsia-500/15 text-fuchsia-500' },
+    { value: 'other', label: 'Прочее', short: 'Прочее', icon: FileIcon, tone: 'bg-slate-500/15 text-slate-400' },
 ]
 
 const kindMeta = (k: Kind) => KINDS.find(x => x.value === k)!
@@ -501,8 +501,9 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                                         : 'border-transparent bg-sky-500/[0.05] hover:bg-sky-500/10'
                                 }`}
                             >
-                                <span className="block w-full text-[10px] sm:text-xs font-medium text-foreground leading-tight break-words">
-                                    {folder?.name ?? k.label}
+                                <span className="block w-full text-[10px] sm:text-xs font-medium text-foreground leading-tight">
+                                    <span className="sm:hidden">{k.short}</span>
+                                    <span className="hidden sm:inline">{folder?.name ?? k.label}</span>
                                 </span>
                                 <span className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${k.tone}`}>
                                     <Icon size={18} />
