@@ -94,7 +94,7 @@ export default function ProjectCard({ project, onOpen, onTogglePin, onDelete, ac
                         <Calendar size={12} /> до {formatProjectDate(project.deadline)}
                     </span>
                 )}
-                {project.files_count !== undefined || project.links_count !== undefined && (
+                {(project.files_count !== undefined || project.links_count !== undefined) && (
                     <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <Paperclip size={12} /> {(project.files_count ?? 0) + (project.links_count ?? 0)}
                     </span>
