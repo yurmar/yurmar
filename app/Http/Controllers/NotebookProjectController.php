@@ -56,6 +56,7 @@ class NotebookProjectController extends Controller
             'tasks',
             'links',
             'files',
+            'folders',
         ]);
 
         return response()->json($notebookProject);

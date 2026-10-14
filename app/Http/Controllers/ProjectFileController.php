@@ -20,7 +20,7 @@ class ProjectFileController extends Controller
 
         $data = $request->validate([
             'file' => 'required|file|max:'.ProjectFile::MAX_SIZE_KB,
-            'category' => ['sometimes', 'nullable', Rule::in(ProjectFile::CATEGORIES)],
+            'folder_id' => $this->folderRule($notebookProject),
             'description' => 'sometimes|nullable|string|max:5000',
         ]);
 
@@ -47,7 +47,7 @@ class ProjectFileController extends Controller
             'path' => $path,
             'mime_type' => $upload->getClientMimeType(),
             'size' => $upload->getSize(),
-            'category' => $data['category'] ?? null,
+            'folder_id' => $data['folder_id'] ?? null,
             'description' => $data['description'] ?? null,
         ]);
 
@@ -61,7 +61,7 @@ class ProjectFileController extends Controller
 
         $data = $request->validate([
             'name' => 'sometimes|nullable|string|max:255',
-            'category' => ['sometimes', 'nullable', Rule::in(ProjectFile::CATEGORIES)],
+            'folder_id' => $this->folderRule($notebookProject),
             'description' => 'sometimes|nullable|string|max:5000',
         ]);
 
@@ -96,6 +96,14 @@ class ProjectFileController extends Controller
         $projectFile->delete();
 
         return response()->json(null, 204);
+    }
+
+    private function folderRule(NotebookProject $project): array
+    {
+        return [
+            'sometimes', 'nullable', 'integer',
+            Rule::exists('project_folders', 'id')->where('notebook_project_id', $project->id),
+        ];
     }
 
     private function ensureBelongs(NotebookProject $project, ProjectFile $file): void

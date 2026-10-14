@@ -14,6 +14,7 @@ use App\Http\Controllers\NotebookProjectController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFileController;
+use App\Http\Controllers\ProjectFolderController;
 use App\Http\Controllers\ProjectLinkController;
 use App\Http\Controllers\ProjectMilestoneController;
 use App\Http\Controllers\ProjectTaskController;
@@ -126,6 +127,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notebook-projects/{notebookProject}/files/{projectFile}', [ProjectFileController::class, 'update']);
     Route::get('/notebook-projects/{notebookProject}/files/{projectFile}/download', [ProjectFileController::class, 'download']);
     Route::delete('/notebook-projects/{notebookProject}/files/{projectFile}', [ProjectFileController::class, 'destroy']);
+
+    Route::post('/notebook-projects/{notebookProject}/folders', [ProjectFolderController::class, 'store']);
+    Route::put('/notebook-projects/{notebookProject}/folders/{projectFolder}', [ProjectFolderController::class, 'update']);
+    Route::delete('/notebook-projects/{notebookProject}/folders/{projectFolder}', [ProjectFolderController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр
