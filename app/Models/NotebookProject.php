@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class NotebookProject extends Model
+{
+    use SoftDeletes;
+
+    public const STATUSES = ['idea', 'planning', 'active', 'paused', 'completed', 'archived'];
+
+    public const PRIORITIES = ['low', 'normal', 'high'];
+
+    public const UNTITLED = 'Без названия';
+
+    protected $fillable = [
+        'name',
+        'description',
+        'status',
+        'priority',
+        'local_path',
+        'repository_url',
+        'technologies',
+        'start_date',
+        'deadline',
+        'is_pinned',
+    ];
+
+    protected $attributes = [
+        'status' => 'idea',
+        'priority' => 'normal',
+        'is_pinned' => false,
+    ];
+
+    protected $casts = [
+        'technologies' => 'array',
+        'is_pinned' => 'boolean',
+        'start_date' => 'date:Y-m-d',
+        'deadline' => 'date:Y-m-d',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
