@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
+import { GripVertical, Trash2 } from 'lucide-react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { ProjectMilestone, ProjectTask, ProjectTaskPatch } from '@/api/notebookProjects'
 import { PRIORITY_OPTIONS, TASK_STATUS_OPTIONS } from './projectMeta'
 import { useAutosave } from './useAutosave'
@@ -7,16 +9,13 @@ import { useAutosave } from './useAutosave'
 interface Props {
     task: ProjectTask
     milestones: ProjectMilestone[]
-    isFirst: boolean
-    isLast: boolean
     onSave: (id: number, patch: ProjectTaskPatch) => Promise<unknown>
     onDelete: (task: ProjectTask) => void
-    onMove: (task: ProjectTask, dir: -1 | 1) => void
 }
 
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
 
-export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSave, onDelete, onMove }: Props) {
+export default function ProjectTaskRow({ task, milestones, onSave, onDelete }: Props) {
     const [title, setTitle] = useState(task.title)
     const [dueDate, setDueDate] = useState(task.due_date ?? '')
     const { saveState, schedule, flush } = useAutosave<ProjectTaskPatch>({
@@ -28,12 +27,32 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
         void flush()
     }
 
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: `t-${task.id}`,
+        data: { type: 'task' },
+    })
+
     const done = task.status === 'done'
     const cancelled = task.status === 'cancelled'
 
     return (
-        <div className="rounded-lg border border-sky-500/10 bg-sky-500/[0.03] p-2.5">
+        <div
+            ref={setNodeRef}
+            style={{ transform: CSS.Transform.toString(transform), transition }}
+            className={`rounded-lg border border-sky-500/10 bg-sky-500/[0.03] p-2.5 ${
+                isDragging ? 'opacity-60 shadow-lg relative z-10' : ''
+            }`}
+        >
             <div className="flex items-center gap-2">
+                <button
+                    type="button"
+                    {...attributes}
+                    {...listeners}
+                    className="touch-none cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground hover:text-sky-500 flex-shrink-0"
+                    aria-label="Перетащить задачу"
+                >
+                    <GripVertical size={14} />
+                </button>
                 <input
                     type="checkbox"
                     checked={done}
@@ -56,24 +75,6 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
                 <div className="flex items-center flex-shrink-0">
                     <button
                         type="button"
-                        disabled={isFirst}
-                        onClick={() => onMove(task, -1)}
-                        className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30"
-                        aria-label="Поднять задачу"
-                    >
-                        <ArrowUp size={14} />
-                    </button>
-                    <button
-                        type="button"
-                        disabled={isLast}
-                        onClick={() => onMove(task, 1)}
-                        className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30"
-                        aria-label="Опустить задачу"
-                    >
-                        <ArrowDown size={14} />
-                    </button>
-                    <button
-                        type="button"
                         onClick={() => onDelete(task)}
                         className="p-1 text-muted-foreground hover:text-red-400"
                         aria-label="Удалить задачу"
@@ -83,7 +84,7 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
                 </div>
             </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-2 pl-6">
+            <div className="mt-2 flex flex-wrap items-center gap-2 pl-12">
                 <select
                     value={task.status}
                     onChange={e => saveNow({ status: e.target.value as ProjectTask['status'] })}
