@@ -1,5 +1,27 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, ChevronRight, GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
+import {
+    closestCorners,
+    CollisionDetection,
+    DndContext,
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    KeyboardSensor,
+    PointerSensor,
+    TouchSensor,
+    useDroppable,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core'
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import {
     apiCreateMilestone,
     apiCreateTask,
@@ -26,6 +48,22 @@ interface Props {
 }
 
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
+
+const groupId = (milestoneId: number | null) => `g-${milestoneId ?? 'none'}`
+const parseGroup = (id: string): number | null | undefined => {
+    if (!id.startsWith('g-')) return undefined
+    const raw = id.slice(2)
+    return raw === 'none' ? null : Number(raw)
+}
+
+// Задачи сталкиваются только с задачами и группами, этапы — только с этапами.
+const collisionDetection: CollisionDetection = args => {
+    const dragging = args.active.data.current?.type
+    const containers = args.droppableContainers.filter(c =>
+        dragging === 'milestone' ? c.data.current?.type === 'milestone' : c.data.current?.type !== 'milestone'
+    )
+    return closestCorners({ ...args, droppableContainers: containers })
+}
 
 export const progressOf = (tasks: ProjectTask[]) => {
     const counted = tasks.filter(t => t.status !== 'cancelled')
@@ -75,18 +113,63 @@ function AddTask({ onAdd }: { onAdd: (title: string) => void }) {
     )
 }
 
+/** Контейнер задач группы: принимает перетаскивание, в том числе в пустую группу. */
+function TaskGroup({ milestoneId, taskIds, children }: { milestoneId: number | null; taskIds: string[]; children: ReactNode }) {
+    const { setNodeRef, isOver } = useDroppable({ id: groupId(milestoneId), data: { type: 'group' } })
+    return (
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            <div
+                ref={setNodeRef}
+                className={`space-y-2 min-h-[8px] rounded-lg transition-colors ${isOver ? 'bg-sky-500/5' : ''}`}
+            >
+                {children}
+            </div>
+        </SortableContext>
+    )
+}
+
+function SortableMilestone({
+    id, children,
+}: {
+    id: number
+    children: (handle: ReactNode) => ReactNode
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: `m-${id}`,
+        data: { type: 'milestone' },
+    })
+    const handle = (
+        <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="touch-none cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground hover:text-sky-500 flex-shrink-0"
+            aria-label="Перетащить этап"
+        >
+            <GripVertical size={16} />
+        </button>
+    )
+    return (
+        <div
+            ref={setNodeRef}
+            style={{ transform: CSS.Transform.toString(transform), transition }}
+            className={`rounded-xl border border-sky-500/20 p-3 space-y-3 ${isDragging ? 'opacity-60 shadow-lg relative z-10' : ''}`}
+        >
+            {children(handle)}
+        </div>
+    )
+}
+
 function MilestoneHeader({
-    milestone, tasks, open, onToggle, isFirst, isLast, onSave, onDelete, onMove, autoFocus,
+    milestone, tasks, open, onToggle, handle, onSave, onDelete, autoFocus,
 }: {
     milestone: ProjectMilestone
     tasks: ProjectTask[]
     open: boolean
     onToggle: () => void
-    isFirst: boolean
-    isLast: boolean
+    handle: ReactNode
     onSave: (id: number, patch: ProjectMilestonePatch) => Promise<unknown>
     onDelete: (m: ProjectMilestone) => void
-    onMove: (m: ProjectMilestone, dir: -1 | 1) => void
     autoFocus: boolean
 }) {
     const [title, setTitle] = useState(milestone.title)
@@ -99,6 +182,7 @@ function MilestoneHeader({
     return (
         <div className="space-y-2">
             <div className="flex items-center gap-2">
+                {handle}
                 <button type="button" onClick={onToggle} className="text-muted-foreground hover:text-foreground" aria-label={open ? 'Свернуть этап' : 'Развернуть этап'}>
                     {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </button>
@@ -110,11 +194,9 @@ function MilestoneHeader({
                     maxLength={255}
                     className="flex-1 min-w-0 bg-transparent font-semibold text-base sm:text-sm text-foreground focus:outline-none"
                 />
-                <button type="button" disabled={isFirst} onClick={() => onMove(milestone, -1)} className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30" aria-label="Поднять этап"><ArrowUp size={14} /></button>
-                <button type="button" disabled={isLast} onClick={() => onMove(milestone, 1)} className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30" aria-label="Опустить этап"><ArrowDown size={14} /></button>
                 <button type="button" onClick={() => onDelete(milestone)} className="p-1 text-muted-foreground hover:text-red-400" aria-label="Удалить этап"><Trash2 size={14} /></button>
             </div>
-            <div className="flex flex-wrap items-center gap-2 pl-6">
+            <div className="flex flex-wrap items-center gap-2 pl-12">
                 <select
                     value={milestone.status}
                     onChange={e => { schedule({ status: e.target.value as ProjectMilestone['status'] }); void flush() }}
@@ -127,7 +209,7 @@ function MilestoneHeader({
                 <input type="date" value={deadline} onChange={e => { setDeadline(e.target.value); schedule({ deadline: e.target.value || null }) }} className={small} aria-label="Дедлайн этапа" />
                 <ProgressBar tasks={tasks} />
             </div>
-            {fieldErrors.deadline && <p className="pl-6 text-xs text-red-400">{fieldErrors.deadline}</p>}
+            {fieldErrors.deadline && <p className="pl-12 text-xs text-red-400">{fieldErrors.deadline}</p>}
         </div>
     )
 }
@@ -141,6 +223,13 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
     const [newMilestoneId, setNewMilestoneId] = useState<number | null>(null)
     const [milestoneToDelete, setMilestoneToDelete] = useState<ProjectMilestone | null>(null)
     const [taskToDelete, setTaskToDelete] = useState<ProjectTask | null>(null)
+    const dragOrigin = useRef<{ taskId: number; milestoneId: number | null } | null>(null)
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    )
 
     const load = useCallback(() => {
         setLoading(true)
@@ -189,20 +278,6 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
         setTaskToDelete(null)
     }
 
-    const moveTask = async (task: ProjectTask, dir: -1 | 1) => {
-        const group = tasksOf(task.milestone_id)
-        const index = group.findIndex(t => t.id === task.id)
-        const target = index + dir
-        if (target < 0 || target >= group.length) return
-        const reordered = [...group]
-        ;[reordered[index], reordered[target]] = [reordered[target], reordered[index]]
-        const groupIds = new Set(group.map(t => t.id))
-        const rest = sortedTasks.filter(t => !groupIds.has(t.id))
-        const ids = [...rest.map(t => t.id), ...reordered.map(t => t.id)]
-        const r = await apiReorderTasks(projectId, ids)
-        setTasks(r.data)
-    }
-
     const addMilestone = async () => {
         const r = await apiCreateMilestone(projectId, { title: 'Новый этап' })
         setMilestones(prev => [...prev, r.data])
@@ -217,20 +292,6 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
         setMilestoneToDelete(null)
     }
 
-    const moveMilestone = async (m: ProjectMilestone, dir: -1 | 1) => {
-        const index = milestones.findIndex(x => x.id === m.id)
-        const target = index + dir
-        if (target < 0 || target >= milestones.length) return
-        const next = [...milestones]
-        ;[next[index], next[target]] = [next[target], next[index]]
-        setMilestones(next)
-        try {
-            await apiReorderMilestones(projectId, next.map(x => x.id))
-        } catch {
-            load()
-        }
-    }
-
     const toggle = (id: number) =>
         setCollapsed(prev => {
             const next = new Set(prev)
@@ -239,23 +300,124 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
             return next
         })
 
-    const renderTasks = (group: ProjectTask[], milestoneId: number | null) => (
-        <div className="space-y-2">
-            {group.map((t, i) => (
-                <ProjectTaskRow
-                    key={t.id}
-                    task={t}
-                    milestones={milestones}
-                    isFirst={i === 0}
-                    isLast={i === group.length - 1}
-                    onSave={saveTask}
-                    onDelete={setTaskToDelete}
-                    onMove={moveTask}
-                />
-            ))}
-            <AddTask onAdd={title => addTask(milestoneId, title)} />
-        </div>
-    )
+    // ---- drag and drop ----
+
+    const containerOfOver = (overId: string): number | null | undefined => {
+        const g = parseGroup(overId)
+        if (g !== undefined) return g
+        if (overId.startsWith('t-')) {
+            const over = tasks.find(t => t.id === Number(overId.slice(2)))
+            return over ? over.milestone_id : undefined
+        }
+        return undefined
+    }
+
+    const handleDragStart = (e: DragStartEvent) => {
+        const id = String(e.active.id)
+        if (!id.startsWith('t-')) return
+        const task = tasks.find(t => t.id === Number(id.slice(2)))
+        if (task) dragOrigin.current = { taskId: task.id, milestoneId: task.milestone_id }
+    }
+
+    // Перенос задачи в другой этап «на лету», чтобы список перестроился под курсором.
+    const handleDragOver = (e: DragOverEvent) => {
+        const activeId = String(e.active.id)
+        if (!activeId.startsWith('t-') || !e.over) return
+        const taskId = Number(activeId.slice(2))
+        const target = containerOfOver(String(e.over.id))
+        if (target === undefined) return
+        setTasks(prev => {
+            const task = prev.find(t => t.id === taskId)
+            if (!task || task.milestone_id === target) return prev
+            return prev.map(t => (t.id === taskId ? { ...t, milestone_id: target } : t))
+        })
+    }
+
+    const persistTaskOrder = async (ordered: ProjectTask[], movedId: number, from: number | null) => {
+        const moved = ordered.find(t => t.id === movedId)
+        try {
+            if (moved && moved.milestone_id !== from) {
+                await apiUpdateTask(projectId, movedId, { milestone_id: moved.milestone_id })
+            }
+            await apiReorderTasks(projectId, ordered.map(t => t.id))
+        } catch {
+            load()
+        }
+    }
+
+    const handleDragEnd = (e: DragEndEvent) => {
+        const activeId = String(e.active.id)
+        const overId = e.over ? String(e.over.id) : null
+
+        if (activeId.startsWith('m-')) {
+            if (!overId || !overId.startsWith('m-') || overId === activeId) return
+            const from = milestones.findIndex(m => `m-${m.id}` === activeId)
+            const to = milestones.findIndex(m => `m-${m.id}` === overId)
+            if (from < 0 || to < 0) return
+            const next = arrayMove(milestones, from, to)
+            setMilestones(next)
+            apiReorderMilestones(projectId, next.map(m => m.id)).catch(load)
+            return
+        }
+
+        const origin = dragOrigin.current
+        dragOrigin.current = null
+        if (!activeId.startsWith('t-') || !origin) return
+
+        const taskId = Number(activeId.slice(2))
+        const task = tasks.find(t => t.id === taskId)
+        if (!task) return
+
+        // Порядок внутри группы: ставим на место задачи, над которой отпустили.
+        let group = tasksOf(task.milestone_id)
+        if (overId?.startsWith('t-') && overId !== activeId) {
+            const overTaskId = Number(overId.slice(2))
+            const from = group.findIndex(t => t.id === taskId)
+            const to = group.findIndex(t => t.id === overTaskId)
+            if (from >= 0 && to >= 0) group = arrayMove(group, from, to)
+        }
+
+        const groups: (number | null)[] = [...milestones.map(m => m.id), null]
+        const ordered: ProjectTask[] = groups.flatMap(g =>
+            g === task.milestone_id ? group : tasksOf(g)
+        )
+
+        const sameSpot =
+            origin.milestoneId === task.milestone_id &&
+            ordered.every((t, i) => t.id === sortedTasks[i]?.id)
+        if (sameSpot) return
+
+        setTasks(ordered.map((t, i) => ({ ...t, sort_order: i })))
+        void persistTaskOrder(ordered, taskId, origin.milestoneId)
+    }
+
+    const handleDragCancel = () => {
+        if (dragOrigin.current) {
+            const { taskId, milestoneId } = dragOrigin.current
+            setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, milestone_id: milestoneId } : t)))
+            dragOrigin.current = null
+        }
+    }
+
+    const renderTasks = (milestoneId: number | null) => {
+        const group = tasksOf(milestoneId)
+        return (
+            <>
+                <TaskGroup milestoneId={milestoneId} taskIds={group.map(t => `t-${t.id}`)}>
+                    {group.map(t => (
+                        <ProjectTaskRow
+                            key={t.id}
+                            task={t}
+                            milestones={milestones}
+                            onSave={saveTask}
+                            onDelete={setTaskToDelete}
+                        />
+                    ))}
+                </TaskGroup>
+                <AddTask onAdd={title => addTask(milestoneId, title)} />
+            </>
+        )
+    }
 
     if (loading) return <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" /></div>
     if (error) {
@@ -282,31 +444,46 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
                 </button>
             </div>
 
-            {milestones.map((m, i) => (
-                <div key={m.id} className="rounded-xl border border-sky-500/20 p-3 space-y-3">
-                    <MilestoneHeader
-                        milestone={m}
-                        tasks={tasksOf(m.id)}
-                        open={!collapsed.has(m.id)}
-                        onToggle={() => toggle(m.id)}
-                        isFirst={i === 0}
-                        isLast={i === milestones.length - 1}
-                        onSave={saveMilestone}
-                        onDelete={setMilestoneToDelete}
-                        onMove={moveMilestone}
-                        autoFocus={newMilestoneId === m.id}
-                    />
-                    {!collapsed.has(m.id) && renderTasks(tasksOf(m.id), m.id)}
-                </div>
-            ))}
+            <DndContext
+                sensors={sensors}
+                collisionDetection={collisionDetection}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+            >
+                <SortableContext items={milestones.map(m => `m-${m.id}`)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-4">
+                        {milestones.map(m => (
+                            <SortableMilestone key={m.id} id={m.id}>
+                                {handle => (
+                                    <>
+                                        <MilestoneHeader
+                                            milestone={m}
+                                            tasks={tasksOf(m.id)}
+                                            open={!collapsed.has(m.id)}
+                                            onToggle={() => toggle(m.id)}
+                                            handle={handle}
+                                            onSave={saveMilestone}
+                                            onDelete={setMilestoneToDelete}
+                                            autoFocus={newMilestoneId === m.id}
+                                        />
+                                        {!collapsed.has(m.id) && renderTasks(m.id)}
+                                    </>
+                                )}
+                            </SortableMilestone>
+                        ))}
+                    </div>
+                </SortableContext>
 
-            <div className="rounded-xl border border-sky-500/10 p-3 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-sm text-foreground">Без этапа</span>
-                    <ProgressBar tasks={unassigned} />
+                <div className="rounded-xl border border-sky-500/10 p-3 space-y-3 mt-4">
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-sm text-foreground">Без этапа</span>
+                        <ProgressBar tasks={unassigned} />
+                    </div>
+                    {renderTasks(null)}
                 </div>
-                {renderTasks(unassigned, null)}
-            </div>
+            </DndContext>
 
             <ConfirmModal
                 open={!!taskToDelete}
