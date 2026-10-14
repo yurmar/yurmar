@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ProjectFile;
+use App\Models\ProjectFolder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -31,7 +32,7 @@ class ProjectFolderTest extends TestCase
         $this->postJson("/api/notebook-projects/{$project->id}/folders", ['name' => 'Specs', 'parent_id' => $rootId])
             ->assertStatus(201)->assertJsonPath('parent_id', $rootId);
 
-        $this->getJson("/api/notebook-projects/{$project->id}")->assertOk()->assertJsonCount(2, 'folders');
+        $this->getJson("/api/notebook-projects/{$project->id}")->assertOk()->assertJsonCount(2 + count(ProjectFolder::SYSTEM), 'folders');
     }
 
     public function test_parent_must_belong_to_same_project(): void
@@ -100,8 +101,46 @@ class ProjectFolderTest extends TestCase
 
         Storage::disk(ProjectFile::DISK)->assertMissing($a);
         Storage::disk(ProjectFile::DISK)->assertMissing($b);
-        $this->assertSame(0, $project->folders()->count());
+        $this->assertSame(0, $project->folders()->whereNull('system_key')->count());
         $this->assertSame([$keepId], $project->files()->pluck('id')->all());
+    }
+
+    public function test_upload_goes_to_system_folder_by_type_and_system_folders_are_protected(): void
+    {
+        $user = User::factory()->create();
+        $project = $user->notebookProjects()->create(['name' => 'P']);
+        Sanctum::actingAs($user);
+
+        $folderId = $this->postJson("/api/notebook-projects/{$project->id}/files", [
+            'file' => UploadedFile::fake()->image('shot.png'),
+        ])->assertStatus(201)->json('folder_id');
+
+        $folder = ProjectFolder::find($folderId);
+        $this->assertSame('images', $folder->system_key);
+
+        $docFolder = $this->postJson("/api/notebook-projects/{$project->id}/files", [
+            'file' => UploadedFile::fake()->create('spec.pdf', 1, 'application/pdf'),
+        ])->assertStatus(201)->json('folder_id');
+        $this->assertSame('docs', ProjectFolder::find($docFolder)->system_key);
+
+        $this->deleteJson("/api/notebook-projects/{$project->id}/folders/{$folderId}")
+            ->assertStatus(422);
+        $this->putJson("/api/notebook-projects/{$project->id}/folders/{$folderId}", ['parent_id' => null])
+            ->assertStatus(422);
+    }
+
+    public function test_show_sorts_unsorted_files_into_system_folders(): void
+    {
+        $user = User::factory()->create();
+        $project = $user->notebookProjects()->create(['name' => 'P']);
+        $file = $project->files()->create([
+            'name' => 'old.png', 'original_name' => 'old.png', 'path' => 'x', 'mime_type' => 'image/png', 'size' => 1,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->getJson("/api/notebook-projects/{$project->id}")->assertOk();
+
+        $this->assertSame('images', ProjectFolder::find($file->fresh()->folder_id)->system_key);
     }
 
     public function test_foreign_user_is_blocked(): void

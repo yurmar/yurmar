@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NotebookProject;
 use App\Models\ProjectFile;
+use App\Models\ProjectFolder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -41,13 +42,20 @@ class ProjectFileController extends Controller
         $stored = Str::uuid()->toString().($extension !== '' ? '.'.preg_replace('/[^a-z0-9]/', '', $extension) : '');
         $path = $upload->storeAs('notebook-projects/'.$notebookProject->id, $stored, ProjectFile::DISK);
 
+        // Без явной папки файл сразу попадает в системную папку своего типа.
+        $folderId = $data['folder_id'] ?? null;
+        if ($folderId === null) {
+            $system = ProjectFolder::ensureSystem($notebookProject);
+            $folderId = $system[ProjectFile::kindFor($upload->getClientMimeType(), $originalName)];
+        }
+
         $file = $notebookProject->files()->create([
             'name' => $originalName,
             'original_name' => $originalName,
             'path' => $path,
             'mime_type' => $upload->getClientMimeType(),
             'size' => $upload->getSize(),
-            'folder_id' => $data['folder_id'] ?? null,
+            'folder_id' => $folderId,
             'description' => $data['description'] ?? null,
         ]);
 

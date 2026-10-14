@@ -21,6 +21,22 @@ class ProjectFile extends Model
         'exe', 'msi', 'bat', 'cmd', 'com', 'scr', 'dll', 'cgi', 'htaccess',
     ];
 
+    /** Определяет тип файла по mime/расширению: ключ системной папки. */
+    public static function kindFor(?string $mime, string $name): string
+    {
+        $mime = (string) $mime;
+        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+        return match (true) {
+            str_starts_with($mime, 'image/') => 'images',
+            str_starts_with($mime, 'video/') => 'video',
+            str_starts_with($mime, 'audio/') => 'audio',
+            in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz', 'tgz'], true) => 'archives',
+            in_array($ext, ['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'odt', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'], true) => 'docs',
+            default => 'other',
+        };
+    }
+
     protected $fillable = ['folder_id', 'name', 'original_name', 'path', 'mime_type', 'size', 'description'];
 
     protected $hidden = ['path'];

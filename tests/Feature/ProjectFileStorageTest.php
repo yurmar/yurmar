@@ -35,7 +35,7 @@ class ProjectFileStorageTest extends TestCase
             'file' => UploadedFile::fake()->create('Спецификация v2.pdf', 120, 'application/pdf'),
         ])->assertStatus(201)
             ->assertJsonPath('name', 'Спецификация v2.pdf')
-            ->assertJsonPath('folder_id', null)
+            ->assertJsonPath('name', 'Спецификация v2.pdf')
             ->assertJsonMissingPath('path');
 
         $file = ProjectFile::find($response->json('id'));

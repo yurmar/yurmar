@@ -57,6 +57,10 @@ class ProjectFolderController extends Controller
             }
         }
 
+        if ($projectFolder->system_key !== null && array_key_exists('parent_id', $data)) {
+            throw ValidationException::withMessages(['parent_id' => 'Системную папку перемещать нельзя.']);
+        }
+
         // Папку нельзя переместить в саму себя или в свою вложенную.
         if (! empty($data['parent_id']) && in_array($data['parent_id'], $projectFolder->descendantIds(), true)) {
             throw ValidationException::withMessages(['parent_id' => 'Нельзя переместить папку внутрь самой себя.']);
@@ -71,6 +75,10 @@ class ProjectFolderController extends Controller
     {
         $this->authorize('update', $notebookProject);
         abort_unless($projectFolder->notebook_project_id === $notebookProject->id, 404);
+
+        if ($projectFolder->system_key !== null) {
+            throw ValidationException::withMessages(['folder' => 'Системную папку удалить нельзя.']);
+        }
 
         // Файлы внутри (в том числе во вложенных папках) удаляются и с диска.
         // Строки удаляем явно, не полагаясь на каскад FK (не везде он создаётся одинаково).

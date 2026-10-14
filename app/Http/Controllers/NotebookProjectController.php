@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\NotebookProject;
+use App\Models\ProjectFolder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -41,6 +42,8 @@ class NotebookProjectController extends Controller
     public function show(Request $request, NotebookProject $notebookProject): JsonResponse
     {
         $this->authorize('view', $notebookProject);
+
+        ProjectFolder::ensureSystem($notebookProject);
 
         $notebookProject->loadCount([
             'tasks as tasks_count' => fn ($q) => $q->where('status', '!=', 'cancelled'),
