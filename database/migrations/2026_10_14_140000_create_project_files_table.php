@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('project_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('notebook_project_id')->constrained('notebook_projects')->cascadeOnDelete();
+            $table->unsignedBigInteger('notebook_project_id');
             $table->string('name');
             $table->string('original_name');
             $table->string('path', 512);
@@ -21,7 +21,10 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
 
-            $table->index('notebook_project_id');
+            // Имя FK задано явно: после переименования project_files → project_links
+            // прежнее project_files_notebook_project_id_foreign остаётся занятым (MySQL).
+            $table->foreign('notebook_project_id', 'fk_storage_files_project')
+                ->references('id')->on('notebook_projects')->cascadeOnDelete();
         });
     }
 
