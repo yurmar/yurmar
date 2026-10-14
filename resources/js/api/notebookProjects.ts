@@ -24,16 +24,25 @@ export interface ProjectTask {
 export interface ProjectFile {
     id: number
     notebook_project_id: number
+    folder_id: number | null
     name: string
     original_name: string
     mime_type: string | null
     size: number
-    category: LinkCategory | null
     description: string | null
+    created_at: string
+    updated_at: string
+}
+
+export interface ProjectFolder {
+    id: number
+    notebook_project_id: number
+    parent_id: number | null
+    name: string
     created_at: string
 }
 
-export type ProjectFilePatch = Partial<Pick<ProjectFile, 'name' | 'category' | 'description'>>
+export type ProjectFilePatch = Partial<Pick<ProjectFile, 'name' | 'folder_id' | 'description'>>
 
 export type LinkType = 'local_path' | 'url'
 export type LinkCategory = 'code' | 'design' | 'docs' | 'data' | 'other'
@@ -97,6 +106,7 @@ export interface NotebookProject {
     tasks?: ProjectTask[]
     links?: ProjectLink[]
     files?: ProjectFile[]
+    folders?: ProjectFolder[]
 }
 
 export type NotebookProjectPatch = Partial<
@@ -145,10 +155,12 @@ export const apiDeleteLink = (projectId: number, id: number) =>
 export const apiUploadFile = (
     projectId: number,
     file: File,
+    folderId: number | null,
     onProgress?: (percent: number) => void,
 ) => {
     const form = new FormData()
     form.append('file', file)
+    if (folderId !== null) form.append('folder_id', String(folderId))
     return client.post<ProjectFile>(`${planUrl(projectId)}/files`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: e => {
@@ -162,3 +174,10 @@ export const apiDeleteFile = (projectId: number, id: number) =>
     client.delete(`${planUrl(projectId)}/files/${id}`)
 export const apiDownloadFile = (projectId: number, id: number) =>
     client.get<Blob>(`${planUrl(projectId)}/files/${id}/download`, { responseType: 'blob' })
+
+export const apiCreateFolder = (projectId: number, data: { name: string; parent_id?: number | null }) =>
+    client.post<ProjectFolder>(`${planUrl(projectId)}/folders`, data)
+export const apiUpdateFolder = (projectId: number, id: number, data: { name?: string; parent_id?: number | null }) =>
+    client.put<ProjectFolder>(`${planUrl(projectId)}/folders/${id}`, data)
+export const apiDeleteFolder = (projectId: number, id: number) =>
+    client.delete(`${planUrl(projectId)}/folders/${id}`)
