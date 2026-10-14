@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\NotebookProject;
 use App\Models\Note;
+use App\Models\NotebookProject;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
