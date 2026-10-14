@@ -10,6 +10,7 @@ use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\ExampleFolderController;
 use App\Http\Controllers\HeroController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\NotebookProjectController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
@@ -96,6 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/notes/{note}', [NoteController::class, 'destroy']);
     Route::post('/notes/{note}/restore', [NoteController::class, 'restore']);
     Route::delete('/notes/{note}/force', [NoteController::class, 'forceDestroy']);
+
+    Route::get('/notebook-projects', [NotebookProjectController::class, 'index']);
+    Route::post('/notebook-projects', [NotebookProjectController::class, 'store']);
+    Route::get('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'show']);
+    Route::put('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'update']);
+    Route::delete('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр
