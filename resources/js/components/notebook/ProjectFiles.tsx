@@ -553,12 +553,27 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                                         isDrop ? 'border-sky-500 bg-sky-500/10' : 'border-sky-500/15 bg-sky-500/[0.04] hover:bg-sky-500/10'
                                     }`}
                                 >
-                                    <div className="flex items-start justify-between">
-                                        <Folder size={34} className="text-sky-500" fill="currentColor" fillOpacity={0.2} />
+                                    <div className="flex items-start justify-between gap-1">
+                                        {renamingId === folder.id ? (
+                                            <input
+                                                autoFocus
+                                                value={renameValue}
+                                                onClick={e => e.stopPropagation()}
+                                                onChange={e => setRenameValue(e.target.value)}
+                                                onKeyDown={e => onFolderKey(e, commitRename)}
+                                                onBlur={commitRename}
+                                                maxLength={255}
+                                                className="min-w-0 flex-1 input-field rounded-md px-2 py-1 text-base sm:text-sm"
+                                            />
+                                        ) : (
+                                            <div className="min-w-0 flex-1 font-medium text-foreground truncate pt-0.5" title={folder.name}>
+                                                {folder.name}
+                                            </div>
+                                        )}
                                         <button
                                             type="button"
                                             onClick={e => { e.stopPropagation(); setMenuId(menuId === folder.id ? null : folder.id) }}
-                                            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-sky-500/10"
+                                            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-sky-500/10 flex-shrink-0"
                                             aria-label="Действия с папкой"
                                         >
                                             <MoreVertical size={16} />
@@ -582,20 +597,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                                             </button>
                                         </div>
                                     )}
-                                    {renamingId === folder.id ? (
-                                        <input
-                                            autoFocus
-                                            value={renameValue}
-                                            onClick={e => e.stopPropagation()}
-                                            onChange={e => setRenameValue(e.target.value)}
-                                            onKeyDown={e => onFolderKey(e, commitRename)}
-                                            onBlur={commitRename}
-                                            maxLength={255}
-                                            className="mt-2 w-full input-field rounded-md px-2 py-1 text-base sm:text-sm"
-                                        />
-                                    ) : (
-                                        <div className="mt-2 font-medium text-foreground truncate">{folder.name}</div>
-                                    )}
+                                    <Folder size={34} className="text-sky-500 my-2" fill="currentColor" fillOpacity={0.2} />
                                     <div className="text-xs text-muted-foreground">
                                         {stats.count} {plural(stats.count, 'файл', 'файла', 'файлов')}
                                     </div>
