@@ -118,7 +118,7 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
     const handleSaved = (saved: NotebookProject) =>
         setProjects(prev => prev.map(p => (p.id === saved.id ? { ...p, ...saved } : p)))
 
-    const handleCounts = (id: number, counts: { tasks_count: number; done_tasks_count: number }) =>
+    const handleCounts = (id: number, counts: { tasks_count?: number; done_tasks_count?: number; files_count?: number }) =>
         setProjects(prev => prev.map(p => (p.id === id ? { ...p, ...counts } : p)))
 
     const handleTogglePin = async (p: NotebookProject) => {
