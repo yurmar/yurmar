@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GripVertical, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, GripVertical, Trash2 } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { ProjectMilestone, ProjectTask, ProjectTaskPatch } from '@/api/notebookProjects'
@@ -9,13 +9,16 @@ import { useAutosave } from './useAutosave'
 interface Props {
     task: ProjectTask
     milestones: ProjectMilestone[]
+    isFirst: boolean
+    isLast: boolean
     onSave: (id: number, patch: ProjectTaskPatch) => Promise<unknown>
     onDelete: (task: ProjectTask) => void
+    onMove: (task: ProjectTask, dir: -1 | 1) => void
 }
 
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
 
-export default function ProjectTaskRow({ task, milestones, onSave, onDelete }: Props) {
+export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSave, onDelete, onMove }: Props) {
     const [title, setTitle] = useState(task.title)
     const [dueDate, setDueDate] = useState(task.due_date ?? '')
     const { saveState, schedule, flush } = useAutosave<ProjectTaskPatch>({
@@ -73,6 +76,24 @@ export default function ProjectTaskRow({ task, milestones, onSave, onDelete }: P
                     } ${saveState === 'error' ? 'underline decoration-red-400' : ''}`}
                 />
                 <div className="flex items-center flex-shrink-0">
+                    <button
+                        type="button"
+                        disabled={isFirst}
+                        onClick={() => onMove(task, -1)}
+                        className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30"
+                        aria-label="Поднять задачу"
+                    >
+                        <ArrowUp size={14} />
+                    </button>
+                    <button
+                        type="button"
+                        disabled={isLast}
+                        onClick={() => onMove(task, 1)}
+                        className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30"
+                        aria-label="Опустить задачу"
+                    >
+                        <ArrowDown size={14} />
+                    </button>
                     <button
                         type="button"
                         onClick={() => onDelete(task)}

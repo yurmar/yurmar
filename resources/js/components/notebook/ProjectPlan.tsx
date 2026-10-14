@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronRight, GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
 import {
     closestCorners,
     CollisionDetection,
@@ -161,15 +161,18 @@ function SortableMilestone({
 }
 
 function MilestoneHeader({
-    milestone, tasks, open, onToggle, handle, onSave, onDelete, autoFocus,
+    milestone, tasks, open, onToggle, handle, isFirst, isLast, onSave, onDelete, onMove, autoFocus,
 }: {
     milestone: ProjectMilestone
     tasks: ProjectTask[]
     open: boolean
     onToggle: () => void
     handle: ReactNode
+    isFirst: boolean
+    isLast: boolean
     onSave: (id: number, patch: ProjectMilestonePatch) => Promise<unknown>
     onDelete: (m: ProjectMilestone) => void
+    onMove: (m: ProjectMilestone, dir: -1 | 1) => void
     autoFocus: boolean
 }) {
     const [title, setTitle] = useState(milestone.title)
@@ -194,6 +197,8 @@ function MilestoneHeader({
                     maxLength={255}
                     className="flex-1 min-w-0 bg-transparent font-semibold text-base sm:text-sm text-foreground focus:outline-none"
                 />
+                <button type="button" disabled={isFirst} onClick={() => onMove(milestone, -1)} className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30" aria-label="Поднять этап"><ArrowUp size={14} /></button>
+                <button type="button" disabled={isLast} onClick={() => onMove(milestone, 1)} className="p-1 text-muted-foreground hover:text-sky-500 disabled:opacity-30" aria-label="Опустить этап"><ArrowDown size={14} /></button>
                 <button type="button" onClick={() => onDelete(milestone)} className="p-1 text-muted-foreground hover:text-red-400" aria-label="Удалить этап"><Trash2 size={14} /></button>
             </div>
             <div className="flex flex-wrap items-center gap-2 pl-12">
@@ -300,6 +305,27 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
             return next
         })
 
+    const moveTask = async (task: ProjectTask, dir: -1 | 1) => {
+        const group = tasksOf(task.milestone_id)
+        const index = group.findIndex(t => t.id === task.id)
+        const target = index + dir
+        if (target < 0 || target >= group.length) return
+        const reordered = arrayMove(group, index, target)
+        const groups: (number | null)[] = [...milestones.map(m => m.id), null]
+        const ordered = groups.flatMap(g => (g === task.milestone_id ? reordered : tasksOf(g)))
+        setTasks(ordered.map((t, i) => ({ ...t, sort_order: i })))
+        apiReorderTasks(projectId, ordered.map(t => t.id)).catch(load)
+    }
+
+    const moveMilestone = (m: ProjectMilestone, dir: -1 | 1) => {
+        const index = milestones.findIndex(x => x.id === m.id)
+        const target = index + dir
+        if (target < 0 || target >= milestones.length) return
+        const next = arrayMove(milestones, index, target)
+        setMilestones(next)
+        apiReorderMilestones(projectId, next.map(x => x.id)).catch(load)
+    }
+
     // ---- drag and drop ----
 
     const containerOfOver = (overId: string): number | null | undefined => {
@@ -404,13 +430,16 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
         return (
             <>
                 <TaskGroup milestoneId={milestoneId} taskIds={group.map(t => `t-${t.id}`)}>
-                    {group.map(t => (
+                    {group.map((t, i) => (
                         <ProjectTaskRow
                             key={t.id}
                             task={t}
                             milestones={milestones}
+                            isFirst={i === 0}
+                            isLast={i === group.length - 1}
                             onSave={saveTask}
                             onDelete={setTaskToDelete}
+                            onMove={moveTask}
                         />
                     ))}
                 </TaskGroup>
@@ -454,7 +483,7 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
             >
                 <SortableContext items={milestones.map(m => `m-${m.id}`)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-4">
-                        {milestones.map(m => (
+                        {milestones.map((m, mi) => (
                             <SortableMilestone key={m.id} id={m.id}>
                                 {handle => (
                                     <>
@@ -464,8 +493,11 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
                                             open={!collapsed.has(m.id)}
                                             onToggle={() => toggle(m.id)}
                                             handle={handle}
+                                            isFirst={mi === 0}
+                                            isLast={mi === milestones.length - 1}
                                             onSave={saveMilestone}
                                             onDelete={setMilestoneToDelete}
+                                            onMove={moveMilestone}
                                             autoFocus={newMilestoneId === m.id}
                                         />
                                         {!collapsed.has(m.id) && renderTasks(m.id)}
