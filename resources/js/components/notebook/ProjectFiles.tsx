@@ -466,7 +466,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
 
             <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Мои файлы</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
                     {KINDS.map(k => {
                         const Icon = k.icon
                         const active = kindFilter === k.value
@@ -475,15 +475,15 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                                 key={k.value}
                                 type="button"
                                 onClick={() => setKindFilter(active ? null : k.value)}
-                                className={`flex flex-col items-start gap-2 rounded-xl p-3 text-left transition-colors border ${
+                                className={`flex flex-col items-center gap-1.5 rounded-xl p-2 text-center transition-colors border min-w-0 ${
                                     active ? 'border-sky-500/60 bg-sky-500/10' : 'border-transparent bg-sky-500/[0.05] hover:bg-sky-500/10'
                                 }`}
                             >
-                                <span className="block w-full text-sm font-medium text-foreground truncate">{k.label}</span>
-                                <span className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${k.tone}`}>
-                                    <Icon size={20} />
+                                <span className="block w-full text-[10px] sm:text-xs font-medium text-foreground leading-tight break-words">{k.label}</span>
+                                <span className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${k.tone}`}>
+                                    <Icon size={18} />
                                 </span>
-                                <span className="block text-xs text-muted-foreground whitespace-nowrap">
+                                <span className="block text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                                     {formatSize(kindStats.get(k.value) ?? 0)}
                                 </span>
                             </button>
