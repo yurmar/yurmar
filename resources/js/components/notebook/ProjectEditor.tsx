@@ -31,6 +31,8 @@ const TABS: { value: TabKey; label: string; count?: (p: NotebookProject) => numb
 /** Правая панель: редактирование выбранного проекта с автосохранением. */
 export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin, onDelete, onBack, autoFocusName }: Props) {
     const [tab, setTab] = useState<TabKey>('info')
+    // Растёт после импорта плана: перечитываем форму и ссылки.
+    const [importVersion, setImportVersion] = useState(0)
     // Вкладка монтируется при первом открытии и дальше остаётся в DOM скрытой — без повторной загрузки.
     const [visited, setVisited] = useState<Set<TabKey>>(new Set(['info']))
     const selectTab = (next: TabKey) => {
@@ -112,6 +114,7 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
             <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                 <div className={tab === 'info' ? '' : 'hidden'}>
                     <ProjectForm
+                        key={importVersion}
                         project={project}
                         errors={fieldErrors}
                         autoFocusName={autoFocusName}
@@ -123,6 +126,10 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                         <ProjectPlan
                             projectId={project.id}
                             onCounts={counts => onCounts(project.id, counts)}
+                            onImported={imported => {
+                                onSaved(imported)
+                                setImportVersion(v => v + 1)
+                            }}
                         />
                     </div>
                 )}
@@ -130,6 +137,7 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                     <div className={tab === 'links' ? '' : 'hidden'}>
                         <ProjectLinks
                             projectId={project.id}
+                            reloadToken={importVersion}
                             onCount={links_count => onCounts(project.id, { links_count })}
                         />
                     </div>

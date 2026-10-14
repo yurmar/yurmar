@@ -16,6 +16,8 @@ import { useAutosave } from './useAutosave'
 interface Props {
     projectId: number
     onCount: (count: number) => void
+    /** Меняется после импорта плана — ссылки нужно перечитать. */
+    reloadToken?: number
 }
 
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
@@ -144,7 +146,7 @@ function LinkRow({ file, onSave, onDelete }: {
     )
 }
 
-export default function ProjectLinks({ projectId, onCount }: Props) {
+export default function ProjectLinks({ projectId, onCount, reloadToken }: Props) {
     const [files, setLinks] = useState<ProjectLink[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
@@ -163,7 +165,7 @@ export default function ProjectLinks({ projectId, onCount }: Props) {
             .finally(() => setLoading(false))
     }
 
-    useEffect(load, [projectId])
+    useEffect(load, [projectId, reloadToken])
 
     useEffect(() => {
         if (!loading) onCount(files.length)

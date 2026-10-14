@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Check, ClipboardCopy, FileText, Loader2, X } from 'lucide-react'
 import {
+    apiImportInto,
     apiImportPreview,
+    apiImportPreviewInto,
     apiImportProject,
     ImportPreview,
     NotebookProject,
@@ -14,6 +16,8 @@ interface Props {
     open: boolean
     onClose: () => void
     onImported: (project: NotebookProject) => void
+    /** Если задан — план добавляется в этот проект, иначе создаётся новый. */
+    projectId?: number
 }
 
 // Единый источник промпта — docs/notebook-project-plan-import.md (первый блок ```text).
@@ -24,7 +28,7 @@ const errorMessage = (e: unknown) => {
     return data?.errors ? Object.values(data.errors)[0][0] : data?.message ?? 'Не удалось обработать файл'
 }
 
-export default function ImportProjectModal({ open, onClose, onImported }: Props) {
+export default function ImportProjectModal({ open, onClose, onImported, projectId }: Props) {
     const [markdown, setMarkdown] = useState('')
     const [fileName, setFileName] = useState('')
     const [preview, setPreview] = useState<ImportPreview | null>(null)
@@ -72,7 +76,9 @@ export default function ImportProjectModal({ open, onClose, onImported }: Props)
         setLoading(true)
         setError('')
         try {
-            const r = await apiImportPreview({ markdown })
+            const r = projectId !== undefined
+                ? await apiImportPreviewInto(projectId, markdown)
+                : await apiImportPreview({ markdown })
             setPreview(r.data)
         } catch (e) {
             setError(errorMessage(e))
@@ -85,7 +91,9 @@ export default function ImportProjectModal({ open, onClose, onImported }: Props)
         setLoading(true)
         setError('')
         try {
-            const r = await apiImportProject(markdown)
+            const r = projectId !== undefined
+                ? await apiImportInto(projectId, markdown)
+                : await apiImportProject(markdown)
             onImported({ ...r.data.project })
             onClose()
         } catch (e) {
@@ -119,7 +127,9 @@ export default function ImportProjectModal({ open, onClose, onImported }: Props)
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                     >
                         <div className="flex items-center justify-between p-5 pb-3 flex-shrink-0">
-                            <h3 className="text-lg font-semibold text-white">Импорт проекта из MD</h3>
+                            <h3 className="text-lg font-semibold text-white">
+                                {projectId !== undefined ? 'Импорт плана из MD' : 'Импорт проекта из MD'}
+                            </h3>
                             <button onClick={onClose} className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10" aria-label="Закрыть">
                                 <X size={18} />
                             </button>
@@ -190,6 +200,12 @@ export default function ImportProjectModal({ open, onClose, onImported }: Props)
                                 </>
                             ) : (
                                 <div className="space-y-4">
+                                    {projectId !== undefined && (
+                                        <p className="text-xs text-gray-400">
+                                            Этапы, задачи и ссылки будут добавлены к текущему плану. Свойства проекта из файла
+                                            заполнят только пустые поля, заполненное не изменится.
+                                        </p>
+                                    )}
                                     <div className="rounded-xl border border-sky-500/20 p-3">
                                         <div className="text-base font-semibold text-white">{preview.project.name}</div>
                                         <div className="mt-1 text-xs text-gray-400">

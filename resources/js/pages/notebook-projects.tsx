@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { BookOpen, FileUp, Loader2, Plus, Search, X } from 'lucide-react'
+import { BookOpen, Loader2, Plus, Search, X } from 'lucide-react'
 import { RootState } from '@/store'
 import {
     apiCreateNotebookProject,
@@ -14,7 +14,6 @@ import {
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import ProjectCard from '@/components/notebook/ProjectCard'
 import ProjectEditor from '@/components/notebook/ProjectEditor'
-import ImportProjectModal from '@/components/notebook/ImportProjectModal'
 import { PROJECT_UNTITLED, STATUS_OPTIONS, priorityMeta } from '@/components/notebook/projectMeta'
 
 type SortKey = 'updated' | 'deadline' | 'priority'
@@ -46,7 +45,6 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
     const [loading, setLoading] = useState(true)
     const [loadError, setLoadError] = useState(false)
     const [creating, setCreating] = useState(false)
-    const [importOpen, setImportOpen] = useState(false)
     const [justCreatedId, setJustCreatedId] = useState<number | null>(null)
     const [filters, setFilters] = useState<Filters>(loadFilters)
     const [toDelete, setToDelete] = useState<NotebookProject | null>(null)
@@ -117,12 +115,6 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
         }
     }
 
-    const handleImported = (project: NotebookProject) => {
-        // Счётчики задач и ссылок приходят со списком; перечитываем его целиком.
-        apiGetNotebookProjects().then(r => setProjects(r.data)).catch(() => setProjects(prev => [project, ...prev]))
-        select(project.id)
-    }
-
     const handleSaved = (saved: NotebookProject) =>
         setProjects(prev => prev.map(p => (p.id === saved.id ? { ...p, ...saved } : p)))
 
@@ -190,16 +182,7 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
                             </button>
                         </div>
 
-                        <div className="mb-3 flex-shrink-0 flex items-center justify-between gap-2">
-                            {switcher}
-                            <button
-                                type="button"
-                                onClick={() => setImportOpen(true)}
-                                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-sky-500/30 text-sky-500 text-sm font-medium whitespace-nowrap hover:bg-sky-500/10"
-                            >
-                                <FileUp size={14} /> Импорт из MD
-                            </button>
-                        </div>
+                        <div className="mb-3 flex-shrink-0">{switcher}</div>
 
                         <div className="relative mb-2 flex-shrink-0">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -299,12 +282,6 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
                     </div>
                 </div>
             </div>
-
-            <ImportProjectModal
-                open={importOpen}
-                onClose={() => setImportOpen(false)}
-                onImported={handleImported}
-            />
 
             <ConfirmModal
                 open={!!toDelete}

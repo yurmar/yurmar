@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, FileUp, GripVertical, Loader2, Plus, Trash2 } from 'lucide-react'
 import {
     closestCorners,
     CollisionDetection,
@@ -35,16 +35,20 @@ import {
     ProjectMilestone,
     ProjectMilestonePatch,
     ProjectTask,
+    NotebookProject,
     ProjectTaskPatch,
 } from '@/api/notebookProjects'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import ProjectTaskRow from './ProjectTaskRow'
+import ImportProjectModal from './ImportProjectModal'
 import { MILESTONE_STATUS_OPTIONS } from './projectMeta'
 import { useAutosave } from './useAutosave'
 
 interface Props {
     projectId: number
     onCounts: (counts: { tasks_count: number; done_tasks_count: number }) => void
+    /** Вызывается после импорта плана из MD: проект мог получить новые значения полей и ссылки. */
+    onImported: (project: NotebookProject) => void
 }
 
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
@@ -219,7 +223,7 @@ function MilestoneHeader({
     )
 }
 
-export default function ProjectPlan({ projectId, onCounts }: Props) {
+export default function ProjectPlan({ projectId, onCounts, onImported }: Props) {
     const [milestones, setMilestones] = useState<ProjectMilestone[]>([])
     const [tasks, setTasks] = useState<ProjectTask[]>([])
     const [loading, setLoading] = useState(true)
@@ -228,6 +232,7 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
     const [newMilestoneId, setNewMilestoneId] = useState<number | null>(null)
     const [milestoneToDelete, setMilestoneToDelete] = useState<ProjectMilestone | null>(null)
     const [taskToDelete, setTaskToDelete] = useState<ProjectTask | null>(null)
+    const [importOpen, setImportOpen] = useState(false)
     const dragOrigin = useRef<{ taskId: number; milestoneId: number | null } | null>(null)
 
     const sensors = useSensors(
@@ -464,13 +469,22 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
         <section className="space-y-4">
             <div className="flex items-center justify-between gap-3">
                 <h2 className="text-base font-semibold text-foreground">План</h2>
-                <button
-                    type="button"
-                    onClick={addMilestone}
-                    className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-sky-500 text-white text-sm font-medium whitespace-nowrap hover:bg-sky-600"
-                >
-                    <Plus size={14} /> Добавить этап
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setImportOpen(true)}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-sky-500/30 text-sky-500 text-sm font-medium whitespace-nowrap hover:bg-sky-500/10"
+                    >
+                        <FileUp size={14} /> Импорт из MD
+                    </button>
+                    <button
+                        type="button"
+                        onClick={addMilestone}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-sky-500 text-white text-sm font-medium whitespace-nowrap hover:bg-sky-600"
+                    >
+                        <Plus size={14} /> Добавить этап
+                    </button>
+                </div>
             </div>
 
             <DndContext
@@ -517,6 +531,12 @@ export default function ProjectPlan({ projectId, onCounts }: Props) {
                 </div>
             </DndContext>
 
+            <ImportProjectModal
+                open={importOpen}
+                projectId={projectId}
+                onClose={() => setImportOpen(false)}
+                onImported={project => { load(); onImported(project) }}
+            />
             <ConfirmModal
                 open={!!taskToDelete}
                 title="Удалить задачу?"

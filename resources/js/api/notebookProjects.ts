@@ -226,6 +226,15 @@ export const apiImportPreview = (source: { markdown?: string; file?: File }) => 
     return client.post<ImportPreview>('/notebook-projects/import', { markdown: source.markdown, dry_run: true })
 }
 
+export const apiImportPreviewInto = (projectId: number, markdown: string) =>
+    client.post<ImportPreview>(`${planUrl(projectId)}/import-plan`, { markdown, dry_run: true })
+
+export const apiImportInto = (projectId: number, markdown: string) =>
+    client.post<{ project: NotebookProject; filled: string[]; warnings: string[]; totals: ImportPreview['totals'] }>(
+        `${planUrl(projectId)}/import-plan`,
+        { markdown },
+    )
+
 export const apiImportProject = (markdown: string) =>
     client.post<{ project: NotebookProject; warnings: string[]; totals: ImportPreview['totals'] }>(
         '/notebook-projects/import',
