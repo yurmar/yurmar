@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AlertCircle, ArrowLeft, Check, Loader2, Pin, Trash2 } from 'lucide-react'
 import { apiUpdateNotebookProject, NotebookProject, NotebookProjectPatch } from '@/api/notebookProjects'
 import ProjectForm from './ProjectForm'
@@ -28,15 +29,41 @@ const TABS: { value: TabKey; label: string; count?: (p: NotebookProject) => numb
     { value: 'notes', label: 'Записи', count: p => p.notes_count },
 ]
 
+const TAB_STORAGE_KEY = 'notebook_project_tab'
+
+const isTabKey = (value: string | null): value is TabKey => TABS.some(t => t.value === value)
+
+function storedTab(): TabKey | null {
+    try {
+        const value = localStorage.getItem(TAB_STORAGE_KEY)
+        return isTabKey(value) ? value : null
+    } catch {
+        return null
+    }
+}
+
 /** Правая панель: редактирование выбранного проекта с автосохранением. */
 export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin, onDelete, onBack, autoFocusName }: Props) {
-    const [tab, setTab] = useState<TabKey>('info')
+    // Вкладка хранится в адресе (?section=) и в localStorage: переживает перезагрузку страницы.
+    const [params, setParams] = useSearchParams()
+    const [tab, setTab] = useState<TabKey>(() => {
+        const fromUrl = params.get('section')
+        return isTabKey(fromUrl) ? fromUrl : storedTab() ?? 'info'
+    })
     // Растёт после импорта плана: перечитываем форму и ссылки.
     const [importVersion, setImportVersion] = useState(0)
     // Вкладка монтируется при первом открытии и дальше остаётся в DOM скрытой — без повторной загрузки.
-    const [visited, setVisited] = useState<Set<TabKey>>(new Set(['info']))
+    const [visited, setVisited] = useState<Set<TabKey>>(() => new Set<TabKey>(['info', tab]))
     const selectTab = (next: TabKey) => {
         setTab(next)
+        try {
+            localStorage.setItem(TAB_STORAGE_KEY, next)
+        } catch { /* хранилище недоступно — вкладка просто не запоминается */ }
+        setParams(prev => {
+            const nextParams = new URLSearchParams(prev)
+            nextParams.set('section', next)
+            return nextParams
+        }, { replace: true })
         setVisited(prev => (prev.has(next) ? prev : new Set(prev).add(next)))
     }
 
