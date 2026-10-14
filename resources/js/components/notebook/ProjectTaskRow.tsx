@@ -16,6 +16,15 @@ interface Props {
     onMove: (task: ProjectTask, dir: -1 | 1) => void
 }
 
+// Подсветка карточки по статусу: к выполнению — нейтральная, в работе — синяя,
+// готово — зелёная, отменена — оранжевая.
+const STATUS_TONE: Record<ProjectTask['status'], string> = {
+    todo: 'border-sky-500/10 bg-sky-500/[0.03]',
+    in_progress: 'border-blue-500/40 bg-blue-500/15',
+    done: 'border-emerald-500/35 bg-emerald-500/15',
+    cancelled: 'border-orange-500/40 bg-orange-500/15',
+}
+
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
 
 export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSave, onDelete, onMove }: Props) {
@@ -42,7 +51,7 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
         <div
             ref={setNodeRef}
             style={{ transform: CSS.Transform.toString(transform), transition }}
-            className={`rounded-lg border border-sky-500/10 bg-sky-500/[0.03] p-2.5 ${
+            className={`rounded-lg border p-2.5 transition-colors ${STATUS_TONE[task.status]} ${
                 isDragging ? 'opacity-60 shadow-lg relative z-10' : ''
             }`}
         >
