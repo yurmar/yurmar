@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
 import { BookOpen, Loader2, Pin, Plus, Search, Trash, Trash2, X } from 'lucide-react'
@@ -8,6 +8,8 @@ import { apiGetNotes, apiCreateNote, apiUpdateNote, apiDeleteNote, Note } from '
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import NoteEditorPanel from '@/components/notebook/NoteEditorPanel'
 import TrashModal from '@/components/notebook/TrashModal'
+import NotebookTabs, { NotebookTab } from '@/components/notebook/NotebookTabs'
+import NotebookProjects from '@/pages/notebook-projects'
 
 const UNTITLED = 'Без названия'
 
@@ -30,7 +32,7 @@ function snippet(content: string | null) {
     return text.length > 0 ? text.slice(0, 80) : 'Новая заметка'
 }
 
-export default function Notebook() {
+function NotesView({ switcher }: { switcher: ReactNode }) {
     const isAuth = useSelector((s: RootState) => s.auth.isAuthenticated)
     const authLoading = useSelector((s: RootState) => s.auth.loading)
 
@@ -259,13 +261,14 @@ export default function Notebook() {
                                 <button
                                     type="button"
                                     onClick={handleCreate}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 transition-colors"
-                                    aria-label="Добавить запись"
+                                    className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-sky-500 text-white text-sm font-medium whitespace-nowrap hover:bg-sky-600 transition-colors"
                                 >
-                                    <Plus size={16} />
+                                    <Plus size={16} /> Добавить запись
                                 </button>
                             </div>
                         </div>
+
+                        <div className="mb-3 flex-shrink-0">{switcher}</div>
 
                         <div className="relative mb-3 flex-shrink-0">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -353,4 +356,13 @@ export default function Notebook() {
             />
         </div>
     )
+}
+
+export default function Notebook() {
+    const [params, setParams] = useSearchParams()
+    const tab: NotebookTab = params.get('tab') === 'projects' ? 'projects' : 'notes'
+    const changeTab = (next: NotebookTab) => setParams(next === 'projects' ? { tab: 'projects' } : {}, { replace: true })
+    const switcher = <NotebookTabs tab={tab} onChange={changeTab} />
+
+    return tab === 'projects' ? <NotebookProjects switcher={switcher} /> : <NotesView switcher={switcher} />
 }
