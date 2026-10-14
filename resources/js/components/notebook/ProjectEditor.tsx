@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AlertCircle, ArrowLeft, Check, Loader2, Pin, Trash2 } from 'lucide-react'
 import { apiUpdateNotebookProject, NotebookProject, NotebookProjectPatch } from '@/api/notebookProjects'
 import ProjectForm from './ProjectForm'
@@ -17,8 +18,26 @@ interface Props {
     autoFocusName?: boolean
 }
 
+type TabKey = 'info' | 'plan' | 'links' | 'files' | 'notes'
+
+const TABS: { value: TabKey; label: string; count?: (p: NotebookProject) => number | undefined }[] = [
+    { value: 'info', label: 'Общая информация' },
+    { value: 'plan', label: 'План', count: p => p.tasks_count },
+    { value: 'links', label: 'Ссылки', count: p => p.links_count },
+    { value: 'files', label: 'Файлы', count: p => p.files_count },
+    { value: 'notes', label: 'Записи', count: p => p.notes_count },
+]
+
 /** Правая панель: редактирование выбранного проекта с автосохранением. */
 export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin, onDelete, onBack, autoFocusName }: Props) {
+    const [tab, setTab] = useState<TabKey>('info')
+    // Вкладка монтируется при первом открытии и дальше остаётся в DOM скрытой — без повторной загрузки.
+    const [visited, setVisited] = useState<Set<TabKey>>(new Set(['info']))
+    const selectTab = (next: TabKey) => {
+        setTab(next)
+        setVisited(prev => (prev.has(next) ? prev : new Set(prev).add(next)))
+    }
+
     const { saveState, fieldErrors, schedule } = useAutosave<NotebookProjectPatch>({
         save: async patch => {
             const r = await apiUpdateNotebookProject(project.id, patch)
@@ -62,37 +81,75 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                 </button>
             </div>
 
+            <div className="flex-shrink-0 mb-4 overflow-x-auto custom-scroll" role="tablist">
+                <div className="inline-flex min-w-full gap-1 border-b border-sky-500/15">
+                    {TABS.map(t => {
+                        const count = t.count?.(project)
+                        const active = tab === t.value
+                        return (
+                            <button
+                                key={t.value}
+                                type="button"
+                                role="tab"
+                                aria-selected={active}
+                                onClick={() => selectTab(t.value)}
+                                className={`px-3 py-2 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                                    active
+                                        ? 'border-sky-500 text-sky-500'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                {t.label}
+                                {count !== undefined && count > 0 && (
+                                    <span className="ml-1.5 text-xs text-muted-foreground">{count}</span>
+                                )}
+                            </button>
+                        )
+                    })}
+                </div>
+            </div>
+
             <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                <ProjectForm
-                    project={project}
-                    errors={fieldErrors}
-                    autoFocusName={autoFocusName}
-                    onChange={schedule}
-                />
-                <div className="mt-8 pt-6 border-t border-sky-500/15">
-                    <ProjectPlan
-                        projectId={project.id}
-                        onCounts={counts => onCounts(project.id, counts)}
+                <div className={tab === 'info' ? '' : 'hidden'}>
+                    <ProjectForm
+                        project={project}
+                        errors={fieldErrors}
+                        autoFocusName={autoFocusName}
+                        onChange={schedule}
                     />
                 </div>
-                <div className="mt-8 pt-6 border-t border-sky-500/15">
-                    <ProjectLinks
-                        projectId={project.id}
-                        onCount={links_count => onCounts(project.id, { links_count })}
-                    />
-                </div>
-                <div className="mt-8 pt-6 border-t border-sky-500/15">
-                    <ProjectFiles
-                        projectId={project.id}
-                        onCount={files_count => onCounts(project.id, { files_count })}
-                    />
-                </div>
-                <div className="mt-8 pt-6 border-t border-sky-500/15">
-                    <ProjectNotes
-                        projectId={project.id}
-                        onCount={notes_count => onCounts(project.id, { notes_count })}
-                    />
-                </div>
+                {visited.has('plan') && (
+                    <div className={tab === 'plan' ? '' : 'hidden'}>
+                        <ProjectPlan
+                            projectId={project.id}
+                            onCounts={counts => onCounts(project.id, counts)}
+                        />
+                    </div>
+                )}
+                {visited.has('links') && (
+                    <div className={tab === 'links' ? '' : 'hidden'}>
+                        <ProjectLinks
+                            projectId={project.id}
+                            onCount={links_count => onCounts(project.id, { links_count })}
+                        />
+                    </div>
+                )}
+                {visited.has('files') && (
+                    <div className={tab === 'files' ? '' : 'hidden'}>
+                        <ProjectFiles
+                            projectId={project.id}
+                            onCount={files_count => onCounts(project.id, { files_count })}
+                        />
+                    </div>
+                )}
+                {visited.has('notes') && (
+                    <div className={tab === 'notes' ? '' : 'hidden'}>
+                        <ProjectNotes
+                            projectId={project.id}
+                            onCount={notes_count => onCounts(project.id, { notes_count })}
+                        />
+                    </div>
+                )}
             </div>
         </>
     )
