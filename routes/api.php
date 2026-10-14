@@ -13,6 +13,8 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\NotebookProjectController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectMilestoneController;
+use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\TodoDayController;
@@ -103,6 +105,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'show']);
     Route::put('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'update']);
     Route::delete('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'destroy']);
+
+    Route::post('/notebook-projects/{notebookProject}/milestones', [ProjectMilestoneController::class, 'store']);
+    Route::post('/notebook-projects/{notebookProject}/milestones/reorder', [ProjectMilestoneController::class, 'reorder']);
+    Route::put('/notebook-projects/{notebookProject}/milestones/{projectMilestone}', [ProjectMilestoneController::class, 'update']);
+    Route::delete('/notebook-projects/{notebookProject}/milestones/{projectMilestone}', [ProjectMilestoneController::class, 'destroy']);
+
+    Route::post('/notebook-projects/{notebookProject}/tasks', [ProjectTaskController::class, 'store']);
+    Route::post('/notebook-projects/{notebookProject}/tasks/reorder', [ProjectTaskController::class, 'reorder']);
+    Route::put('/notebook-projects/{notebookProject}/tasks/{projectTask}', [ProjectTaskController::class, 'update']);
+    Route::delete('/notebook-projects/{notebookProject}/tasks/{projectTask}', [ProjectTaskController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр
