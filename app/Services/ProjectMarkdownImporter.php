@@ -249,6 +249,82 @@ class ProjectMarkdownImporter
         });
     }
 
+    /**
+     * Добавляет этапы, задачи и ссылки в существующий проект. Свойства проекта из файла
+     * заполняют только пустые поля, уже заполненное не перезаписывается.
+     *
+     * @return string[] какие поля проекта были заполнены
+     */
+    public function importInto(NotebookProject $project, array $parsed): array
+    {
+        return DB::transaction(function () use ($project, $parsed) {
+            $filled = [];
+            $props = $parsed['project'];
+            $update = [];
+
+            $fileHasName = $props['name'] !== 'Импортированный проект';
+            if ($fileHasName && (trim((string) $project->name) === '' || $project->name === NotebookProject::UNTITLED)) {
+                $update['name'] = $props['name'];
+            }
+            foreach (['description', 'local_path', 'repository_url', 'start_date', 'deadline'] as $field) {
+                if (($project->{$field} === null || $project->{$field} === '') && ! empty($props[$field])) {
+                    $update[$field] = $props[$field];
+                }
+            }
+            if (empty($project->technologies) && ! empty($props['technologies'])) {
+                $update['technologies'] = $props['technologies'];
+            }
+            // Статус и приоритет меняем, только пока они стоят по умолчанию.
+            if ($project->status === 'idea' && $props['status'] !== 'idea') {
+                $update['status'] = $props['status'];
+            }
+            if ($project->priority === 'normal' && $props['priority'] !== 'normal') {
+                $update['priority'] = $props['priority'];
+            }
+            // Дедлайн не должен оказаться раньше начала после частичного заполнения.
+            $start = $update['start_date'] ?? $project->start_date?->toDateString();
+            $deadline = $update['deadline'] ?? $project->deadline?->toDateString();
+            if ($start && $deadline && $deadline < $start) {
+                unset($update['deadline']);
+            }
+
+            if ($update) {
+                $project->update($update);
+                $filled = array_keys($update);
+            }
+
+            $milestoneOrder = ((int) $project->milestones()->max('sort_order')) + 1;
+            $taskOrder = ((int) $project->tasks()->max('sort_order')) + 1;
+
+            foreach ($parsed['milestones'] as $data) {
+                $tasks = $data['tasks'];
+                unset($data['tasks']);
+                $milestone = $project->milestones()->create($data + ['sort_order' => $milestoneOrder++]);
+                foreach ($tasks as $task) {
+                    $this->createTask($project, $milestone, $task, $taskOrder++);
+                }
+            }
+
+            foreach ($parsed['unassigned'] as $task) {
+                $this->createTask($project, null, $task, $taskOrder++);
+            }
+
+            $existing = $project->links()->get(['url', 'path']);
+            $linkOrder = ((int) $project->links()->max('sort_order')) + 1;
+            foreach ($parsed['links'] as $link) {
+                $duplicate = $existing->contains(
+                    fn ($e) => ($link['url'] !== null && $e->url === $link['url'])
+                        || ($link['path'] !== null && $e->path === $link['path'])
+                );
+                if (! $duplicate) {
+                    $project->links()->create($link + ['sort_order' => $linkOrder++]);
+                }
+            }
+
+            return $filled;
+        });
+    }
+
     private function createTask(NotebookProject $project, ?ProjectMilestone $milestone, array $task, int $order): ProjectTask
     {
         return $project->tasks()->create($task + [

@@ -183,4 +183,49 @@ MD;
             ->assertJsonPath('totals.tasks', 4)
             ->assertJsonPath('totals.links', 1);
     }
+
+    public function test_import_into_existing_project_appends_and_fills_only_empty_fields(): void
+    {
+        $user = User::factory()->create();
+        $project = $user->notebookProjects()->create([
+            'name' => 'Мой проект', 'description' => 'Своё описание',
+        ]);
+        $existing = $project->milestones()->create(['title' => 'Старый этап', 'sort_order' => 0]);
+        $project->tasks()->create(['title' => 'Старая задача', 'milestone_id' => $existing->id, 'sort_order' => 0]);
+        $project->links()->create(['name' => 'Репо', 'type' => 'url', 'url' => 'https://github.com/user/site', 'sort_order' => 0]);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson("/api/notebook-projects/{$project->id}/import-plan", ['markdown' => self::SAMPLE])
+            ->assertStatus(201);
+
+        $project->refresh();
+        // Заполненное не перезаписано, пустое — заполнено.
+        $this->assertSame('Мой проект', $project->name);
+        $this->assertSame('Своё описание', $project->description);
+        $this->assertSame('/Users/me/site', $project->local_path);
+        $this->assertSame('high', $project->priority);
+        $this->assertContains('local_path', $response->json('filled'));
+        $this->assertNotContains('description', $response->json('filled'));
+
+        // Этапы и задачи добавлены после существующих.
+        $this->assertSame(['Старый этап', 'Этап 1. Каркас', 'Этап 2. Контент'], $project->milestones()->pluck('title')->all());
+        $this->assertSame(6, $project->tasks()->count());
+        // Ссылка на репозиторий уже была — дубль не создаётся.
+        $this->assertSame(3, $project->links()->count());
+    }
+
+    public function test_import_into_requires_ownership_and_supports_dry_run(): void
+    {
+        $owner = User::factory()->create();
+        $project = $owner->notebookProjects()->create(['name' => 'P']);
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->postJson("/api/notebook-projects/{$project->id}/import-plan", ['markdown' => self::SAMPLE])
+            ->assertStatus(403);
+
+        Sanctum::actingAs($owner);
+        $this->postJson("/api/notebook-projects/{$project->id}/import-plan", ['markdown' => self::SAMPLE, 'dry_run' => true])
+            ->assertOk()->assertJsonPath('totals.tasks', 5);
+        $this->assertSame(0, $project->tasks()->count());
+    }
 }

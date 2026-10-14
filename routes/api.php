@@ -112,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'update']);
     Route::delete('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'destroy']);
 
+    Route::post('/notebook-projects/{notebookProject}/import-plan', [NotebookProjectImportController::class, 'storeInto']);
     Route::post('/notebook-projects/{notebookProject}/milestones', [ProjectMilestoneController::class, 'store']);
     Route::post('/notebook-projects/{notebookProject}/milestones/reorder', [ProjectMilestoneController::class, 'reorder']);
     Route::put('/notebook-projects/{notebookProject}/milestones/{projectMilestone}', [ProjectMilestoneController::class, 'update']);

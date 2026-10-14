@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NotebookProject;
 use App\Services\ProjectMarkdownImporter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,6 +11,44 @@ use Illuminate\Validation\ValidationException;
 class NotebookProjectImportController extends Controller
 {
     public function store(Request $request, ProjectMarkdownImporter $importer): JsonResponse
+    {
+        $parsed = $this->parsed($request, $importer);
+
+        if ($request->boolean('dry_run')) {
+            return response()->json($parsed);
+        }
+
+        $project = $importer->import($request->user(), $parsed);
+
+        return response()->json([
+            'project' => $project,
+            'warnings' => $parsed['warnings'],
+            'totals' => $parsed['totals'],
+        ], 201);
+    }
+
+    /** Импорт плана в существующий проект: добавляет этапы, задачи и ссылки. */
+    public function storeInto(Request $request, NotebookProject $notebookProject, ProjectMarkdownImporter $importer): JsonResponse
+    {
+        $this->authorize('update', $notebookProject);
+
+        $parsed = $this->parsed($request, $importer);
+
+        if ($request->boolean('dry_run')) {
+            return response()->json($parsed);
+        }
+
+        $filled = $importer->importInto($notebookProject, $parsed);
+
+        return response()->json([
+            'project' => $notebookProject->fresh(),
+            'filled' => $filled,
+            'warnings' => $parsed['warnings'],
+            'totals' => $parsed['totals'],
+        ], 201);
+    }
+
+    private function parsed(Request $request, ProjectMarkdownImporter $importer): array
     {
         $data = $request->validate([
             'markdown' => 'required_without:file|nullable|string|max:500000',
@@ -37,16 +76,6 @@ class NotebookProjectImportController extends Controller
             ]);
         }
 
-        if ($request->boolean('dry_run')) {
-            return response()->json($parsed);
-        }
-
-        $project = $importer->import($request->user(), $parsed);
-
-        return response()->json([
-            'project' => $project,
-            'warnings' => $parsed['warnings'],
-            'totals' => $parsed['totals'],
-        ], 201);
+        return $parsed;
     }
 }
