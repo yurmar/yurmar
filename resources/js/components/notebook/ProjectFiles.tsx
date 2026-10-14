@@ -77,22 +77,48 @@ function plural(n: number, one: string, few: string, many: string) {
     return many
 }
 
-function FileDetails({ file, folders, path, projectId, onSave, onMove, onDelete, onClose }: {
+function FileDetails({ file, folderOptions, path, projectId, onSave, onMove, onDelete, onClose, onCreateFolder }: {
     file: ProjectFile
-    folders: ProjectFolder[]
+    folderOptions: { id: number; label: string }[]
     path: string
     projectId: number
     onSave: (id: number, patch: ProjectFilePatch) => Promise<unknown>
     onMove: (file: ProjectFile, folderId: number | null) => void
     onDelete: (file: ProjectFile) => void
     onClose: () => void
+    onCreateFolder: () => void
 }) {
     const [name, setName] = useState(file.name)
     const [description, setDescription] = useState(file.description ?? '')
     const [downloading, setDownloading] = useState(false)
+    const [preview, setPreview] = useState<{ url: string; kind: 'image' | 'pdf' } | null>(null)
+    const [previewLoading, setPreviewLoading] = useState(false)
     const { saveState, schedule } = useAutosave<ProjectFilePatch>({ save: patch => onSave(file.id, patch) })
     const meta = kindMeta(kindOf(file))
     const Icon = meta.icon
+
+    // Превью: картинки и PDF до 10 МБ подгружаем через авторизованный запрос.
+    useEffect(() => {
+        const mime = file.mime_type ?? ''
+        const isImage = mime.startsWith('image/') && mime !== 'image/svg+xml'
+        const isPdf = mime === 'application/pdf'
+        if ((!isImage && !isPdf) || file.size > 10 * 1024 * 1024) return
+        let objectUrl: string | null = null
+        let cancelled = false
+        setPreviewLoading(true)
+        apiDownloadFile(projectId, file.id)
+            .then(r => {
+                if (cancelled) return
+                objectUrl = URL.createObjectURL(r.data)
+                setPreview({ url: objectUrl, kind: isImage ? 'image' : 'pdf' })
+            })
+            .catch(() => {})
+            .finally(() => { if (!cancelled) setPreviewLoading(false) })
+        return () => {
+            cancelled = true
+            if (objectUrl) URL.revokeObjectURL(objectUrl)
+        }
+    }, [file.id, file.mime_type, file.size, projectId])
 
     const download = async () => {
         setDownloading(true)
@@ -121,9 +147,23 @@ function FileDetails({ file, folders, path, projectId, onSave, onMove, onDelete,
                 </button>
             </div>
             <div className="flex flex-col items-center text-center gap-2 py-2">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${meta.tone}`}>
-                    <Icon size={30} />
-                </div>
+                {preview?.kind === 'image' ? (
+                    <img
+                        src={preview.url}
+                        alt={file.name}
+                        className="max-h-44 w-full rounded-xl object-contain bg-black/[0.04] dark:bg-white/[0.05]"
+                    />
+                ) : preview?.kind === 'pdf' ? (
+                    <iframe
+                        src={preview.url}
+                        title={file.name}
+                        className="h-56 w-full rounded-xl border border-sky-500/15 bg-white"
+                    />
+                ) : (
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${meta.tone}`}>
+                        {previewLoading ? <Loader2 size={26} className="animate-spin" /> : <Icon size={30} />}
+                    </div>
+                )}
                 <input
                     value={name}
                     onChange={e => { setName(e.target.value); schedule({ name: e.target.value }) }}
@@ -154,14 +194,23 @@ function FileDetails({ file, folders, path, projectId, onSave, onMove, onDelete,
                 <div>
                     <dt className="text-xs text-muted-foreground mb-1">Переместить в папку</dt>
                     <dd>
-                        <select
-                            value={file.folder_id ?? ''}
-                            onChange={e => onMove(file, e.target.value ? Number(e.target.value) : null)}
-                            className="w-full input-field rounded-md px-2 py-1.5 text-base sm:text-sm"
-                        >
-                            <option value="">Корень хранилища</option>
-                            {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                        </select>
+                        {folderOptions.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                                Папок пока нет.{' '}
+                                <button type="button" onClick={onCreateFolder} className="text-sky-400 hover:text-sky-300">
+                                    Создать папку
+                                </button>
+                            </p>
+                        ) : (
+                            <select
+                                value={file.folder_id ?? ''}
+                                onChange={e => onMove(file, e.target.value ? Number(e.target.value) : null)}
+                                className="w-full input-field rounded-md px-2 py-1.5 text-base sm:text-sm"
+                            >
+                                <option value="">Корень хранилища</option>
+                                {folderOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                            </select>
+                        )}
                     </dd>
                 </div>
             </dl>
@@ -273,6 +322,14 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
             return kindFilter ? true : f.folder_id === currentFolder
         })
     }, [files, query, kindFilter, currentFolder])
+
+    const folderOptions = useMemo(
+        () => folders
+            .map(f => ({ id: f.id, label: pathOf(f.id).map(x => x.name).join(' / ') }))
+            .sort((a, b) => a.label.localeCompare(b.label, 'ru')),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [folders],
+    )
 
     const subfolders = folders.filter(f => f.parent_id === currentFolder)
     const selected = files.find(f => f.id === selectedId) ?? null
@@ -719,7 +776,8 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                         <FileDetails
                             key={selected.id}
                             file={selected}
-                            folders={folders}
+                            folderOptions={folderOptions}
+                            onCreateFolder={() => { setCurrentFolder(selected.folder_id); setCreatingFolder(true) }}
                             path={locationOf(selected)}
                             projectId={projectId}
                             onSave={saveFile}
