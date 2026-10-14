@@ -30,12 +30,23 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
     const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
     // Поле описания растёт вместе с текстом, чтобы он помещался целиком.
-    useLayoutEffect(() => {
+    const fitDescription = () => {
         const el = descriptionRef.current
-        if (!el) return
+        if (!el || el.offsetParent === null) return // вкладка скрыта: замеры нулевые
         el.style.height = 'auto'
         el.style.height = `${el.scrollHeight}px`
-    }, [form.description])
+    }
+
+    useLayoutEffect(fitDescription, [form.description])
+
+    // Вкладка «Общая информация» монтируется скрытой — пересчитываем при показе и смене ширины.
+    useEffect(() => {
+        const el = descriptionRef.current
+        if (!el || typeof ResizeObserver === 'undefined') return
+        const observer = new ResizeObserver(fitDescription)
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [])
 
     useEffect(() => {
         if (autoFocusName) nameRef.current?.focus()
