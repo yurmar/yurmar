@@ -7,9 +7,10 @@ interface Props {
     onOpen: (project: NotebookProject) => void
     onTogglePin: (project: NotebookProject) => void
     onDelete: (project: NotebookProject) => void
+    active?: boolean
 }
 
-export default function ProjectCard({ project, onOpen, onTogglePin, onDelete }: Props) {
+export default function ProjectCard({ project, onOpen, onTogglePin, onDelete, active }: Props) {
     const status = statusMeta(project.status)
     const progress =
         project.tasks_count && project.tasks_count > 0
@@ -22,7 +23,9 @@ export default function ProjectCard({ project, onOpen, onTogglePin, onDelete }: 
             tabIndex={0}
             onClick={() => onOpen(project)}
             onKeyDown={e => { if (e.key === 'Enter') onOpen(project) }}
-            className="group w-full text-left card-block rounded-xl p-4 cursor-pointer"
+            className={`group w-full text-left card-block rounded-xl p-3.5 cursor-pointer transition-colors ${
+                active ? 'border-sky-500/50 bg-sky-500/5' : ''
+            }`}
         >
             <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
