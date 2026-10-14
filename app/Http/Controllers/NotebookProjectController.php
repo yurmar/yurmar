@@ -12,6 +12,10 @@ class NotebookProjectController extends Controller
     public function index(Request $request): JsonResponse
     {
         $projects = $request->user()->notebookProjects()
+            ->withCount([
+                'tasks as tasks_count' => fn ($q) => $q->where('status', '!=', 'cancelled'),
+                'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
+            ])
             ->orderByDesc('is_pinned')
             ->orderByDesc('updated_at')
             ->get();
@@ -35,6 +39,18 @@ class NotebookProjectController extends Controller
     public function show(Request $request, NotebookProject $notebookProject): JsonResponse
     {
         $this->authorize('view', $notebookProject);
+
+        $notebookProject->loadCount([
+            'tasks as tasks_count' => fn ($q) => $q->where('status', '!=', 'cancelled'),
+            'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
+        ]);
+        $notebookProject->load([
+            'milestones' => fn ($q) => $q->withCount([
+                'tasks as tasks_count' => fn ($t) => $t->where('status', '!=', 'cancelled'),
+                'tasks as done_tasks_count' => fn ($t) => $t->where('status', 'done'),
+            ]),
+            'tasks',
+        ]);
 
         return response()->json($notebookProject);
     }
