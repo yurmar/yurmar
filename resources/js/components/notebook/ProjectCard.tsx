@@ -1,4 +1,4 @@
-import { Calendar, Pencil, Pin, Trash2 } from 'lucide-react'
+import { Calendar, Paperclip, Pencil, Pin, Trash2 } from 'lucide-react'
 import type { NotebookProject } from '@/api/notebookProjects'
 import { PROJECT_UNTITLED, formatProjectDate, priorityMeta, statusMeta } from './projectMeta'
 
@@ -92,6 +92,11 @@ export default function ProjectCard({ project, onOpen, onTogglePin, onDelete, ac
                 {project.deadline && (
                     <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <Calendar size={12} /> до {formatProjectDate(project.deadline)}
+                    </span>
+                )}
+                {project.files_count !== undefined && (
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <Paperclip size={12} /> {project.files_count}
                     </span>
                 )}
                 <span className="whitespace-nowrap">Изменён {formatProjectDate(project.updated_at)}</span>
