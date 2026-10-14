@@ -62,4 +62,9 @@ class NotebookProject extends Model
     {
         return $this->hasMany(ProjectLink::class)->orderBy('sort_order')->orderBy('id');
     }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(ProjectFile::class)->orderBy('id');
+    }
 }
