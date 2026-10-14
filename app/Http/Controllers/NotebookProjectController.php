@@ -15,7 +15,7 @@ class NotebookProjectController extends Controller
             ->withCount([
                 'tasks as tasks_count' => fn ($q) => $q->where('status', '!=', 'cancelled'),
                 'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
-                'files',
+                'links',
             ])
             ->orderByDesc('is_pinned')
             ->orderByDesc('updated_at')
@@ -44,7 +44,7 @@ class NotebookProjectController extends Controller
         $notebookProject->loadCount([
             'tasks as tasks_count' => fn ($q) => $q->where('status', '!=', 'cancelled'),
             'tasks as done_tasks_count' => fn ($q) => $q->where('status', 'done'),
-            'files',
+            'links',
         ]);
         $notebookProject->load([
             'milestones' => fn ($q) => $q->withCount([
@@ -52,7 +52,7 @@ class NotebookProjectController extends Controller
                 'tasks as done_tasks_count' => fn ($t) => $t->where('status', 'done'),
             ]),
             'tasks',
-            'files',
+            'links',
         ]);
 
         return response()->json($notebookProject);

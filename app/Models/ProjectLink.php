@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProjectFile extends Model
+class ProjectLink extends Model
 {
     // 'upload' зарезервирован под будущую серверную загрузку и пока не принимается.
     public const TYPES = ['local_path', 'url'];

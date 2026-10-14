@@ -2,13 +2,13 @@ import { AlertCircle, ArrowLeft, Check, Loader2, Pin, Trash2 } from 'lucide-reac
 import { apiUpdateNotebookProject, NotebookProject, NotebookProjectPatch } from '@/api/notebookProjects'
 import ProjectForm from './ProjectForm'
 import ProjectPlan from './ProjectPlan'
-import ProjectFiles from './ProjectFiles'
+import ProjectLinks from './ProjectLinks'
 import { useAutosave } from './useAutosave'
 
 interface Props {
     project: NotebookProject
     onSaved: (project: NotebookProject) => void
-    onCounts: (id: number, counts: { tasks_count?: number; done_tasks_count?: number; files_count?: number }) => void
+    onCounts: (id: number, counts: { tasks_count?: number; done_tasks_count?: number; links_count?: number; files_count?: number }) => void
     onTogglePin: (project: NotebookProject) => void
     onDelete: (project: NotebookProject) => void
     onBack: () => void
@@ -74,9 +74,9 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                     />
                 </div>
                 <div className="mt-8 pt-6 border-t border-sky-500/15">
-                    <ProjectFiles
+                    <ProjectLinks
                         projectId={project.id}
-                        onCount={files_count => onCounts(project.id, { files_count })}
+                        onCount={links_count => onCounts(project.id, { links_count })}
                     />
                 </div>
             </div>

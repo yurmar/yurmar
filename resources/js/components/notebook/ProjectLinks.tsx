@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Check, Copy, ExternalLink, Loader2, Plus, Trash2 } from 'lucide-react'
 import {
-    apiCreateFile,
-    apiDeleteFile,
+    apiCreateLink,
+    apiDeleteLink,
     apiGetNotebookProject,
-    apiUpdateFile,
-    FileType,
-    ProjectFile,
-    ProjectFilePatch,
+    apiUpdateLink,
+    LinkType,
+    ProjectLink,
+    ProjectLinkPatch,
 } from '@/api/notebookProjects'
 import ConfirmModal from '@/components/ui/ConfirmModal'
-import { FILE_CATEGORY_OPTIONS, FILE_TYPE_OPTIONS } from './projectMeta'
+import { MATERIAL_CATEGORY_OPTIONS, LINK_TYPE_OPTIONS } from './projectMeta'
 import { useAutosave } from './useAutosave'
 
 interface Props {
@@ -22,7 +22,7 @@ const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
 
 const isHttp = (value: string | null) => !!value && /^https?:\/\//i.test(value)
 
-function guessName(type: FileType, value: string) {
+function guessName(type: LinkType, value: string) {
     const v = value.trim()
     if (type === 'url') {
         try {
@@ -35,17 +35,17 @@ function guessName(type: FileType, value: string) {
     return parts[parts.length - 1] || v
 }
 
-function FileRow({ file, onSave, onDelete }: {
-    file: ProjectFile
-    onSave: (id: number, patch: ProjectFilePatch) => Promise<unknown>
-    onDelete: (file: ProjectFile) => void
+function LinkRow({ file, onSave, onDelete }: {
+    file: ProjectLink
+    onSave: (id: number, patch: ProjectLinkPatch) => Promise<unknown>
+    onDelete: (file: ProjectLink) => void
 }) {
     const [name, setName] = useState(file.name)
     const [value, setValue] = useState((file.type === 'url' ? file.url : file.path) ?? '')
     const [description, setDescription] = useState(file.description ?? '')
     const [tags, setTags] = useState((file.tags ?? []).join(', '))
     const [copied, setCopied] = useState(false)
-    const { fieldErrors, saveState, schedule, flush } = useAutosave<ProjectFilePatch>({
+    const { fieldErrors, saveState, schedule, flush } = useAutosave<ProjectLinkPatch>({
         save: patch => onSave(file.id, patch),
     })
 
@@ -60,7 +60,7 @@ function FileRow({ file, onSave, onDelete }: {
         } catch { /* буфер обмена недоступен */ }
     }
 
-    const changeType = (type: FileType) => {
+    const changeType = (type: LinkType) => {
         // Значение другого типа не сохраняем: поле нужно заполнить заново.
         setValue('')
         schedule({ type, [type === 'url' ? 'url' : 'path']: '' })
@@ -86,11 +86,11 @@ function FileRow({ file, onSave, onDelete }: {
             <div className="flex items-center gap-2">
                 <select
                     value={file.type}
-                    onChange={e => changeType(e.target.value as FileType)}
+                    onChange={e => changeType(e.target.value as LinkType)}
                     className={small}
                     aria-label="Тип"
                 >
-                    {FILE_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {LINK_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 <input
                     value={value}
@@ -116,12 +116,12 @@ function FileRow({ file, onSave, onDelete }: {
             <div className="flex flex-wrap items-center gap-2">
                 <select
                     value={file.category ?? ''}
-                    onChange={e => { schedule({ category: (e.target.value || null) as ProjectFile['category'] }); void flush() }}
+                    onChange={e => { schedule({ category: (e.target.value || null) as ProjectLink['category'] }); void flush() }}
                     className={small}
                     aria-label="Категория"
                 >
                     <option value="">Без категории</option>
-                    {FILE_CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {MATERIAL_CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 <input
                     value={tags}
@@ -144,21 +144,21 @@ function FileRow({ file, onSave, onDelete }: {
     )
 }
 
-export default function ProjectFiles({ projectId, onCount }: Props) {
-    const [files, setFiles] = useState<ProjectFile[]>([])
+export default function ProjectLinks({ projectId, onCount }: Props) {
+    const [files, setLinks] = useState<ProjectLink[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
-    const [addType, setAddType] = useState<FileType>('url')
+    const [addType, setAddType] = useState<LinkType>('url')
     const [addValue, setAddValue] = useState('')
     const [addError, setAddError] = useState('')
     const [adding, setAdding] = useState(false)
-    const [toDelete, setToDelete] = useState<ProjectFile | null>(null)
+    const [toDelete, setToDelete] = useState<ProjectLink | null>(null)
 
     const load = () => {
         setLoading(true)
         setError(false)
         apiGetNotebookProject(projectId)
-            .then(r => setFiles(r.data.files ?? []))
+            .then(r => setLinks(r.data.links ?? []))
             .catch(() => setError(true))
             .finally(() => setLoading(false))
     }
@@ -170,10 +170,10 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [files.length, loading])
 
-    const save = async (id: number, patch: ProjectFilePatch) => {
-        const r = await apiUpdateFile(projectId, id, patch)
+    const save = async (id: number, patch: ProjectLinkPatch) => {
+        const r = await apiUpdateLink(projectId, id, patch)
         // Поля ввода — источник правды; из ответа берём только то, что вводом не меняется.
-        setFiles(prev => prev.map(f => (f.id === id ? { ...f, type: r.data.type, category: r.data.category } : f)))
+        setLinks(prev => prev.map(f => (f.id === id ? { ...f, type: r.data.type, category: r.data.category } : f)))
     }
 
     const add = async () => {
@@ -182,12 +182,12 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
         setAdding(true)
         setAddError('')
         try {
-            const r = await apiCreateFile(projectId, {
+            const r = await apiCreateLink(projectId, {
                 name: guessName(addType, value),
                 type: addType,
                 [addType === 'url' ? 'url' : 'path']: value,
             })
-            setFiles(prev => [...prev, r.data])
+            setLinks(prev => [...prev, r.data])
             setAddValue('')
         } catch (e: unknown) {
             const errors = (e as { response?: { data?: { errors?: Record<string, string[]> } } }).response?.data?.errors
@@ -199,39 +199,39 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
 
     const confirmDelete = async () => {
         if (!toDelete) return
-        await apiDeleteFile(projectId, toDelete.id)
-        setFiles(prev => prev.filter(f => f.id !== toDelete.id))
+        await apiDeleteLink(projectId, toDelete.id)
+        setLinks(prev => prev.filter(f => f.id !== toDelete.id))
         setToDelete(null)
     }
 
     return (
         <section className="space-y-3">
-            <h2 className="text-base font-semibold text-foreground">Файлы и ссылки</h2>
+            <h2 className="text-base font-semibold text-foreground">Ссылки</h2>
 
             {loading ? (
                 <div className="flex justify-center py-4"><Loader2 className="animate-spin text-muted-foreground" /></div>
             ) : error ? (
                 <div className="py-3 text-center">
-                    <p className="text-sm text-muted-foreground mb-2">Не удалось загрузить файлы</p>
+                    <p className="text-sm text-muted-foreground mb-2">Не удалось загрузить ссылки</p>
                     <button type="button" onClick={load} className="text-sm text-sky-400 hover:text-sky-300">Повторить</button>
                 </div>
             ) : (
                 <>
                     {files.length === 0 && (
-                        <p className="text-sm text-muted-foreground">Пока ничего нет — добавьте путь к каталогу или ссылку.</p>
+                        <p className="text-sm text-muted-foreground">Пока ничего нет — добавьте ссылку или путь к каталогу.</p>
                     )}
                     {files.map(f => (
-                        <FileRow key={f.id} file={f} onSave={save} onDelete={setToDelete} />
+                        <LinkRow key={f.id} file={f} onSave={save} onDelete={setToDelete} />
                     ))}
 
                     <div className="flex items-center gap-2">
                         <select
                             value={addType}
-                            onChange={e => setAddType(e.target.value as FileType)}
+                            onChange={e => setAddType(e.target.value as LinkType)}
                             className={small}
-                            aria-label="Тип нового материала"
+                            aria-label="Тип новой ссылки"
                         >
-                            {FILE_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                            {LINK_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
                         <input
                             value={addValue}
@@ -258,8 +258,8 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
 
             <ConfirmModal
                 open={!!toDelete}
-                title="Удалить материал?"
-                message={toDelete ? `«${toDelete.name}» будет удалён из проекта (сам файл не затрагивается).` : undefined}
+                title="Удалить ссылку?"
+                message={toDelete ? `«${toDelete.name}» будет удалена из проекта (сам файл или каталог не затрагивается).` : undefined}
                 confirmLabel="Удалить"
                 onConfirm={confirmDelete}
                 onClose={() => setToDelete(null)}

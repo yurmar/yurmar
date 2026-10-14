@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-class ProjectFileTest extends TestCase
+class ProjectLinkTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -17,16 +17,16 @@ class ProjectFileTest extends TestCase
         $project = $user->notebookProjects()->create(['name' => 'P']);
         Sanctum::actingAs($user);
 
-        $this->postJson("/api/notebook-projects/{$project->id}/files", [
+        $this->postJson("/api/notebook-projects/{$project->id}/links", [
             'name' => 'Src', 'type' => 'local_path', 'path' => '/Users/me/src', 'category' => 'code', 'tags' => ['php'],
         ])->assertStatus(201)->assertJsonPath('path', '/Users/me/src')->assertJsonPath('url', null);
 
-        $this->postJson("/api/notebook-projects/{$project->id}/files", [
+        $this->postJson("/api/notebook-projects/{$project->id}/links", [
             'name' => 'Docs', 'type' => 'url', 'url' => 'https://example.com/docs',
         ])->assertStatus(201)->assertJsonPath('url', 'https://example.com/docs');
 
         $this->getJson("/api/notebook-projects/{$project->id}")
-            ->assertOk()->assertJsonCount(2, 'files')->assertJsonPath('files_count', 2);
+            ->assertOk()->assertJsonCount(2, 'links')->assertJsonPath('links_count', 2);
     }
 
     public function test_dangerous_urls_and_upload_type_are_rejected(): void
@@ -36,11 +36,11 @@ class ProjectFileTest extends TestCase
         Sanctum::actingAs($user);
 
         foreach (['javascript:alert(1)', 'file:///etc/passwd', 'data:text/html;base64,AAAA'] as $url) {
-            $this->postJson("/api/notebook-projects/{$project->id}/files", ['name' => 'x', 'type' => 'url', 'url' => $url])
+            $this->postJson("/api/notebook-projects/{$project->id}/links", ['name' => 'x', 'type' => 'url', 'url' => $url])
                 ->assertStatus(422);
         }
 
-        $this->postJson("/api/notebook-projects/{$project->id}/files", ['name' => 'x', 'type' => 'upload', 'path' => 'a'])
+        $this->postJson("/api/notebook-projects/{$project->id}/links", ['name' => 'x', 'type' => 'upload', 'path' => 'a'])
             ->assertStatus(422)->assertJsonValidationErrors('type');
     }
 
@@ -50,9 +50,9 @@ class ProjectFileTest extends TestCase
         $project = $user->notebookProjects()->create(['name' => 'P']);
         Sanctum::actingAs($user);
 
-        $this->postJson("/api/notebook-projects/{$project->id}/files", ['name' => 'x', 'type' => 'local_path'])
+        $this->postJson("/api/notebook-projects/{$project->id}/links", ['name' => 'x', 'type' => 'local_path'])
             ->assertStatus(422)->assertJsonValidationErrors('path');
-        $this->postJson("/api/notebook-projects/{$project->id}/files", ['name' => 'x', 'type' => 'url'])
+        $this->postJson("/api/notebook-projects/{$project->id}/links", ['name' => 'x', 'type' => 'url'])
             ->assertStatus(422)->assertJsonValidationErrors('url');
     }
 
@@ -60,13 +60,13 @@ class ProjectFileTest extends TestCase
     {
         $user = User::factory()->create();
         $project = $user->notebookProjects()->create(['name' => 'P']);
-        $file = $project->files()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
+        $link = $project->links()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
         Sanctum::actingAs($user);
 
-        $this->putJson("/api/notebook-projects/{$project->id}/files/{$file->id}", ['name' => 'B'])
+        $this->putJson("/api/notebook-projects/{$project->id}/links/{$link->id}", ['name' => 'B'])
             ->assertOk()->assertJsonPath('name', 'B')->assertJsonPath('path', '/a');
 
-        $this->putJson("/api/notebook-projects/{$project->id}/files/{$file->id}", ['type' => 'url', 'url' => 'https://x.dev'])
+        $this->putJson("/api/notebook-projects/{$project->id}/links/{$link->id}", ['type' => 'url', 'url' => 'https://x.dev'])
             ->assertOk()->assertJsonPath('type', 'url')->assertJsonPath('path', null);
     }
 
@@ -74,10 +74,10 @@ class ProjectFileTest extends TestCase
     {
         $user = User::factory()->create();
         $project = $user->notebookProjects()->create(['name' => 'P']);
-        $file = $project->files()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
+        $link = $project->links()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
         Sanctum::actingAs($user);
 
-        $this->putJson("/api/notebook-projects/{$project->id}/files/{$file->id}", ['type' => 'url', 'url' => ''])
+        $this->putJson("/api/notebook-projects/{$project->id}/links/{$link->id}", ['type' => 'url', 'url' => ''])
             ->assertOk()->assertJsonPath('type', 'url')->assertJsonPath('url', null)->assertJsonPath('path', null);
     }
 
@@ -86,25 +86,25 @@ class ProjectFileTest extends TestCase
         $owner = User::factory()->create();
         $project = $owner->notebookProjects()->create(['name' => 'P']);
         $other = $owner->notebookProjects()->create(['name' => 'Q']);
-        $file = $other->files()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
+        $link = $other->links()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
 
         Sanctum::actingAs($owner);
-        $this->putJson("/api/notebook-projects/{$project->id}/files/{$file->id}", ['name' => 'X'])->assertStatus(404);
+        $this->putJson("/api/notebook-projects/{$project->id}/links/{$link->id}", ['name' => 'X'])->assertStatus(404);
 
         Sanctum::actingAs(User::factory()->create());
-        $this->postJson("/api/notebook-projects/{$project->id}/files", ['name' => 'x', 'type' => 'local_path', 'path' => '/a'])
+        $this->postJson("/api/notebook-projects/{$project->id}/links", ['name' => 'x', 'type' => 'local_path', 'path' => '/a'])
             ->assertStatus(403);
-        $this->deleteJson("/api/notebook-projects/{$other->id}/files/{$file->id}")->assertStatus(403);
+        $this->deleteJson("/api/notebook-projects/{$other->id}/links/{$link->id}")->assertStatus(403);
     }
 
     public function test_delete(): void
     {
         $user = User::factory()->create();
         $project = $user->notebookProjects()->create(['name' => 'P']);
-        $file = $project->files()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
+        $link = $project->links()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
         Sanctum::actingAs($user);
 
-        $this->deleteJson("/api/notebook-projects/{$project->id}/files/{$file->id}")->assertStatus(204);
-        $this->assertSame(0, $project->files()->count());
+        $this->deleteJson("/api/notebook-projects/{$project->id}/links/{$link->id}")->assertStatus(204);
+        $this->assertSame(0, $project->links()->count());
     }
 }

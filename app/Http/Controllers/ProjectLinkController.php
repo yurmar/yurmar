@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\NotebookProject;
-use App\Models\ProjectFile;
+use App\Models\ProjectLink;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class ProjectFileController extends Controller
+class ProjectLinkController extends Controller
 {
     public function store(Request $request, NotebookProject $notebookProject): JsonResponse
     {
@@ -17,32 +17,32 @@ class ProjectFileController extends Controller
 
         $data = $request->validate($this->rules(true));
         $data = $this->normalize($data, null);
-        $data['sort_order'] = ((int) $notebookProject->files()->max('sort_order')) + 1;
+        $data['sort_order'] = ((int) $notebookProject->links()->max('sort_order')) + 1;
 
-        $file = $notebookProject->files()->create($data);
+        $link = $notebookProject->links()->create($data);
 
-        return response()->json($file->fresh(), 201);
+        return response()->json($link->fresh(), 201);
     }
 
-    public function update(Request $request, NotebookProject $notebookProject, ProjectFile $projectFile): JsonResponse
+    public function update(Request $request, NotebookProject $notebookProject, ProjectLink $projectLink): JsonResponse
     {
         $this->authorize('update', $notebookProject);
-        abort_unless($projectFile->notebook_project_id === $notebookProject->id, 404);
+        abort_unless($projectLink->notebook_project_id === $notebookProject->id, 404);
 
         $data = $request->validate($this->rules(false));
-        $data = $this->normalize($data, $projectFile);
+        $data = $this->normalize($data, $projectLink);
 
-        $projectFile->update($data);
+        $projectLink->update($data);
 
-        return response()->json($projectFile->fresh());
+        return response()->json($projectLink->fresh());
     }
 
-    public function destroy(Request $request, NotebookProject $notebookProject, ProjectFile $projectFile): JsonResponse
+    public function destroy(Request $request, NotebookProject $notebookProject, ProjectLink $projectLink): JsonResponse
     {
         $this->authorize('update', $notebookProject);
-        abort_unless($projectFile->notebook_project_id === $notebookProject->id, 404);
+        abort_unless($projectLink->notebook_project_id === $notebookProject->id, 404);
 
-        $projectFile->delete();
+        $projectLink->delete();
 
         return response()->json(null, 204);
     }
@@ -53,11 +53,11 @@ class ProjectFileController extends Controller
 
         return [
             'name' => [$presence, 'nullable', 'string', 'max:255'],
-            'type' => [$presence, Rule::in(ProjectFile::TYPES)],
+            'type' => [$presence, Rule::in(ProjectLink::TYPES)],
             'path' => 'sometimes|nullable|string|max:1024',
             'url' => ['sometimes', 'nullable', 'string', 'max:2048', 'url:http,https'],
             'description' => 'sometimes|nullable|string|max:5000',
-            'category' => ['sometimes', 'nullable', Rule::in(ProjectFile::CATEGORIES)],
+            'category' => ['sometimes', 'nullable', Rule::in(ProjectLink::CATEGORIES)],
             'tags' => 'sometimes|nullable|array|max:20',
             'tags.*' => 'string|max:30',
         ];
@@ -68,7 +68,7 @@ class ProjectFileController extends Controller
      * для url — url (path обнуляется). При создании значение обязательно; при правке его
      * можно временно очистить (смена типа, ввод «с нуля») — поле остаётся пустым.
      */
-    private function normalize(array $data, ?ProjectFile $existing): array
+    private function normalize(array $data, ?ProjectLink $existing): array
     {
         $type = $data['type'] ?? $existing?->type;
         $path = array_key_exists('path', $data) ? $data['path'] : $existing?->path;

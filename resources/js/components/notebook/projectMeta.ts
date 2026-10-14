@@ -1,4 +1,4 @@
-import type { FileCategory, FileType, MilestoneStatus, ProjectPriority, ProjectStatus, TaskStatus } from '@/api/notebookProjects'
+import type { LinkCategory, LinkType, MilestoneStatus, ProjectPriority, ProjectStatus, TaskStatus } from '@/api/notebookProjects'
 
 export const PROJECT_UNTITLED = 'Без названия'
 
@@ -38,12 +38,12 @@ export const MILESTONE_STATUS_OPTIONS: { value: MilestoneStatus; label: string }
     { value: 'done', label: 'Завершён' },
 ]
 
-export const FILE_TYPE_OPTIONS: { value: FileType; label: string }[] = [
+export const LINK_TYPE_OPTIONS: { value: LinkType; label: string }[] = [
     { value: 'local_path', label: 'Локальный путь' },
     { value: 'url', label: 'Ссылка' },
 ]
 
-export const FILE_CATEGORY_OPTIONS: { value: FileCategory; label: string }[] = [
+export const MATERIAL_CATEGORY_OPTIONS: { value: LinkCategory; label: string }[] = [
     { value: 'code', label: 'Код' },
     { value: 'design', label: 'Дизайн' },
     { value: 'docs', label: 'Документация' },

@@ -21,25 +21,25 @@ export interface ProjectTask {
     completed_at: string | null
 }
 
-export type FileType = 'local_path' | 'url'
-export type FileCategory = 'code' | 'design' | 'docs' | 'data' | 'other'
+export type LinkType = 'local_path' | 'url'
+export type LinkCategory = 'code' | 'design' | 'docs' | 'data' | 'other'
 
-export interface ProjectFile {
+export interface ProjectLink {
     id: number
     notebook_project_id: number
     name: string
-    type: FileType
+    type: LinkType
     path: string | null
     url: string | null
     description: string | null
-    category: FileCategory | null
+    category: LinkCategory | null
     tags: string[] | null
     sort_order: number
     created_at: string
 }
 
-export type ProjectFilePatch = Partial<
-    Pick<ProjectFile, 'name' | 'type' | 'path' | 'url' | 'description' | 'category' | 'tags'>
+export type ProjectLinkPatch = Partial<
+    Pick<ProjectLink, 'name' | 'type' | 'path' | 'url' | 'description' | 'category' | 'tags'>
 >
 
 export interface ProjectMilestone {
@@ -76,11 +76,12 @@ export interface NotebookProject {
     updated_at: string
     tasks_count?: number
     done_tasks_count?: number
+    links_count?: number
     files_count?: number
     notes_count?: number
     milestones?: ProjectMilestone[]
     tasks?: ProjectTask[]
-    files?: ProjectFile[]
+    links?: ProjectLink[]
 }
 
 export type NotebookProjectPatch = Partial<
@@ -119,9 +120,9 @@ export const apiDeleteMilestone = (projectId: number, id: number) =>
 export const apiReorderMilestones = (projectId: number, ids: number[]) =>
     client.post<ProjectMilestone[]>(`${planUrl(projectId)}/milestones/reorder`, { ids })
 
-export const apiCreateFile = (projectId: number, data: ProjectFilePatch) =>
-    client.post<ProjectFile>(`${planUrl(projectId)}/files`, data)
-export const apiUpdateFile = (projectId: number, id: number, data: ProjectFilePatch) =>
-    client.put<ProjectFile>(`${planUrl(projectId)}/files/${id}`, data)
-export const apiDeleteFile = (projectId: number, id: number) =>
-    client.delete(`${planUrl(projectId)}/files/${id}`)
+export const apiCreateLink = (projectId: number, data: ProjectLinkPatch) =>
+    client.post<ProjectLink>(`${planUrl(projectId)}/links`, data)
+export const apiUpdateLink = (projectId: number, id: number, data: ProjectLinkPatch) =>
+    client.put<ProjectLink>(`${planUrl(projectId)}/links/${id}`, data)
+export const apiDeleteLink = (projectId: number, id: number) =>
+    client.delete(`${planUrl(projectId)}/links/${id}`)

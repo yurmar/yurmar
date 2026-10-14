@@ -13,7 +13,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\NotebookProjectController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ProjectFileController;
+use App\Http\Controllers\ProjectLinkController;
 use App\Http\Controllers\ProjectMilestoneController;
 use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\ServiceController;
@@ -117,9 +117,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notebook-projects/{notebookProject}/tasks/{projectTask}', [ProjectTaskController::class, 'update']);
     Route::delete('/notebook-projects/{notebookProject}/tasks/{projectTask}', [ProjectTaskController::class, 'destroy']);
 
-    Route::post('/notebook-projects/{notebookProject}/files', [ProjectFileController::class, 'store']);
-    Route::put('/notebook-projects/{notebookProject}/files/{projectFile}', [ProjectFileController::class, 'update']);
-    Route::delete('/notebook-projects/{notebookProject}/files/{projectFile}', [ProjectFileController::class, 'destroy']);
+    Route::post('/notebook-projects/{notebookProject}/links', [ProjectLinkController::class, 'store']);
+    Route::put('/notebook-projects/{notebookProject}/links/{projectLink}', [ProjectLinkController::class, 'update']);
+    Route::delete('/notebook-projects/{notebookProject}/links/{projectLink}', [ProjectLinkController::class, 'destroy']);
 });
 
 // Brief orders: публичное создание, защищённый просмотр
