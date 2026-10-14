@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import type { NotebookProject, NotebookProjectPatch } from '@/api/notebookProjects'
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from './projectMeta'
@@ -27,6 +27,15 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
     const [techs, setTechs] = useState<string[]>(project.technologies ?? [])
     const [techInput, setTechInput] = useState('')
     const nameRef = useRef<HTMLInputElement>(null)
+    const descriptionRef = useRef<HTMLTextAreaElement>(null)
+
+    // Поле описания растёт вместе с текстом, чтобы он помещался целиком.
+    useLayoutEffect(() => {
+        const el = descriptionRef.current
+        if (!el) return
+        el.style.height = 'auto'
+        el.style.height = `${el.scrollHeight}px`
+    }, [form.description])
 
     useEffect(() => {
         if (autoFocusName) nameRef.current?.focus()
@@ -77,11 +86,12 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
             <div>
                 <label className={label}>Описание</label>
                 <textarea
+                    ref={descriptionRef}
                     value={form.description}
                     onChange={e => set('description', e.target.value)}
                     rows={4}
                     placeholder="Цели, идея, что нужно сделать"
-                    className={`${field} resize-y`}
+                    className={`${field} resize-none overflow-hidden min-h-[6rem]`}
                 />
                 {err('description')}
             </div>
