@@ -1,4 +1,4 @@
-import { DragEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { DragEvent, KeyboardEvent, useEffect, useMemo, useState } from 'react'
 import {
     Archive, ChevronRight, Download, File as FileIcon, FileText, Folder, Home, Image as ImageIcon,
     Loader2, MoreVertical, Music, Pencil, Search, Trash2, UploadCloud, Video, X,
@@ -17,6 +17,7 @@ import {
     ProjectFolder,
 } from '@/api/notebookProjects'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import UploadFilesModal from './UploadFilesModal'
 import { useAutosave } from './useAutosave'
 
 interface Props {
@@ -235,6 +236,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
     const [selectedId, setSelectedId] = useState<number | null>(null)
     const [uploads, setUploads] = useState<UploadItem[]>([])
     const [dragOver, setDragOver] = useState(false)
+    const [uploadOpen, setUploadOpen] = useState(false)
     const [renamingId, setRenamingId] = useState<number | null>(null)
     const [renameValue, setRenameValue] = useState('')
     const [menuId, setMenuId] = useState<number | null>(null)
@@ -243,7 +245,6 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
     const [fileToDelete, setFileToDelete] = useState<ProjectFile | null>(null)
     const [folderToDelete, setFolderToDelete] = useState<ProjectFolder | null>(null)
     const [actionError, setActionError] = useState('')
-    const inputRef = useRef<HTMLInputElement>(null)
 
     const load = () => {
         setLoading(true)
@@ -350,8 +351,8 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
     const patchUpload = (key: string, patch: Partial<UploadItem>) =>
         setUploads(prev => prev.map(u => (u.key === key ? { ...u, ...patch } : u)))
 
-    const uploadAll = async (list: File[]) => {
-        const targetFolder = currentFolder
+    // targetFolder === null — папку определяет сервер по типу файла.
+    const uploadAll = async (list: File[], targetFolder: number | null) => {
         for (const file of list) {
             const key = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`
             if (file.size > MAX_BYTES) {
@@ -372,7 +373,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
     const handleDrop = (e: DragEvent) => {
         e.preventDefault()
         setDragOver(false)
-        if (e.dataTransfer.files.length) void uploadAll(Array.from(e.dataTransfer.files))
+        if (e.dataTransfer.files.length) void uploadAll(Array.from(e.dataTransfer.files), currentFolder)
     }
 
     const commitRename = async () => {
@@ -431,22 +432,11 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={() => inputRef.current?.click()}
+                        onClick={() => setUploadOpen(true)}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-sky-500 text-white text-sm font-medium whitespace-nowrap hover:bg-sky-600"
                     >
                         <UploadCloud size={14} /> Загрузить файлы
                     </button>
-                    <input
-                        ref={inputRef}
-                        type="file"
-                        multiple
-                        className="hidden"
-                        onChange={e => {
-                            const list = Array.from(e.target.files ?? [])
-                            e.target.value = ''
-                            if (list.length) void uploadAll(list)
-                        }}
-                    />
                 </div>
             </div>
 
@@ -750,6 +740,13 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                 </div>
             )}
 
+            <UploadFilesModal
+                open={uploadOpen}
+                folderOptions={folderOptions}
+                defaultFolderId={currentFolder}
+                onUpload={(list, folderId) => void uploadAll(list, folderId)}
+                onClose={() => setUploadOpen(false)}
+            />
             <ConfirmModal
                 open={!!fileToDelete}
                 title="Удалить файл?"
