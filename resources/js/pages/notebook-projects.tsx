@@ -118,6 +118,9 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
     const handleSaved = (saved: NotebookProject) =>
         setProjects(prev => prev.map(p => (p.id === saved.id ? { ...p, ...saved } : p)))
 
+    const handleCounts = (id: number, counts: { tasks_count: number; done_tasks_count: number }) =>
+        setProjects(prev => prev.map(p => (p.id === id ? { ...p, ...counts } : p)))
+
     const handleTogglePin = async (p: NotebookProject) => {
         try {
             const r = await apiUpdateNotebookProject(p.id, { is_pinned: !p.is_pinned })
@@ -269,6 +272,7 @@ export default function NotebookProjects({ switcher }: { switcher: ReactNode }) 
                                 key={selected.id}
                                 project={selected}
                                 onSaved={handleSaved}
+                                onCounts={handleCounts}
                                 onTogglePin={handleTogglePin}
                                 onDelete={setToDelete}
                                 onBack={() => select(null)}

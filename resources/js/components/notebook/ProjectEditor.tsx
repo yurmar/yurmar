@@ -1,11 +1,13 @@
 import { AlertCircle, ArrowLeft, Check, Loader2, Pin, Trash2 } from 'lucide-react'
 import { apiUpdateNotebookProject, NotebookProject, NotebookProjectPatch } from '@/api/notebookProjects'
 import ProjectForm from './ProjectForm'
+import ProjectPlan from './ProjectPlan'
 import { useAutosave } from './useAutosave'
 
 interface Props {
     project: NotebookProject
     onSaved: (project: NotebookProject) => void
+    onCounts: (id: number, counts: { tasks_count: number; done_tasks_count: number }) => void
     onTogglePin: (project: NotebookProject) => void
     onDelete: (project: NotebookProject) => void
     onBack: () => void
@@ -13,7 +15,7 @@ interface Props {
 }
 
 /** Правая панель: редактирование выбранного проекта с автосохранением. */
-export default function ProjectEditor({ project, onSaved, onTogglePin, onDelete, onBack, autoFocusName }: Props) {
+export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin, onDelete, onBack, autoFocusName }: Props) {
     const { saveState, fieldErrors, schedule } = useAutosave<NotebookProjectPatch>({
         save: async patch => {
             const r = await apiUpdateNotebookProject(project.id, patch)
@@ -64,6 +66,12 @@ export default function ProjectEditor({ project, onSaved, onTogglePin, onDelete,
                     autoFocusName={autoFocusName}
                     onChange={schedule}
                 />
+                <div className="mt-8 pt-6 border-t border-sky-500/15">
+                    <ProjectPlan
+                        projectId={project.id}
+                        onCounts={counts => onCounts(project.id, counts)}
+                    />
+                </div>
             </div>
         </>
     )
