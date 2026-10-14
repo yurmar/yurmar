@@ -71,8 +71,8 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
                     }}
                     placeholder="Название задачи"
                     maxLength={255}
-                    className={`flex-1 min-w-0 bg-transparent text-base sm:text-sm focus:outline-none ${
-                        done || cancelled ? 'line-through text-muted-foreground' : 'text-foreground'
+                    className={`flex-1 min-w-0 bg-transparent text-base sm:text-sm focus:outline-none transition-colors ${
+                        done || cancelled ? 'text-muted-foreground/60' : 'text-foreground font-medium'
                     } ${saveState === 'error' ? 'underline decoration-red-400' : ''}`}
                 />
                 <div className="flex items-center flex-shrink-0">
