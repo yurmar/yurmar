@@ -9,8 +9,6 @@ class ProjectFile extends Model
 {
     public const DISK = 'local';
 
-    public const CATEGORIES = ['code', 'design', 'docs', 'data', 'other'];
-
     /** Максимальный размер одного файла, КБ. */
     public const MAX_SIZE_KB = 51200;
 
@@ -23,11 +21,11 @@ class ProjectFile extends Model
         'exe', 'msi', 'bat', 'cmd', 'com', 'scr', 'dll', 'cgi', 'htaccess',
     ];
 
-    protected $fillable = ['name', 'original_name', 'path', 'mime_type', 'size', 'category', 'description'];
+    protected $fillable = ['folder_id', 'name', 'original_name', 'path', 'mime_type', 'size', 'description'];
 
     protected $hidden = ['path'];
 
-    protected $casts = ['size' => 'integer'];
+    protected $casts = ['size' => 'integer', 'folder_id' => 'integer'];
 
     public function project(): BelongsTo
     {
