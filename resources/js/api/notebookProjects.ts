@@ -39,6 +39,7 @@ export interface ProjectFolder {
     notebook_project_id: number
     parent_id: number | null
     name: string
+    system_key: string | null
     created_at: string
 }
 

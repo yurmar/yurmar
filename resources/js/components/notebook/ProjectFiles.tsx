@@ -1,6 +1,6 @@
 import { DragEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
-    Archive, ChevronRight, Download, File as FileIcon, FileText, Folder, FolderPlus, Home, Image as ImageIcon,
+    Archive, ChevronRight, Download, File as FileIcon, FileText, Folder, Home, Image as ImageIcon,
     Loader2, MoreVertical, Music, Pencil, Search, Trash2, UploadCloud, Video, X,
 } from 'lucide-react'
 import {
@@ -77,7 +77,7 @@ function plural(n: number, one: string, few: string, many: string) {
     return many
 }
 
-function FileDetails({ file, folderOptions, path, projectId, onSave, onMove, onDelete, onClose, onCreateFolder }: {
+function FileDetails({ file, folderOptions, path, projectId, onSave, onMove, onDelete, onClose }: {
     file: ProjectFile
     folderOptions: { id: number; label: string }[]
     path: string
@@ -86,7 +86,6 @@ function FileDetails({ file, folderOptions, path, projectId, onSave, onMove, onD
     onMove: (file: ProjectFile, folderId: number | null) => void
     onDelete: (file: ProjectFile) => void
     onClose: () => void
-    onCreateFolder: () => void
 }) {
     const [name, setName] = useState(file.name)
     const [description, setDescription] = useState(file.description ?? '')
@@ -194,23 +193,14 @@ function FileDetails({ file, folderOptions, path, projectId, onSave, onMove, onD
                 <div>
                     <dt className="text-xs text-muted-foreground mb-1">Переместить в папку</dt>
                     <dd>
-                        {folderOptions.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">
-                                Папок пока нет.{' '}
-                                <button type="button" onClick={onCreateFolder} className="text-sky-400 hover:text-sky-300">
-                                    Создать папку
-                                </button>
-                            </p>
-                        ) : (
-                            <select
-                                value={file.folder_id ?? ''}
-                                onChange={e => onMove(file, e.target.value ? Number(e.target.value) : null)}
-                                className="w-full input-field rounded-md px-2 py-1.5 text-base sm:text-sm"
-                            >
-                                <option value="">Корень хранилища</option>
-                                {folderOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                            </select>
-                        )}
+                        <select
+                            value={file.folder_id ?? ''}
+                            onChange={e => onMove(file, e.target.value ? Number(e.target.value) : null)}
+                            className="w-full input-field rounded-md px-2 py-1.5 text-base sm:text-sm"
+                        >
+                            <option value="">Корень хранилища</option>
+                            {folderOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                        </select>
                     </dd>
                 </div>
             </dl>
@@ -242,12 +232,9 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
     const [error, setError] = useState(false)
     const [currentFolder, setCurrentFolder] = useState<number | null>(null)
     const [query, setQuery] = useState('')
-    const [kindFilter, setKindFilter] = useState<Kind | null>(null)
     const [selectedId, setSelectedId] = useState<number | null>(null)
     const [uploads, setUploads] = useState<UploadItem[]>([])
     const [dragOver, setDragOver] = useState(false)
-    const [creatingFolder, setCreatingFolder] = useState(false)
-    const [folderName, setFolderName] = useState('')
     const [renamingId, setRenamingId] = useState<number | null>(null)
     const [renameValue, setRenameValue] = useState('')
     const [menuId, setMenuId] = useState<number | null>(null)
@@ -303,25 +290,17 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
         return { count: inside.length, size: inside.reduce((s, f) => s + f.size, 0) }
     }
 
-    const kindStats = useMemo(() => {
-        const stats = new Map<Kind, number>()
-        files.forEach(f => stats.set(kindOf(f), (stats.get(kindOf(f)) ?? 0) + f.size))
-        return stats
-    }, [files])
-
     const totalSize = files.reduce((s, f) => s + f.size, 0)
-    const searching = query.trim() !== '' || kindFilter !== null
+    const searching = query.trim() !== ''
 
     const visibleFiles = useMemo(() => {
         const q = query.trim().toLowerCase()
         return files.filter(f => {
-            if (kindFilter && kindOf(f) !== kindFilter) return false
+            // Без поиска — содержимое текущей папки, при поиске — файлы по всему хранилищу.
             if (q) return f.name.toLowerCase().includes(q)
-            // Без поиска и фильтра показываем содержимое текущей папки;
-            // при поиске или фильтре типа — файлы по всему хранилищу.
-            return kindFilter ? true : f.folder_id === currentFolder
+            return f.folder_id === currentFolder
         })
-    }, [files, query, kindFilter, currentFolder])
+    }, [files, query, currentFolder])
 
     const folderOptions = useMemo(
         () => folders
@@ -331,8 +310,16 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
         [folders],
     )
 
-    const subfolders = folders.filter(f => f.parent_id === currentFolder)
+    // Системные папки по типу показываются плитками «Мои файлы», здесь — только свои.
+    const subfolders = folders.filter(f => f.parent_id === currentFolder && f.system_key === null)
     const selected = files.find(f => f.id === selectedId) ?? null
+
+    // Переход в другую папку закрывает панель «Сведения о файле».
+    const openFolder = (id: number | null) => {
+        setCurrentFolder(id)
+        setSelectedId(null)
+        setQuery('')
+    }
     const breadcrumbs = pathOf(currentFolder)
 
     const locationOf = (file: ProjectFile) =>
@@ -388,22 +375,6 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
         if (e.dataTransfer.files.length) void uploadAll(Array.from(e.dataTransfer.files))
     }
 
-    const createFolder = async () => {
-        const name = folderName.trim()
-        if (!name) {
-            setCreatingFolder(false)
-            return
-        }
-        try {
-            const r = await apiCreateFolder(projectId, { name, parent_id: currentFolder })
-            setFolders(prev => [...prev, r.data])
-            setFolderName('')
-            setCreatingFolder(false)
-        } catch (e) {
-            setActionError(apiErrorMessage(e, 'Не удалось создать папку'))
-        }
-    }
-
     const commitRename = async () => {
         const id = renamingId
         const name = renameValue.trim()
@@ -438,7 +409,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
             await apiDeleteFolder(projectId, folderToDelete.id)
             setFolders(prev => prev.filter(f => !ids.has(f.id)))
             setFiles(prev => prev.filter(f => f.folder_id === null || !ids.has(f.folder_id)))
-            if (currentFolder !== null && ids.has(currentFolder)) setCurrentFolder(folderToDelete.parent_id)
+            if (currentFolder !== null && ids.has(currentFolder)) openFolder(folderToDelete.parent_id)
             if (selected && selected.folder_id !== null && ids.has(selected.folder_id)) setSelectedId(null)
         } catch (e) {
             setActionError(apiErrorMessage(e, 'Не удалось удалить папку'))
@@ -448,10 +419,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
 
     const onFolderKey = (e: KeyboardEvent, handler: () => void) => {
         if (e.key === 'Enter') handler()
-        if (e.key === 'Escape') {
-            setCreatingFolder(false)
-            setRenamingId(null)
-        }
+        if (e.key === 'Escape') setRenamingId(null)
     }
 
     const quotaPercent = Math.min(100, Math.round((totalSize / QUOTA_BYTES) * 100))
@@ -461,13 +429,6 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-base font-semibold text-foreground">Файлы</h2>
                 <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setCreatingFolder(true)}
-                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-sky-500/30 text-sky-500 text-sm font-medium whitespace-nowrap hover:bg-sky-500/10"
-                    >
-                        <FolderPlus size={14} /> Создать папку
-                    </button>
                     <button
                         type="button"
                         onClick={() => inputRef.current?.click()}
@@ -526,22 +487,38 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                 <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
                     {KINDS.map(k => {
                         const Icon = k.icon
-                        const active = kindFilter === k.value
+                        const folder = folders.find(f => f.system_key === k.value)
+                        const active = !!folder && currentFolder === folder.id
+                        const stats = folder ? folderStats(folder.id) : { count: 0, size: 0 }
                         return (
                             <button
                                 key={k.value}
                                 type="button"
-                                onClick={() => setKindFilter(active ? null : k.value)}
+                                disabled={!folder}
+                                onClick={() => folder && openFolder(folder.id)}
+                                onDragOver={e => { if (folder && dragFileId !== null) { e.preventDefault(); setDropFolderId(folder.id) } }}
+                                onDragLeave={() => setDropFolderId(null)}
+                                onDrop={e => {
+                                    e.preventDefault()
+                                    setDropFolderId(null)
+                                    const file = files.find(f => f.id === dragFileId)
+                                    setDragFileId(null)
+                                    if (file && folder) void moveFile(file, folder.id)
+                                }}
                                 className={`flex flex-col items-center gap-1.5 rounded-xl p-2 text-center transition-colors border min-w-0 ${
-                                    active ? 'border-sky-500/60 bg-sky-500/10' : 'border-transparent bg-sky-500/[0.05] hover:bg-sky-500/10'
+                                    active || (folder && dropFolderId === folder.id)
+                                        ? 'border-sky-500/60 bg-sky-500/10'
+                                        : 'border-transparent bg-sky-500/[0.05] hover:bg-sky-500/10'
                                 }`}
                             >
-                                <span className="block w-full text-[10px] sm:text-xs font-medium text-foreground leading-tight break-words">{k.label}</span>
+                                <span className="block w-full text-[10px] sm:text-xs font-medium text-foreground leading-tight break-words">
+                                    {folder?.name ?? k.label}
+                                </span>
                                 <span className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${k.tone}`}>
                                     <Icon size={18} />
                                 </span>
                                 <span className="block text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
-                                    {formatSize(kindStats.get(k.value) ?? 0)}
+                                    {formatSize(stats.size)}
                                 </span>
                             </button>
                         )
@@ -552,7 +529,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
             <div className="flex flex-wrap items-center gap-1 text-sm">
                 <button
                     type="button"
-                    onClick={() => { setCurrentFolder(null); setKindFilter(null); setQuery('') }}
+                    onClick={() => openFolder(null)}
                     className={`inline-flex items-center gap-1 ${currentFolder === null ? 'text-foreground font-medium' : 'text-sky-400 hover:text-sky-300'}`}
                 >
                     <Home size={14} /> Хранилище
@@ -562,7 +539,7 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                         <ChevronRight size={14} className="text-muted-foreground" />
                         <button
                             type="button"
-                            onClick={() => setCurrentFolder(f.id)}
+                            onClick={() => openFolder(f.id)}
                             className={i === breadcrumbs.length - 1 ? 'text-foreground font-medium' : 'text-sky-400 hover:text-sky-300'}
                         >
                             {f.name}
@@ -571,32 +548,17 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                 ))}
             </div>
 
-            {!searching && (subfolders.length > 0 || creatingFolder) && (
+            {!searching && subfolders.length > 0 && (
                 <div>
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Папки</p>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                        {creatingFolder && (
-                            <div className="rounded-xl border border-sky-500/40 p-3">
-                                <Folder size={28} className="text-sky-500 mb-2" />
-                                <input
-                                    autoFocus
-                                    value={folderName}
-                                    onChange={e => setFolderName(e.target.value)}
-                                    onKeyDown={e => onFolderKey(e, createFolder)}
-                                    onBlur={createFolder}
-                                    placeholder="Название папки"
-                                    maxLength={255}
-                                    className="w-full input-field rounded-md px-2 py-1 text-base sm:text-sm"
-                                />
-                            </div>
-                        )}
                         {subfolders.map(folder => {
                             const stats = folderStats(folder.id)
                             const isDrop = dropFolderId === folder.id
                             return (
                                 <div
                                     key={folder.id}
-                                    onClick={() => renamingId === null && setCurrentFolder(folder.id)}
+                                    onClick={() => renamingId === null && openFolder(folder.id)}
                                     onDragOver={e => { if (dragFileId !== null) { e.preventDefault(); setDropFolderId(folder.id) } }}
                                     onDragLeave={() => setDropFolderId(null)}
                                     onDrop={e => {
@@ -777,7 +739,6 @@ export default function ProjectFiles({ projectId, onCount }: Props) {
                             key={selected.id}
                             file={selected}
                             folderOptions={folderOptions}
-                            onCreateFolder={() => { setCurrentFolder(selected.folder_id); setCreatingFolder(true) }}
                             path={locationOf(selected)}
                             projectId={projectId}
                             onSave={saveFile}
