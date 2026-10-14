@@ -33,10 +33,9 @@ class ProjectFileStorageTest extends TestCase
 
         $response = $this->postJson("/api/notebook-projects/{$project->id}/files", [
             'file' => UploadedFile::fake()->create('Спецификация v2.pdf', 120, 'application/pdf'),
-            'category' => 'docs',
         ])->assertStatus(201)
             ->assertJsonPath('name', 'Спецификация v2.pdf')
-            ->assertJsonPath('category', 'docs')
+            ->assertJsonPath('folder_id', null)
             ->assertJsonMissingPath('path');
 
         $file = ProjectFile::find($response->json('id'));
@@ -106,8 +105,8 @@ class ProjectFileStorageTest extends TestCase
         ])->json('id');
         $path = ProjectFile::find($id)->path;
 
-        $this->putJson("/api/notebook-projects/{$project->id}/files/{$id}", ['name' => '../../etc/b.txt', 'category' => 'data'])
-            ->assertOk()->assertJsonPath('name', 'b.txt')->assertJsonPath('category', 'data');
+        $this->putJson("/api/notebook-projects/{$project->id}/files/{$id}", ['name' => '../../etc/b.txt'])
+            ->assertOk()->assertJsonPath('name', 'b.txt');
 
         $this->deleteJson("/api/notebook-projects/{$project->id}/files/{$id}")->assertStatus(204);
         Storage::disk(ProjectFile::DISK)->assertMissing($path);
