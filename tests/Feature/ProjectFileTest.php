@@ -70,6 +70,17 @@ class ProjectFileTest extends TestCase
             ->assertOk()->assertJsonPath('type', 'url')->assertJsonPath('path', null);
     }
 
+    public function test_type_switch_with_empty_value_is_allowed_on_update(): void
+    {
+        $user = User::factory()->create();
+        $project = $user->notebookProjects()->create(['name' => 'P']);
+        $file = $project->files()->create(['name' => 'A', 'type' => 'local_path', 'path' => '/a']);
+        Sanctum::actingAs($user);
+
+        $this->putJson("/api/notebook-projects/{$project->id}/files/{$file->id}", ['type' => 'url', 'url' => ''])
+            ->assertOk()->assertJsonPath('type', 'url')->assertJsonPath('url', null)->assertJsonPath('path', null);
+    }
+
     public function test_foreign_access_is_blocked(): void
     {
         $owner = User::factory()->create();

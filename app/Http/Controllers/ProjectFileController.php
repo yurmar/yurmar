@@ -65,7 +65,8 @@ class ProjectFileController extends Controller
 
     /**
      * Приводит запись к согласованному виду: для local_path нужен path (url обнуляется),
-     * для url — url (path обнуляется). Работает и для частичных обновлений.
+     * для url — url (path обнуляется). При создании значение обязательно; при правке его
+     * можно временно очистить (смена типа, ввод «с нуля») — поле остаётся пустым.
      */
     private function normalize(array $data, ?ProjectFile $existing): array
     {
@@ -74,16 +75,16 @@ class ProjectFileController extends Controller
         $url = array_key_exists('url', $data) ? $data['url'] : $existing?->url;
 
         if ($type === 'local_path') {
-            if (trim((string) $path) === '') {
+            if ($existing === null && trim((string) $path) === '') {
                 throw ValidationException::withMessages(['path' => 'Укажите путь.']);
             }
-            $data['path'] = trim($path);
+            $data['path'] = trim((string) $path) === '' ? null : trim((string) $path);
             $data['url'] = null;
         } else {
-            if (trim((string) $url) === '') {
+            if ($existing === null && trim((string) $url) === '') {
                 throw ValidationException::withMessages(['url' => 'Укажите ссылку.']);
             }
-            $data['url'] = trim($url);
+            $data['url'] = trim((string) $url) === '' ? null : trim((string) $url);
             $data['path'] = null;
         }
 
