@@ -21,6 +21,20 @@ export interface ProjectTask {
     completed_at: string | null
 }
 
+export interface ProjectFile {
+    id: number
+    notebook_project_id: number
+    name: string
+    original_name: string
+    mime_type: string | null
+    size: number
+    category: LinkCategory | null
+    description: string | null
+    created_at: string
+}
+
+export type ProjectFilePatch = Partial<Pick<ProjectFile, 'name' | 'category' | 'description'>>
+
 export type LinkType = 'local_path' | 'url'
 export type LinkCategory = 'code' | 'design' | 'docs' | 'data' | 'other'
 
@@ -82,6 +96,7 @@ export interface NotebookProject {
     milestones?: ProjectMilestone[]
     tasks?: ProjectTask[]
     links?: ProjectLink[]
+    files?: ProjectFile[]
 }
 
 export type NotebookProjectPatch = Partial<
@@ -126,3 +141,24 @@ export const apiUpdateLink = (projectId: number, id: number, data: ProjectLinkPa
     client.put<ProjectLink>(`${planUrl(projectId)}/links/${id}`, data)
 export const apiDeleteLink = (projectId: number, id: number) =>
     client.delete(`${planUrl(projectId)}/links/${id}`)
+
+export const apiUploadFile = (
+    projectId: number,
+    file: File,
+    onProgress?: (percent: number) => void,
+) => {
+    const form = new FormData()
+    form.append('file', file)
+    return client.post<ProjectFile>(`${planUrl(projectId)}/files`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: e => {
+            if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100))
+        },
+    })
+}
+export const apiUpdateFile = (projectId: number, id: number, data: ProjectFilePatch) =>
+    client.put<ProjectFile>(`${planUrl(projectId)}/files/${id}`, data)
+export const apiDeleteFile = (projectId: number, id: number) =>
+    client.delete(`${planUrl(projectId)}/files/${id}`)
+export const apiDownloadFile = (projectId: number, id: number) =>
+    client.get<Blob>(`${planUrl(projectId)}/files/${id}/download`, { responseType: 'blob' })

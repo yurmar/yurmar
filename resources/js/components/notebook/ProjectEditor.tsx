@@ -3,6 +3,7 @@ import { apiUpdateNotebookProject, NotebookProject, NotebookProjectPatch } from 
 import ProjectForm from './ProjectForm'
 import ProjectPlan from './ProjectPlan'
 import ProjectLinks from './ProjectLinks'
+import ProjectFiles from './ProjectFiles'
 import { useAutosave } from './useAutosave'
 
 interface Props {
@@ -77,6 +78,12 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                     <ProjectLinks
                         projectId={project.id}
                         onCount={links_count => onCounts(project.id, { links_count })}
+                    />
+                </div>
+                <div className="mt-8 pt-6 border-t border-sky-500/15">
+                    <ProjectFiles
+                        projectId={project.id}
+                        onCount={files_count => onCounts(project.id, { files_count })}
                     />
                 </div>
             </div>
