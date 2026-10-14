@@ -8,6 +8,7 @@ const Login = lazy(() => import('@/pages/login'))
 const About = lazy(() => import('@/pages/about'))
 const Contacts = lazy(() => import('@/pages/contacts'))
 const Notebook = lazy(() => import('@/pages/notebook'))
+const NotebookProject = lazy(() => import('@/pages/notebook-project'))
 const Orders = lazy(() => import('@/pages/orders'))
 const Files = lazy(() => import('@/pages/files'))
 const Examples = lazy(() => import('@/pages/examples'))
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
             { path: 'about', element: <Suspense fallback={fallback}><About /></Suspense> },
             { path: 'contacts', element: <Suspense fallback={fallback}><Contacts /></Suspense> },
             { path: 'notebook', element: <Suspense fallback={fallback}><Notebook /></Suspense> },
+            { path: 'notebook/projects/:projectId', element: <Suspense fallback={fallback}><NotebookProject /></Suspense> },
             { path: 'orders', element: <Suspense fallback={fallback}><Orders /></Suspense> },
             { path: 'files', element: <Suspense fallback={fallback}><Files /></Suspense> },
             { path: 'todo', element: <Suspense fallback={fallback}><TodoList /></Suspense> },
