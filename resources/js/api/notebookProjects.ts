@@ -204,3 +204,30 @@ export const apiDetachNote = (projectId: number, noteId: number) =>
     client.delete(`${planUrl(projectId)}/notes/${noteId}`)
 export const apiGetNoteProjects = (noteId: number) =>
     client.get<NoteProjectRef[]>(`/notes/${noteId}/projects`)
+
+export interface ImportPreview {
+    project: Pick<NotebookProject, 'name' | 'description' | 'status' | 'priority' | 'start_date' | 'deadline' | 'local_path' | 'repository_url' | 'technologies'>
+    milestones: { title: string; description: string | null; status: MilestoneStatus; start_date: string | null; deadline: string | null; tasks: unknown[] }[]
+    unassigned: unknown[]
+    links: { name: string; type: LinkType; url: string | null; path: string | null }[]
+    warnings: string[]
+    totals: { milestones: number; tasks: number; links: number }
+}
+
+export const apiImportPreview = (source: { markdown?: string; file?: File }) => {
+    if (source.file) {
+        const form = new FormData()
+        form.append('file', source.file)
+        form.append('dry_run', '1')
+        return client.post<ImportPreview>('/notebook-projects/import', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        })
+    }
+    return client.post<ImportPreview>('/notebook-projects/import', { markdown: source.markdown, dry_run: true })
+}
+
+export const apiImportProject = (markdown: string) =>
+    client.post<{ project: NotebookProject; warnings: string[]; totals: ImportPreview['totals'] }>(
+        '/notebook-projects/import',
+        { markdown },
+    )
