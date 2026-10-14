@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { ArrowLeft, Check, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, Check, FolderKanban, Loader2 } from 'lucide-react'
 import { useNoteEditor } from './useNoteEditor'
 import NoteFormatButton from './NoteFormatButton'
 import NoteEditorContent from './NoteEditorContent'
@@ -14,9 +15,10 @@ interface NoteEditorPanelProps {
     saveState: SaveState
     onBack: () => void
     autoFocusTitle?: boolean
+    projects?: { id: number; name: string }[]
 }
 
-export default function NoteEditorPanel({ title, onTitleChange, content, onContentChange, saveState, onBack, autoFocusTitle }: NoteEditorPanelProps) {
+export default function NoteEditorPanel({ title, onTitleChange, content, onContentChange, saveState, onBack, autoFocusTitle, projects = [] }: NoteEditorPanelProps) {
     const titleRef = useRef<HTMLInputElement>(null)
     const editor = useNoteEditor({ content, onChange: onContentChange, placeholder: 'Начните печатать…' })
 
@@ -58,6 +60,20 @@ export default function NoteEditorPanel({ title, onTitleChange, content, onConte
                 placeholder="Заголовок"
                 className="w-full bg-transparent text-xl font-bold text-foreground placeholder-muted-foreground/50 focus:outline-none mb-3 flex-shrink-0 text-base sm:text-xl"
             />
+
+            {projects.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 mb-3 flex-shrink-0">
+                    {projects.map(p => (
+                        <Link
+                            key={p.id}
+                            to={`/notebook?tab=projects&project=${p.id}`}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/20 text-xs text-sky-400 hover:bg-sky-500/20 whitespace-nowrap"
+                        >
+                            <FolderKanban size={12} /> {p.name.trim() || 'Без названия'}
+                        </Link>
+                    ))}
+                </div>
+            )}
 
             <NoteEditorContent editor={editor} />
         </>

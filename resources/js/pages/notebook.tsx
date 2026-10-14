@@ -10,6 +10,7 @@ import NoteEditorPanel from '@/components/notebook/NoteEditorPanel'
 import TrashModal from '@/components/notebook/TrashModal'
 import NotebookTabs, { NotebookTab } from '@/components/notebook/NotebookTabs'
 import NotebookProjects from '@/pages/notebook-projects'
+import { apiGetNoteProjects, NoteProjectRef } from '@/api/notebookProjects'
 
 const UNTITLED = 'Без названия'
 
@@ -47,6 +48,9 @@ function NotesView({ switcher }: { switcher: ReactNode }) {
     const [justCreatedId, setJustCreatedId] = useState<number | null>(null)
     const [search, setSearch] = useState('')
     const [trashOpen, setTrashOpen] = useState(false)
+    const [noteProjects, setNoteProjects] = useState<NoteProjectRef[]>([])
+    const [params] = useSearchParams()
+    const requestedNoteId = Number(params.get('note')) || null
 
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     const activeIdRef = useRef<number | null>(null)
@@ -62,7 +66,7 @@ function NotesView({ switcher }: { switcher: ReactNode }) {
         apiGetNotes()
             .then(r => {
                 setNotes(r.data)
-                const first = r.data[0]
+                const first = r.data.find(n => n.id === requestedNoteId) ?? r.data[0]
                 if (first) {
                     setActiveId(first.id)
                     setTitle(first.title)
@@ -93,6 +97,19 @@ function NotesView({ switcher }: { switcher: ReactNode }) {
         }, POLL_INTERVAL)
         return () => clearInterval(timer)
     }, [isAuth])
+
+    // Проекты, к которым привязана открытая запись, — чипы со ссылкой в проект.
+    useEffect(() => {
+        if (activeId === null) {
+            setNoteProjects([])
+            return
+        }
+        let cancelled = false
+        apiGetNoteProjects(activeId)
+            .then(r => { if (!cancelled) setNoteProjects(r.data) })
+            .catch(() => { if (!cancelled) setNoteProjects([]) })
+        return () => { cancelled = true }
+    }, [activeId])
 
     const activeNote = useMemo(() => notes.find(n => n.id === activeId) ?? null, [notes, activeId])
 
@@ -333,6 +350,7 @@ function NotesView({ switcher }: { switcher: ReactNode }) {
                                 saveState={saveState}
                                 onBack={() => setActiveId(null)}
                                 autoFocusTitle={justCreatedId === activeNote.id}
+                                projects={noteProjects}
                             />
                         )}
                     </div>
