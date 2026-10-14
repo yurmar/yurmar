@@ -84,6 +84,18 @@ export type ProjectMilestonePatch = Partial<
     Pick<ProjectMilestone, 'title' | 'description' | 'status' | 'start_date' | 'deadline'>
 >
 
+export interface LinkedNote {
+    id: number
+    title: string
+    is_pinned: boolean
+    updated_at: string
+}
+
+export interface NoteProjectRef {
+    id: number
+    name: string
+}
+
 export interface NotebookProject {
     id: number
     name: string
@@ -108,6 +120,7 @@ export interface NotebookProject {
     links?: ProjectLink[]
     files?: ProjectFile[]
     folders?: ProjectFolder[]
+    notes?: LinkedNote[]
 }
 
 export type NotebookProjectPatch = Partial<
@@ -182,3 +195,12 @@ export const apiUpdateFolder = (projectId: number, id: number, data: { name?: st
     client.put<ProjectFolder>(`${planUrl(projectId)}/folders/${id}`, data)
 export const apiDeleteFolder = (projectId: number, id: number) =>
     client.delete(`${planUrl(projectId)}/folders/${id}`)
+
+export const apiGetProjectNotes = (projectId: number) =>
+    client.get<LinkedNote[]>(`${planUrl(projectId)}/notes`)
+export const apiAttachNote = (projectId: number, noteId: number) =>
+    client.post<LinkedNote>(`${planUrl(projectId)}/notes/${noteId}`)
+export const apiDetachNote = (projectId: number, noteId: number) =>
+    client.delete(`${planUrl(projectId)}/notes/${noteId}`)
+export const apiGetNoteProjects = (noteId: number) =>
+    client.get<NoteProjectRef[]>(`/notes/${noteId}/projects`)

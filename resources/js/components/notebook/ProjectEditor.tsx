@@ -4,12 +4,13 @@ import ProjectForm from './ProjectForm'
 import ProjectPlan from './ProjectPlan'
 import ProjectLinks from './ProjectLinks'
 import ProjectFiles from './ProjectFiles'
+import ProjectNotes from './ProjectNotes'
 import { useAutosave } from './useAutosave'
 
 interface Props {
     project: NotebookProject
     onSaved: (project: NotebookProject) => void
-    onCounts: (id: number, counts: { tasks_count?: number; done_tasks_count?: number; links_count?: number; files_count?: number }) => void
+    onCounts: (id: number, counts: { tasks_count?: number; done_tasks_count?: number; links_count?: number; files_count?: number; notes_count?: number }) => void
     onTogglePin: (project: NotebookProject) => void
     onDelete: (project: NotebookProject) => void
     onBack: () => void
@@ -84,6 +85,12 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                     <ProjectFiles
                         projectId={project.id}
                         onCount={files_count => onCounts(project.id, { files_count })}
+                    />
+                </div>
+                <div className="mt-8 pt-6 border-t border-sky-500/15">
+                    <ProjectNotes
+                        projectId={project.id}
+                        onCount={notes_count => onCounts(project.id, { notes_count })}
                     />
                 </div>
             </div>
