@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -71,5 +72,12 @@ class NotebookProject extends Model
     public function folders(): HasMany
     {
         return $this->hasMany(ProjectFolder::class)->orderBy('name');
+    }
+
+    public function notes(): BelongsToMany
+    {
+        return $this->belongsToMany(Note::class, 'project_notes', 'notebook_project_id', 'note_id')
+            ->withPivot('created_at')
+            ->select(['notes.id', 'notes.title', 'notes.is_pinned', 'notes.updated_at']);
     }
 }
