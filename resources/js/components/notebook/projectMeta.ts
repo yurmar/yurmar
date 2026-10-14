@@ -1,4 +1,4 @@
-import type { ProjectPriority, ProjectStatus } from '@/api/notebookProjects'
+import type { MilestoneStatus, ProjectPriority, ProjectStatus, TaskStatus } from '@/api/notebookProjects'
 
 export const PROJECT_UNTITLED = 'Без названия'
 
@@ -24,3 +24,16 @@ export function formatProjectDate(iso: string | null) {
     if (!iso) return ''
     return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
 }
+
+export const TASK_STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
+    { value: 'todo', label: 'К выполнению' },
+    { value: 'in_progress', label: 'В работе' },
+    { value: 'done', label: 'Готово' },
+    { value: 'cancelled', label: 'Отменена' },
+]
+
+export const MILESTONE_STATUS_OPTIONS: { value: MilestoneStatus; label: string }[] = [
+    { value: 'todo', label: 'Не начат' },
+    { value: 'in_progress', label: 'В работе' },
+    { value: 'done', label: 'Завершён' },
+]
