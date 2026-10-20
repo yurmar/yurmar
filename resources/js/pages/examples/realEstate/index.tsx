@@ -27,13 +27,13 @@ const JOURNAL = {
         mode: 'egrn' as ImportMode, heading: 'Импорты выписок ЕГРН', action: 'Импорт выписки из ЕГРН',
         numberLabel: 'Кадастровый номер', fileLabel: 'Файл выписки', empty: 'Загрузите первую выписку из ЕГРН, чтобы получить файл .met.',
         text: 'Загрузите PDF выписки — координаты характерных точек границы участка (МСК-38) будут распознаны и выгружены в текстовый файл .met.',
-        sample: '/examples/real-estate/test-vypiska-egrn.pdf',
+        sample: '/demo-files/real-estate/test-vypiska-egrn.pdf',
     },
     cadastre: {
         mode: 'cadastre' as ImportMode, heading: 'Импорты схем расположения ЗУ', action: 'Импорт схемы',
         numberLabel: 'Условный номер', fileLabel: 'Файл схемы', empty: 'Загрузите первую схему расположения ЗУ, чтобы получить файл .met.',
         text: 'Загрузите PDF схемы расположения земельного участка на кадастровом плане территории — координаты характерных точек границы (МСК-38) будут распознаны и выгружены в файл .met.',
-        sample: '/examples/real-estate/test-skhema-uchastka.pdf',
+        sample: '/demo-files/real-estate/test-skhema-uchastka.pdf',
     },
 }
 

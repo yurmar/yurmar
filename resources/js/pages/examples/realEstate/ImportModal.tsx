@@ -17,7 +17,7 @@ const TEXT = {
         hint: 'Раздел «Описание местоположения земельного участка» — координаты характерных точек границы, МСК-38',
         numberLabel: 'Кадастровый номер',
         placeholder: '38:36:000099:200',
-        sample: '/examples/real-estate/test-vypiska-egrn.pdf',
+        sample: '/demo-files/real-estate/test-vypiska-egrn.pdf',
     },
     cadastre: {
         title: 'Импорт схемы расположения ЗУ',
@@ -25,7 +25,7 @@ const TEXT = {
         hint: '«Схема расположения земельного участка на кадастровом плане территории» — координаты характерных точек границы, МСК-38',
         numberLabel: 'Условный номер ЗУ',
         placeholder: '38:36:000099:ЗУ1',
-        sample: '/examples/real-estate/test-skhema-uchastka.pdf',
+        sample: '/demo-files/real-estate/test-skhema-uchastka.pdf',
     },
 } as const
 
