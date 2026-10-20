@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, GripVertical, Trash2 } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -27,12 +27,46 @@ const STATUS_TONE: Record<ProjectTask['status'], string> = {
 
 const small = 'input-field rounded-md px-2 py-1 text-base sm:text-xs'
 
+const COLLAPSED_LINES = 2
+
 export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSave, onDelete, onMove }: Props) {
     const [title, setTitle] = useState(task.title)
     const [dueDate, setDueDate] = useState(task.due_date ?? '')
     const { saveState, schedule, flush } = useAutosave<ProjectTaskPatch>({
         save: patch => onSave(task.id, patch),
     })
+
+    const [expanded, setExpanded] = useState(false)
+    const [overflows, setOverflows] = useState(false)
+    const titleRef = useRef<HTMLTextAreaElement>(null)
+
+    // Высота поля по содержимому; в свёрнутом виде — не больше COLLAPSED_LINES строк.
+    const fitTitle = useCallback(() => {
+        const el = titleRef.current
+        if (!el) return
+        el.style.height = 'auto'
+        const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 20
+        const limit = lineHeight * COLLAPSED_LINES
+        const tooLong = el.scrollHeight > limit + 2
+        setOverflows(tooLong)
+        el.style.height = `${!expanded && tooLong ? limit : el.scrollHeight}px`
+    }, [expanded])
+
+    useLayoutEffect(fitTitle, [fitTitle, title])
+
+    useEffect(() => {
+        const el = titleRef.current
+        if (!el || typeof ResizeObserver === 'undefined') return
+        let width = el.clientWidth
+        const ro = new ResizeObserver(() => {
+            if (el.clientWidth !== width) {
+                width = el.clientWidth
+                fitTitle()
+            }
+        })
+        ro.observe(el)
+        return () => ro.disconnect()
+    }, [fitTitle])
 
     const saveNow = (patch: ProjectTaskPatch) => {
         schedule(patch)
@@ -55,7 +89,7 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
                 isDragging ? 'opacity-60 shadow-lg relative z-10' : ''
             }`}
         >
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
                 <button
                     type="button"
                     {...attributes}
@@ -72,18 +106,32 @@ export default function ProjectTaskRow({ task, milestones, isFirst, isLast, onSa
                     className="w-4 h-4 accent-sky-500 flex-shrink-0"
                     aria-label="Задача выполнена"
                 />
-                <input
-                    value={title}
-                    onChange={e => {
-                        setTitle(e.target.value)
-                        schedule({ title: e.target.value })
-                    }}
-                    placeholder="Название задачи"
-                    maxLength={255}
-                    className={`flex-1 min-w-0 bg-transparent text-base sm:text-sm focus:outline-none transition-colors ${
-                        done || cancelled ? 'text-muted-foreground/60' : 'text-foreground font-medium'
-                    } ${saveState === 'error' ? 'underline decoration-red-400' : ''}`}
-                />
+                <div className="flex-1 min-w-0">
+                    <textarea
+                        ref={titleRef}
+                        rows={1}
+                        value={title}
+                        onChange={e => {
+                            setTitle(e.target.value.replace(/\n/g, ' '))
+                            schedule({ title: e.target.value.replace(/\n/g, ' ') })
+                        }}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() } }}
+                        placeholder="Название задачи"
+                        maxLength={255}
+                        className={`block w-full resize-none overflow-hidden bg-transparent text-base sm:text-sm focus:outline-none transition-colors ${
+                            done || cancelled ? 'text-muted-foreground/60' : 'text-foreground font-medium'
+                        } ${saveState === 'error' ? 'underline decoration-red-400' : ''}`}
+                    />
+                    {(overflows || expanded) && (
+                        <button
+                            type="button"
+                            onClick={() => setExpanded(v => !v)}
+                            className="text-xs text-sky-500 hover:text-sky-400"
+                        >
+                            {expanded ? 'Свернуть' : 'Далее'}
+                        </button>
+                    )}
+                </div>
                 <div className="flex items-center flex-shrink-0">
                     <button
                         type="button"
