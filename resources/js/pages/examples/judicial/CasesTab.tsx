@@ -5,6 +5,7 @@ import {
     mainCourt, mainNumber, shift, shortName, sphereName, todayIso, withHistory,
     type Case, type Role, type Section, type Status,
 } from './data'
+import ExportButtons from './ExportButtons'
 import { BTN, BTN_GHOST, Dot, Empty, FIELD, Field, Segmented, Sheet, StatTile, StatusBadge, TD, TR, Table, type Ctx } from './ui'
 
 type SortField = 'receipt' | 'task'
@@ -101,7 +102,10 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
                     onChange={setSection}
                     options={(Object.keys(SECTION_LABEL) as Section[]).map(s => ({ id: s, label: SECTION_LABEL[s] }))}
                 />
-                <button type="button" className={BTN} onClick={() => setCreating(true)}><FilePlus2 size={15} /> Новое дело</button>
+                <div className="flex flex-wrap items-center gap-2">
+                    <ExportButtons formats={['excel', 'pdf']} what="список дел с учётом текущих фильтров" />
+                    <button type="button" className={BTN} onClick={() => setCreating(true)}><FilePlus2 size={15} /> Новое дело</button>
+                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">

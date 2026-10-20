@@ -5,6 +5,7 @@ import {
     COMPANIES, EXECUTORS, OUTCOME_LABEL, SPHERES, STATUS_LABEL, calcFin, daysBetween, fmtDate, fmtRub, isOverdue, mainNumber, shortName, todayIso,
     type Outcome, type Status,
 } from './data'
+import ExportButtons from './ExportButtons'
 import { CARD, StatTile, StatusBadge, TD, TR, Table, type Ctx } from './ui'
 
 const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#64748b', '#06b6d4', '#f97316']
@@ -99,6 +100,9 @@ export default function DashboardTab({ ctx }: { ctx: Ctx }) {
 
     return (
         <div className="space-y-5">
+            <div className="flex flex-wrap justify-end gap-2">
+                <ExportButtons formats={['excel', 'pdf', 'pptx']} what="сводные показатели и графики дашборда" />
+            </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                 <StatTile title="Всего дел" icon={Scale} value={d.total} />
                 <StatTile title="В работе" icon={Hourglass} value={d.active} />

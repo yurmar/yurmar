@@ -6,6 +6,7 @@ import {
     deadlineColor, withHistory,
     type Case, type InstanceType, type Outcome, type PartyRole, type Status, type TransferTarget,
 } from './data'
+import ExportButtons from './ExportButtons'
 import { BTN, BTN_DANGER_ICON, BTN_GHOST, Badge, CARD, Dot, FIELD, Field, StatusBadge, type Ctx } from './ui'
 
 function Card({ title, icon: Icon, action, children }: { title: string; icon: typeof Gavel; action?: ReactNode; children: ReactNode }) {
@@ -94,7 +95,10 @@ export default function CaseDetail({ ctx, caseId }: { ctx: Ctx; caseId: number }
 
     return (
         <div className="space-y-5">
-            <button type="button" className={BTN_GHOST} onClick={() => ctx.openCase(null)}><ArrowLeft size={15} /> К списку дел</button>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <button type="button" className={BTN_GHOST} onClick={() => ctx.openCase(null)}><ArrowLeft size={15} /> К списку дел</button>
+                <div className="flex flex-wrap gap-2"><ExportButtons formats={['pdf']} what="карточка дела со всеми инстанциями, участниками и историей" /></div>
+            </div>
 
             <section className={`${CARD} p-5 sm:p-6`}>
                 <div className="flex flex-wrap items-center gap-2">
