@@ -37,6 +37,14 @@ const JOURNAL = {
     },
 }
 
+const TAB_KEY = 'real-estate-tab'
+const readTab = (): Tab => {
+    try {
+        const v = localStorage.getItem(TAB_KEY)
+        return TABS.some(t => t.id === v) ? (v as Tab) : 'egrn'
+    } catch { return 'egrn' }
+}
+
 const VIEW_KEY = 'real-estate-journal-view'
 const readView = (): 'table' | 'cards' => {
     try { return localStorage.getItem(VIEW_KEY) === 'cards' ? 'cards' : 'table' } catch { return 'table' }
@@ -165,7 +173,11 @@ export default function RealEstateExample() {
     const [objects, setObjects] = useState<PropertyObject[]>(initialObjects)
     const [egrn, setEgrn] = useState<ImportRecord[]>(initialEgrn)
     const [cadastre, setCadastre] = useState<ImportRecord[]>(initialCadastre)
-    const [tab, setTab] = useState<Tab>('egrn')
+    const [tab, setTabState] = useState<Tab>(readTab)
+    const setTab = (t: Tab) => {
+        setTabState(t)
+        try { localStorage.setItem(TAB_KEY, t) } catch { /* без хранилища вкладка живёт до перезагрузки */ }
+    }
 
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all')
