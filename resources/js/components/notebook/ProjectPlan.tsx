@@ -69,6 +69,23 @@ const collisionDetection: CollisionDetection = args => {
     return closestCorners({ ...args, droppableContainers: containers })
 }
 
+const collapsedKey = (projectId: number) => `notebook-project-${projectId}-collapsed-milestones`
+
+const readCollapsed = (projectId: number): Set<number> => {
+    try {
+        const raw = JSON.parse(localStorage.getItem(collapsedKey(projectId)) ?? '[]')
+        return new Set(Array.isArray(raw) ? raw.filter((x): x is number => typeof x === 'number') : [])
+    } catch {
+        return new Set()
+    }
+}
+
+const writeCollapsed = (projectId: number, ids: Set<number>) => {
+    try {
+        localStorage.setItem(collapsedKey(projectId), JSON.stringify([...ids]))
+    } catch { /* хранилище недоступно — состояние просто не запомнится */ }
+}
+
 export const progressOf = (tasks: ProjectTask[]) => {
     const counted = tasks.filter(t => t.status !== 'cancelled')
     const done = counted.filter(t => t.status === 'done').length
@@ -228,7 +245,7 @@ export default function ProjectPlan({ projectId, onCounts, onImported }: Props) 
     const [tasks, setTasks] = useState<ProjectTask[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
-    const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+    const [collapsed, setCollapsed] = useState<Set<number>>(() => readCollapsed(projectId))
     const [newMilestoneId, setNewMilestoneId] = useState<number | null>(null)
     const [milestoneToDelete, setMilestoneToDelete] = useState<ProjectMilestone | null>(null)
     const [taskToDelete, setTaskToDelete] = useState<ProjectTask | null>(null)
@@ -307,6 +324,7 @@ export default function ProjectPlan({ projectId, onCounts, onImported }: Props) 
             const next = new Set(prev)
             if (next.has(id)) next.delete(id)
             else next.add(id)
+            writeCollapsed(projectId, next)
             return next
         })
 
