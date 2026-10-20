@@ -27,15 +27,28 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
     })
     const [techs, setTechs] = useState<string[]>(project.technologies ?? [])
     const [techInput, setTechInput] = useState('')
-    const [pathCopied, setPathCopied] = useState(false)
+    const [copiedKey, setCopiedKey] = useState<'short_name' | 'local_path' | null>(null)
 
-    const copyPath = async () => {
+    const copyField = async (key: 'short_name' | 'local_path') => {
         try {
-            await navigator.clipboard.writeText(form.local_path)
-            setPathCopied(true)
-            setTimeout(() => setPathCopied(false), 1500)
+            await navigator.clipboard.writeText(form[key])
+            setCopiedKey(key)
+            setTimeout(() => setCopiedKey(null), 1500)
         } catch { /* буфер обмена недоступен */ }
     }
+
+    const copyButton = (key: 'short_name' | 'local_path', title: string) => (
+        <button
+            type="button"
+            onClick={() => copyField(key)}
+            disabled={!form[key]}
+            title={title}
+            aria-label={title}
+            className="inline-flex items-center justify-center h-9 w-9 flex-shrink-0 rounded-lg border border-sky-500/30 text-sky-500 hover:bg-sky-500/10 disabled:opacity-40"
+        >
+            {copiedKey === key ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+        </button>
+    )
     const nameRef = useRef<HTMLInputElement>(null)
     const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
@@ -106,13 +119,16 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
 
             <div>
                 <label className={label}>Короткое название</label>
-                <input
-                    value={form.short_name}
-                    onChange={e => set('short_name', e.target.value)}
-                    placeholder="Например, yurmar"
-                    maxLength={50}
-                    className={field}
-                />
+                <div className="flex items-center gap-2">
+                    <input
+                        value={form.short_name}
+                        onChange={e => set('short_name', e.target.value)}
+                        placeholder="Например, yurmar"
+                        maxLength={50}
+                        className={field}
+                    />
+                    {copyButton('short_name', 'Скопировать название')}
+                </div>
                 {err('short_name')}
             </div>
 
@@ -174,15 +190,7 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
                         maxLength={1024}
                         className={field}
                     />
-                    <button
-                        type="button"
-                        onClick={copyPath}
-                        disabled={!form.local_path}
-                        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-sky-500/30 text-sky-500 text-sm font-medium whitespace-nowrap hover:bg-sky-500/10 disabled:opacity-40"
-                    >
-                        {pathCopied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                        {pathCopied ? 'Скопировано' : 'Копировать'}
-                    </button>
+                    {copyButton('local_path', 'Скопировать путь')}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">Справочная строка: браузер не открывает каталоги.</p>
                 {err('local_path')}
