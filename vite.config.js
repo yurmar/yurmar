@@ -16,6 +16,16 @@ export default defineConfig({
             '@': path.resolve('./resources/js'),
         },
     },
+    // тяжёлые библиотеки импорта PDF грузятся лениво — без явного списка Vite находит их
+    // уже в работе, пере-оптимизирует и перезагружает страницу посреди импорта
+    optimizeDeps: {
+        include: [
+            'pdfjs-dist/legacy/build/pdf.mjs',
+            'pdfjs-dist/legacy/build/pdf.worker.mjs',
+            'tesseract.js',
+            'proj4',
+        ],
+    },
     build: {
         rollupOptions: {
             output: {
