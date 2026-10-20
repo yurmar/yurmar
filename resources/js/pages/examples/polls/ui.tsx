@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import type { PollStatus } from './data'
@@ -33,6 +33,14 @@ export function Sheet({ title, onClose, children, footer }: {
     children: React.ReactNode
     footer?: React.ReactNode
 }) {
+    const bodyRef = useRef<HTMLDivElement>(null)
+    // новая модалка всегда открывается с начала (автофокус поля/карты внутри не должен прокручивать её)
+    useEffect(() => {
+        bodyRef.current?.scrollTo(0, 0)
+        const t = setTimeout(() => bodyRef.current?.scrollTo(0, 0), 150)
+        return () => clearTimeout(t)
+    }, [])
+
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
         document.addEventListener('keydown', onKey)
@@ -51,7 +59,7 @@ export function Sheet({ title, onClose, children, footer }: {
                         <X size={16} />
                     </button>
                 </div>
-                <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4 sm:px-6 sm:pb-6">{children}</div>
+                <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4 sm:px-6 sm:pb-6">{children}</div>
                 {footer && <div className="flex flex-shrink-0 justify-end gap-2 border-t border-border px-5 py-3 sm:px-6">{footer}</div>}
             </div>
         </div>,
