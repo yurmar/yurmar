@@ -32,6 +32,7 @@ const PollsExample = lazy(() => import('@/pages/examples/polls'))
 const TechSupportExample = lazy(() => import('@/pages/examples/techSupport'))
 const EventsPlanExample = lazy(() => import('@/pages/examples/eventsPlan'))
 const IncidentMonitoringExample = lazy(() => import('@/pages/examples/incidentMonitoring'))
+const RealEstateExample = lazy(() => import('@/pages/examples/realEstate'))
 const TodoList = lazy(() => import('@/pages/todo'))
 const TodoDayPage = lazy(() => import('@/pages/todo/day'))
 const TodoGeneralPage = lazy(() => import('@/pages/todo/general'))
@@ -78,6 +79,7 @@ export const router = createBrowserRouter([
             { path: 'examples/tech-support', element: <Suspense fallback={fallback}><TechSupportExample /></Suspense> },
             { path: 'examples/events-plan', element: <Suspense fallback={fallback}><EventsPlanExample /></Suspense> },
             { path: 'examples/incident-monitoring', element: <Suspense fallback={fallback}><IncidentMonitoringExample /></Suspense> },
+            { path: 'examples/real-estate', element: <Suspense fallback={fallback}><RealEstateExample /></Suspense> },
             { path: 'examples', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: 'examples/:folderId', element: <Suspense fallback={fallback}><Examples /></Suspense> },
             { path: '*', element: <Suspense fallback={fallback}><NotFound /></Suspense> },
