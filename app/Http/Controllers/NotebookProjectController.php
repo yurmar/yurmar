@@ -98,6 +98,7 @@ class NotebookProjectController extends Controller
 
         return $request->validate([
             'name' => 'sometimes|nullable|string|max:255',
+            'short_name' => 'sometimes|nullable|string|max:50',
             'description' => 'sometimes|nullable|string|max:20000',
             'status' => ['sometimes', Rule::in(NotebookProject::STATUSES)],
             'priority' => ['sometimes', Rule::in(NotebookProject::PRIORITIES)],

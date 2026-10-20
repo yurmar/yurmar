@@ -99,6 +99,7 @@ export interface NoteProjectRef {
 export interface NotebookProject {
     id: number
     name: string
+    short_name: string | null
     description: string | null
     status: ProjectStatus
     priority: ProjectPriority
@@ -126,7 +127,7 @@ export interface NotebookProject {
 export type NotebookProjectPatch = Partial<
     Pick<
         NotebookProject,
-        | 'name' | 'description' | 'status' | 'priority' | 'local_path' | 'repository_url'
+        | 'name' | 'short_name' | 'description' | 'status' | 'priority' | 'local_path' | 'repository_url'
         | 'technologies' | 'start_date' | 'deadline' | 'is_pinned'
     >
 >

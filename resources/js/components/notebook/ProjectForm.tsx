@@ -16,6 +16,7 @@ const field = 'w-full input-field rounded-lg px-3 py-2 text-base sm:text-sm'
 export default function ProjectForm({ project, onChange, errors, autoFocusName }: Props) {
     const [form, setForm] = useState({
         name: project.name,
+        short_name: project.short_name ?? '',
         description: project.description ?? '',
         status: project.status,
         priority: project.priority,
@@ -64,7 +65,7 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
 
     const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
         setForm(prev => ({ ...prev, [key]: value }))
-        const nullable = ['description', 'local_path', 'repository_url', 'start_date', 'deadline']
+        const nullable = ['short_name', 'description', 'local_path', 'repository_url', 'start_date', 'deadline']
         onChange({ [key]: nullable.includes(key) && value === '' ? null : value } as NotebookProjectPatch)
     }
 
@@ -101,6 +102,18 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
                     className="w-full bg-transparent text-xl font-bold text-foreground placeholder-muted-foreground/50 focus:outline-none text-base sm:text-xl"
                 />
                 {err('name')}
+            </div>
+
+            <div>
+                <label className={label}>Короткое название</label>
+                <input
+                    value={form.short_name}
+                    onChange={e => set('short_name', e.target.value)}
+                    placeholder="Например, yurmar"
+                    maxLength={50}
+                    className={field}
+                />
+                {err('short_name')}
             </div>
 
             <div>
