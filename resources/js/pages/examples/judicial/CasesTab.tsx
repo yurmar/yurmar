@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { AlarmClock, ArrowDown, ArrowUp, CalendarDays, Eye, FilePlus2, Hourglass, FileCheck2, Scale, Search } from 'lucide-react'
+import { AlarmClock, ArrowDown, ArrowUp, CalendarDays, Eye, FilePlus2, Hourglass, FileCheck2, Scale, Search, SlidersHorizontal, X } from 'lucide-react'
 import {
     COMPANIES, EXECUTORS, PROCEEDINGS, ROLE_LABEL, SECTION_LABEL, SPHERES, STATUS_LABEL, companyName, daysBetween, emptyInstance, fmtDate, isOverdue,
     mainCourt, mainNumber, shift, shortName, sphereName, todayIso, withHistory,
@@ -9,6 +9,8 @@ import ExportButtons from './ExportButtons'
 import { BTN, BTN_GHOST, Dot, Empty, FIELD, Field, Segmented, Sheet, StatTile, StatusBadge, TD, TR, Table, type Ctx } from './ui'
 
 type SortField = 'receipt' | 'task'
+
+const emptyAdv = { proceeding: '', from: '', to: '', court: '', judge: '', party: '' }
 
 const emptyForm = () => ({
     number: '', court: '', subject: '', sphereId: 1, proceeding: 'АПК', receiptDate: todayIso(), role: 'plaintiff' as Role,
@@ -27,6 +29,8 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
     const [sortBy, setSortBy] = useState<SortField>('receipt')
     const [desc, setDesc] = useState(true)
     const [creating, setCreating] = useState(false)
+    const [showAdvanced, setShowAdvanced] = useState(false)
+    const [adv, setAdv] = useState(emptyAdv)
     const [form, setForm] = useState(emptyForm)
 
     const inSection = useMemo(() => db.cases.filter(c => c.section === section), [db.cases, section])
@@ -55,9 +59,20 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
             if (special === 'control' && !(c.directorControl && c.status !== 'terminated')) return false
             if (special === 'soon' && !(c.status !== 'terminated' && tiles.soonFn(c))) return false
             if (q) {
-                const hay = `${c.subject} ${c.instances.map(i => i.number).join(' ')} ${c.parties.map(p => p.name).join(' ')}`.toLowerCase()
+                // как в оригинале: № дела (любой инстанции), истец, ответчик, предмет спора
+                const hay = [
+                    c.subject, ...c.instances.map(i => i.number), ...c.extraNumbers,
+                    ...c.parties.filter(p => p.role === 'plaintiff' || p.role === 'defendant').map(p => p.name),
+                ].join(' ').toLowerCase()
                 if (!hay.includes(q)) return false
             }
+            const has = (v: string, part: string) => v.toLowerCase().includes(part.trim().toLowerCase())
+            if (adv.proceeding && !has(c.proceeding, adv.proceeding)) return false
+            if (adv.from && c.receiptDate < adv.from) return false
+            if (adv.to && c.receiptDate > adv.to) return false
+            if (adv.court && !c.instances.some(i => has(i.court, adv.court))) return false
+            if (adv.judge && !c.instances.some(i => has(i.judge, adv.judge))) return false
+            if (adv.party && !c.parties.some(p => has(`${p.name} ${p.inn}`, adv.party))) return false
             return true
         })
         const dir = desc ? -1 : 1
@@ -66,7 +81,7 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
             const ax = a.currentTaskDate ?? '9999', bx = b.currentTaskDate ?? '9999'
             return ax.localeCompare(bx) * dir
         })
-    }, [inSection, search, sphere, status, executor, company, special, sortBy, desc, tiles])
+    }, [inSection, search, sphere, status, executor, company, special, adv, sortBy, desc, tiles])
 
     const submit = () => {
         if (!form.subject.trim()) { ctx.notify('Укажите предмет спора'); return }
@@ -92,7 +107,8 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
     }
 
     const toggleSpecial = (v: typeof special) => setSpecial(s => (s === v ? '' : v))
-    const hasFilters = !!(search || sphere || status || executor || company || special)
+    const advActive = Object.values(adv).some(Boolean)
+    const hasFilters = !!(advActive || search || sphere || status || executor || company || special)
 
     return (
         <div className="space-y-5">
@@ -120,9 +136,22 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
             <div className="card-block rounded-2xl p-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
                     <div className="relative lg:col-span-2">
-                        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <input className={`${FIELD} pl-9`} placeholder="Номер, предмет, участник…" value={search} onChange={e => setSearch(e.target.value)} />
+                        <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            className={`${FIELD} !rounded-full pl-10 pr-9`}
+                            placeholder="Поиск по № дела, истцу, ответчику, предмету спора..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+                        {search && (
+                            <button type="button" aria-label="Очистить поиск" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setSearch('')}>
+                                <X size={15} />
+                            </button>
+                        )}
                     </div>
+                    <button type="button" className={`${BTN_GHOST} lg:col-span-1`} onClick={() => setShowAdvanced(true)}>
+                        <SlidersHorizontal size={15} /> Поиск по реквизитам{advActive && ' •'}
+                    </button>
                     <select className={FIELD} value={sphere} onChange={e => setSphere(e.target.value)} aria-label="Сфера">
                         <option value="">Все сферы</option>
                         {SPHERES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -153,7 +182,7 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
                         </select>
                         <button type="button" className={BTN_GHOST} onClick={() => setDesc(v => !v)}>{desc ? <ArrowDown size={14} /> : <ArrowUp size={14} />}{desc ? 'Сначала новые' : 'Сначала старые'}</button>
                         {hasFilters && (
-                            <button type="button" className={BTN_GHOST} onClick={() => { setSearch(''); setSphere(''); setStatus(''); setExecutor(''); setCompany(''); setSpecial('') }}>Сбросить</button>
+                            <button type="button" className={BTN_GHOST} onClick={() => { setSearch(''); setSphere(''); setStatus(''); setExecutor(''); setCompany(''); setSpecial(''); setAdv(emptyAdv) }}>Сбросить</button>
                         )}
                     </div>
                 </div>
@@ -229,6 +258,23 @@ export default function CasesTab({ ctx }: { ctx: Ctx }) {
                             <input type="checkbox" className="h-4 w-4" checked={form.directorControl} onChange={e => setForm({ ...form, directorControl: e.target.checked })} />
                             Резонансное дело — на контроле генерального директора
                         </label>
+                    </div>
+                </Sheet>
+            )}
+            {showAdvanced && (
+                <Sheet
+                    title={<h2 className="flex items-center gap-2 text-lg font-semibold"><Search size={17} className="text-violet-500" />Поиск по реквизитам</h2>}
+                    onClose={() => setShowAdvanced(false)}
+                    footer={<><button type="button" className={BTN_GHOST} onClick={() => setAdv(emptyAdv)}>Сбросить</button><button type="button" className={BTN} onClick={() => setShowAdvanced(false)}>Применить</button></>}
+                >
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="Вид судопроизводства" className="sm:col-span-2"><input className={FIELD} list="jd-proceedings" value={adv.proceeding} onChange={e => setAdv({ ...adv, proceeding: e.target.value })} /></Field>
+                        <datalist id="jd-proceedings">{PROCEEDINGS.map(p => <option key={p} value={p} />)}</datalist>
+                        <Field label="Дата поступления с"><input type="date" className={FIELD} value={adv.from} onChange={e => setAdv({ ...adv, from: e.target.value })} /></Field>
+                        <Field label="по"><input type="date" className={FIELD} value={adv.to} onChange={e => setAdv({ ...adv, to: e.target.value })} /></Field>
+                        <Field label="Суд" className="sm:col-span-2"><input className={FIELD} value={adv.court} onChange={e => setAdv({ ...adv, court: e.target.value })} /></Field>
+                        <Field label="Судья" className="sm:col-span-2"><input className={FIELD} value={adv.judge} onChange={e => setAdv({ ...adv, judge: e.target.value })} /></Field>
+                        <Field label="Участник дела (наименование или ИНН)" className="sm:col-span-2"><input className={FIELD} value={adv.party} onChange={e => setAdv({ ...adv, party: e.target.value })} /></Field>
                     </div>
                 </Sheet>
             )}
