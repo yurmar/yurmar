@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import { Check, Copy, X } from 'lucide-react'
 import type { NotebookProject, NotebookProjectPatch } from '@/api/notebookProjects'
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from './projectMeta'
 
@@ -26,6 +26,15 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
     })
     const [techs, setTechs] = useState<string[]>(project.technologies ?? [])
     const [techInput, setTechInput] = useState('')
+    const [pathCopied, setPathCopied] = useState(false)
+
+    const copyPath = async () => {
+        try {
+            await navigator.clipboard.writeText(form.local_path)
+            setPathCopied(true)
+            setTimeout(() => setPathCopied(false), 1500)
+        } catch { /* буфер обмена недоступен */ }
+    }
     const nameRef = useRef<HTMLInputElement>(null)
     const descriptionRef = useRef<HTMLTextAreaElement>(null)
 
@@ -144,13 +153,24 @@ export default function ProjectForm({ project, onChange, errors, autoFocusName }
 
             <div>
                 <label className={label}>Локальный путь</label>
-                <input
-                    value={form.local_path}
-                    onChange={e => set('local_path', e.target.value)}
-                    placeholder="/Users/me/Projects/my-project"
-                    maxLength={1024}
-                    className={field}
-                />
+                <div className="flex items-center gap-2">
+                    <input
+                        value={form.local_path}
+                        onChange={e => set('local_path', e.target.value)}
+                        placeholder="/Users/me/Projects/my-project"
+                        maxLength={1024}
+                        className={field}
+                    />
+                    <button
+                        type="button"
+                        onClick={copyPath}
+                        disabled={!form.local_path}
+                        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-sky-500/30 text-sky-500 text-sm font-medium whitespace-nowrap hover:bg-sky-500/10 disabled:opacity-40"
+                    >
+                        {pathCopied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                        {pathCopied ? 'Скопировано' : 'Копировать'}
+                    </button>
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">Справочная строка: браузер не открывает каталоги.</p>
                 {err('local_path')}
             </div>
