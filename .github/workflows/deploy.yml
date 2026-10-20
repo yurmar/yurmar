@@ -20,6 +20,8 @@ jobs:
           cache: npm
 
       - name: Build frontend
+        env:
+          VITE_YANDEX_MAPS_KEY: ${{ secrets.VITE_YANDEX_MAPS_KEY }}
         run: |
           npm ci
           npm run build
