@@ -2,7 +2,9 @@ import "@/pages/examples/realEstate/lib/iteratorShim";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { EgrnPoint } from "@/pages/examples/realEstate/lib/egrnPdfParse";
 
-pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(new URL("./pdfWorker.ts", import.meta.url), { type: "module" });
+// Воркер pdf.js подключается в основной поток (globalThis.pdfjsWorker): в dev страница (Laravel :8000) и Vite (:5173)
+// на разных origin, и браузер запрещает создавать Worker со скриптом с чужого origin. Для небольших PDF этого достаточно.
+import "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
 export interface ParsedScheme {
     conditionalNumber: string | null;
