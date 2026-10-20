@@ -92,13 +92,23 @@ export const progressOf = (tasks: ProjectTask[]) => {
     return { total: counted.length, done, percent: counted.length ? Math.round((done / counted.length) * 100) : 0 }
 }
 
+// Цвет этапа по проценту завершения: нет задач/0% — нейтральный, до 50% — янтарный, до 100% — голубой, 100% — зелёный.
+const progressTone = (tasks: ProjectTask[]) => {
+    const { total, percent } = progressOf(tasks)
+    if (total === 0 || percent === 0) return { card: 'border-sky-500/20', track: 'bg-sky-500/15', bar: 'bg-sky-500' }
+    if (percent < 50) return { card: 'border-amber-500/40 bg-amber-500/5', track: 'bg-amber-500/15', bar: 'bg-amber-500' }
+    if (percent < 100) return { card: 'border-sky-500/40 bg-sky-500/5', track: 'bg-sky-500/15', bar: 'bg-sky-500' }
+    return { card: 'border-emerald-500/40 bg-emerald-500/5', track: 'bg-emerald-500/15', bar: 'bg-emerald-500' }
+}
+
 function ProgressBar({ tasks }: { tasks: ProjectTask[] }) {
     const { total, done, percent } = progressOf(tasks)
     if (total === 0) return <span className="text-xs text-muted-foreground">нет задач</span>
+    const tone = progressTone(tasks)
     return (
         <div className="flex items-center gap-2 min-w-[120px]">
-            <div className="h-1.5 flex-1 rounded-full bg-sky-500/15 overflow-hidden">
-                <div className="h-full bg-sky-500" style={{ width: `${percent}%` }} />
+            <div className={`h-1.5 flex-1 rounded-full overflow-hidden ${tone.track}`}>
+                <div className={`h-full ${tone.bar}`} style={{ width: `${percent}%` }} />
             </div>
             <span className="text-xs text-muted-foreground whitespace-nowrap">{done}/{total} · {percent}%</span>
         </div>
@@ -150,9 +160,10 @@ function TaskGroup({ milestoneId, taskIds, children }: { milestoneId: number | n
 }
 
 function SortableMilestone({
-    id, children,
+    id, tone, children,
 }: {
     id: number
+    tone: string
     children: (handle: ReactNode) => ReactNode
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -174,7 +185,7 @@ function SortableMilestone({
         <div
             ref={setNodeRef}
             style={{ transform: CSS.Transform.toString(transform), transition }}
-            className={`rounded-xl border border-sky-500/20 p-3 space-y-3 ${isDragging ? 'opacity-60 shadow-lg relative z-10' : ''}`}
+            className={`rounded-xl border p-3 space-y-3 transition-colors ${tone} ${isDragging ? 'opacity-60 shadow-lg relative z-10' : ''}`}
         >
             {children(handle)}
         </div>
@@ -516,7 +527,7 @@ export default function ProjectPlan({ projectId, onCounts, onImported }: Props) 
                 <SortableContext items={milestones.map(m => `m-${m.id}`)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-4">
                         {milestones.map((m, mi) => (
-                            <SortableMilestone key={m.id} id={m.id}>
+                            <SortableMilestone key={m.id} id={m.id} tone={progressTone(tasksOf(m.id)).card}>
                                 {handle => (
                                     <>
                                         <MilestoneHeader
