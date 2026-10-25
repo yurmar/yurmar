@@ -10,11 +10,19 @@ class ExampleFolderController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(ExampleFolder::orderBy('sort_order')->get());
+        $query = ExampleFolder::orderBy('sort_order');
+
+        if (! auth('sanctum')->check()) {
+            $query->where('is_active', true);
+        }
+
+        return response()->json($query->get());
     }
 
     public function show(ExampleFolder $exampleFolder): JsonResponse
     {
+        abort_unless($exampleFolder->is_active || auth('sanctum')->check(), 404);
+
         return response()->json($exampleFolder->load('examples'));
     }
 
@@ -27,6 +35,7 @@ class ExampleFolderController extends Controller
             'color'           => 'nullable|string|max:50',
             'screenshot_path' => 'nullable|string',
             'url'             => 'nullable|string',
+            'is_active'       => 'sometimes|boolean',
             'sort_order'      => 'nullable|integer',
         ]);
 
@@ -42,6 +51,7 @@ class ExampleFolderController extends Controller
             'color'           => 'nullable|string|max:50',
             'screenshot_path' => 'nullable|string',
             'url'             => 'nullable|string',
+            'is_active'       => 'sometimes|boolean',
             'sort_order'      => 'nullable|integer',
         ]);
 

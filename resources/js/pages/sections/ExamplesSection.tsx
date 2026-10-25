@@ -80,6 +80,17 @@ export default function ExamplesSection() {
         setFolders(prev => prev.filter(f => f.id !== id))
     }
 
+    const handleToggleActive = async (folder: ExampleFolder, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        try {
+            const r = await apiUpdateFolder(folder.id, { name: folder.name, is_active: !folder.is_active })
+            setFolders(prev => prev.map(f => f.id === folder.id ? r.data : f))
+        } catch (err) {
+            console.error('Ошибка смены активности:', err)
+        }
+    }
+
     const handleCardClick = (folder: ExampleFolder) => {
         const url = folder.url
         if (url) {
@@ -136,6 +147,7 @@ export default function ExamplesSection() {
                                     onClick={handleCardClick}
                                     onEdit={openEdit}
                                     onDelete={handleDelete}
+                                    onToggleActive={handleToggleActive}
                                 />
                             ))}
                         </AnimatePresence>

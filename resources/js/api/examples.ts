@@ -8,6 +8,7 @@ export interface ExampleFolder {
     color: string | null
     screenshot_path: string | null
     url: string | null
+    is_active: boolean
     sort_order: number
     examples?: ExampleItem[]
 }

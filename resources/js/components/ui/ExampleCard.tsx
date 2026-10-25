@@ -43,6 +43,7 @@ interface ExampleCardProps {
     onClick: (folder: ExampleFolder) => void
     onEdit: (folder: ExampleFolder, e: React.MouseEvent) => void
     onDelete: (id: number, e: React.MouseEvent) => void
+    onToggleActive?: (folder: ExampleFolder, e: React.MouseEvent) => void
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -55,6 +56,7 @@ export default function ExampleCard({
     onClick,
     onEdit,
     onDelete,
+    onToggleActive,
 }: ExampleCardProps) {
     const g          = getGradient(folder.color, index)
     const screenshot = folder.screenshot_path
@@ -67,7 +69,7 @@ export default function ExampleCard({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ delay: index * 0.1, duration: 0.5 }}
             whileHover={{ y: -6, transition: { duration: 0.22 } }}
-            className="relative group cursor-pointer"
+            className={`relative group cursor-pointer ${folder.is_active ? '' : 'opacity-60'}`}
             onClick={() => onClick(folder)}
         >
             {/* ── Visual card ── */}
@@ -119,6 +121,13 @@ export default function ExampleCard({
                     </div>
                 )}
 
+                {/* Inactive badge */}
+                {isAuth && !folder.is_active && (
+                    <span className="absolute top-3 left-3 px-2 py-0.5 rounded-md text-[11px] font-medium bg-black/60 text-white/80">
+                        Неактивна
+                    </span>
+                )}
+
                 {/* Hover arrow */}
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
                     {url && isExternal(url)
@@ -134,6 +143,14 @@ export default function ExampleCard({
             {/* Admin controls */}
             {isAuth && (
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    {onToggleActive && (
+                        <button
+                            onClick={e => onToggleActive(folder, e)}
+                            className={`h-7 px-2 rounded-lg text-xs font-medium text-white shadow-lg ${folder.is_active ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        >
+                            {folder.is_active ? 'Деактивировать' : 'Активировать'}
+                        </button>
+                    )}
                     <button
                         onClick={e => onEdit(folder, e)}
                         className="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center text-white shadow-lg"

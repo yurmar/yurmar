@@ -162,6 +162,17 @@ export default function Examples() {
         }
     }
 
+    const handleToggleActive = async (folder: ExampleFolder, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        try {
+            const r = await apiUpdateFolder(folder.id, { name: folder.name, is_active: !folder.is_active })
+            setFolders(prev => prev.map(f => f.id === folder.id ? r.data : f))
+        } catch (err) {
+            console.error('Ошибка смены активности:', err)
+        }
+    }
+
     // Example CRUD
     const openCreateExample = () => {
         setEditingExample(null)
@@ -281,6 +292,7 @@ export default function Examples() {
                                             onClick={selectFolder}
                                             onEdit={openEditFolder}
                                             onDelete={handleDeleteFolder}
+                                            onToggleActive={handleToggleActive}
                                         />
                                     ))}
                                 </AnimatePresence>
