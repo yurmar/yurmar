@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, ExternalLink, Pencil, Trash2 } from 'lucide-react'
 import type { ExampleFolder } from '@/api/examples'
 
 // ── Gradient palette ───────────────────────────────────────────────────────────
@@ -146,9 +146,10 @@ export default function ExampleCard({
                     {onToggleActive && (
                         <button
                             onClick={e => onToggleActive(folder, e)}
-                            className={`h-7 px-2 rounded-lg text-xs font-medium text-white shadow-lg ${folder.is_active ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            title={folder.is_active ? 'Деактивировать' : 'Активировать'}
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-lg ${folder.is_active ? 'bg-amber-500' : 'bg-emerald-500'}`}
                         >
-                            {folder.is_active ? 'Деактивировать' : 'Активировать'}
+                            {folder.is_active ? <Eye size={11} /> : <EyeOff size={11} />}
                         </button>
                     )}
                     <button
