@@ -37,3 +37,6 @@ export const apiUpdateExample = (folderId: number, id: number, data: Partial<Exa
     client.put<ExampleItem>(`/example-folders/${folderId}/examples/${id}`, data)
 export const apiDeleteExample = (folderId: number, id: number) =>
     client.delete(`/example-folders/${folderId}/examples/${id}`)
+
+export const apiCheckExampleAccess = (path: string) =>
+    client.get<{ allowed: boolean }>('/example-access', { params: { path } })

@@ -19,6 +19,23 @@ class ExampleFolderController extends Controller
         return response()->json($query->get());
     }
 
+    public function access(Request $request): JsonResponse
+    {
+        $path = '/'.trim((string) parse_url((string) $request->query('path'), PHP_URL_PATH), '/');
+
+        $blocked = ! auth('sanctum')->check()
+            && ExampleFolder::where('is_active', false)
+                ->whereNotNull('url')
+                ->get()
+                ->contains(function (ExampleFolder $f) use ($path) {
+                    $url = '/'.trim($f->url, '/');
+
+                    return $path === $url || str_starts_with($path, $url.'/');
+                });
+
+        return response()->json(['allowed' => ! $blocked]);
+    }
+
     public function show(ExampleFolder $exampleFolder): JsonResponse
     {
         abort_unless($exampleFolder->is_active || auth('sanctum')->check(), 404);

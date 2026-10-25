@@ -160,6 +160,7 @@ Route::get('/technologies', [TechnologyController::class, 'index']);
 Route::get('/projects', [ProjectController::class, 'index']);
 Route::get('/projects/{project}', [ProjectController::class, 'show']);
 Route::get('/example-folders', [ExampleFolderController::class, 'index']);
+Route::get('/example-access', [ExampleFolderController::class, 'access']);
 Route::get('/example-folders/{exampleFolder}', [ExampleFolderController::class, 'show']);
 Route::get('/example-folders/{exampleFolder}/examples', [ExampleController::class, 'index']);
 Route::get('/documents', [DocumentController::class, 'index']);
