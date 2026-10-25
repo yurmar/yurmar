@@ -10,13 +10,13 @@ DevOps: Linux, Docker, Nginx, Git
 
 ## Разделы сайта
 
-- [Главная](https://yurmar.ru/)
-- [Обо мне](https://yurmar.ru/#about)
-- [Услуги](https://yurmar.ru/#services)
-- [Достижения](https://yurmar.ru/#achievements)
-- [Технологии](https://yurmar.ru/#technologies)
-- [Контакты](https://yurmar.ru/#contacts)
-- [Блокнот](https://yurmar.ru/notebook)
+- [Главная](https://plusuy.pro/)
+- [Обо мне](https://plusuy.pro/#about)
+- [Услуги](https://plusuy.pro/#services)
+- [Достижения](https://plusuy.pro/#achievements)
+- [Технологии](https://plusuy.pro/#technologies)
+- [Контакты](https://plusuy.pro/#contacts)
+- [Блокнот](https://plusuy.pro/notebook)
 
 ## Контакты
 
