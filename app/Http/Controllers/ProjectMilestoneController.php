@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Services\ProjectJournal;
 
 class ProjectMilestoneController extends Controller
 {
@@ -20,6 +21,7 @@ class ProjectMilestoneController extends Controller
         $data['sort_order'] = ((int) $notebookProject->milestones()->max('sort_order')) + 1;
 
         $milestone = $notebookProject->milestones()->create($data);
+        ProjectJournal::created($notebookProject, 'milestone', $milestone);
 
         return response()->json($milestone->fresh(), 201);
     }
@@ -35,7 +37,9 @@ class ProjectMilestoneController extends Controller
             $data['title'] = $this->title($data['title']);
         }
 
+        $original = $projectMilestone->getRawOriginal();
         $projectMilestone->update($data);
+        ProjectJournal::updated($notebookProject, 'milestone', $projectMilestone, $original);
 
         return response()->json($projectMilestone->fresh());
     }
@@ -46,6 +50,7 @@ class ProjectMilestoneController extends Controller
         $this->ensureBelongs($notebookProject, $projectMilestone);
 
         // Задачи не удаляются: FK nullOnDelete переводит их в «Без этапа».
+        ProjectJournal::deleted($notebookProject, 'milestone', $projectMilestone);
         $projectMilestone->delete();
 
         return response()->json(null, 204);
@@ -69,6 +74,8 @@ class ProjectMilestoneController extends Controller
                 ProjectMilestone::whereKey($id)->update(['sort_order' => $index]);
             }
         });
+
+        ProjectJournal::reordered($notebookProject, 'milestone');
 
         return response()->json($notebookProject->milestones()->get());
     }

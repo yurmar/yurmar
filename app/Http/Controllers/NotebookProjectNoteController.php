@@ -6,6 +6,7 @@ use App\Models\Note;
 use App\Models\NotebookProject;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Services\ProjectJournal;
 
 class NotebookProjectNoteController extends Controller
 {
@@ -22,7 +23,10 @@ class NotebookProjectNoteController extends Controller
         $this->authorize('update', $note);
 
         // Идемпотентно: повторная привязка ничего не меняет.
-        $notebookProject->notes()->syncWithoutDetaching([$note->id => ['created_at' => now()]]);
+        $result = $notebookProject->notes()->syncWithoutDetaching([$note->id => ['created_at' => now()]]);
+        if ($result['attached'] !== []) {
+            ProjectJournal::attached($notebookProject, 'note', $note);
+        }
 
         return response()->json($notebookProject->notes()->where('notes.id', $note->id)->first(), 201);
     }
@@ -33,7 +37,9 @@ class NotebookProjectNoteController extends Controller
         $this->authorize('update', $note);
 
         // Только связь: сама запись остаётся.
-        $notebookProject->notes()->detach($note->id);
+        if ($notebookProject->notes()->detach($note->id) > 0) {
+            ProjectJournal::detached($notebookProject, 'note', $note);
+        }
 
         return response()->json(null, 204);
     }

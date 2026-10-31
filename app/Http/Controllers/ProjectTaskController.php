@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Services\ProjectJournal;
 
 class ProjectTaskController extends Controller
 {
@@ -24,6 +25,7 @@ class ProjectTaskController extends Controller
         }
 
         $task = $notebookProject->tasks()->create($data);
+        ProjectJournal::created($notebookProject, 'task', $task);
 
         return response()->json($task->fresh(), 201);
     }
@@ -45,7 +47,9 @@ class ProjectTaskController extends Controller
                 : null;
         }
 
+        $original = $projectTask->getRawOriginal();
         $projectTask->update($data);
+        ProjectJournal::updated($notebookProject, 'task', $projectTask, $original);
 
         return response()->json($projectTask->fresh());
     }
@@ -55,6 +59,7 @@ class ProjectTaskController extends Controller
         $this->authorize('update', $notebookProject);
         $this->ensureBelongs($notebookProject, $projectTask);
 
+        ProjectJournal::deleted($notebookProject, 'task', $projectTask);
         $projectTask->delete();
 
         return response()->json(null, 204);
@@ -78,6 +83,8 @@ class ProjectTaskController extends Controller
                 ProjectTask::whereKey($id)->update(['sort_order' => $index]);
             }
         });
+
+        ProjectJournal::reordered($notebookProject, 'task');
 
         return response()->json($notebookProject->tasks()->get());
     }

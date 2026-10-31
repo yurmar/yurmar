@@ -7,6 +7,7 @@ import ProjectPlan from './ProjectPlan'
 import ProjectLinks from './ProjectLinks'
 import ProjectFiles from './ProjectFiles'
 import ProjectNotes from './ProjectNotes'
+import ProjectJournal from './ProjectJournal'
 import { useAutosave } from './useAutosave'
 
 interface Props {
@@ -19,7 +20,7 @@ interface Props {
     autoFocusName?: boolean
 }
 
-type TabKey = 'info' | 'plan' | 'links' | 'files' | 'notes'
+type TabKey = 'info' | 'plan' | 'links' | 'files' | 'notes' | 'journal'
 
 const TABS: { value: TabKey; label: string; short?: string; count?: (p: NotebookProject) => number | undefined }[] = [
     { value: 'info', label: 'Общая информация', short: 'Общее' },
@@ -27,6 +28,7 @@ const TABS: { value: TabKey; label: string; short?: string; count?: (p: Notebook
     { value: 'links', label: 'Ссылки', count: p => p.links_count },
     { value: 'files', label: 'Файлы', count: p => p.files_count },
     { value: 'notes', label: 'Записи', count: p => p.notes_count },
+    { value: 'journal', label: 'Журнал' },
 ]
 
 const TAB_STORAGE_KEY = 'notebook_project_tab'
@@ -180,6 +182,11 @@ export default function ProjectEditor({ project, onSaved, onCounts, onTogglePin,
                             projectId={project.id}
                             onCount={files_count => onCounts(project.id, { files_count })}
                         />
+                    </div>
+                )}
+                {visited.has('journal') && (
+                    <div className={tab === 'journal' ? '' : 'hidden'}>
+                        <ProjectJournal projectId={project.id} active={tab === 'journal'} />
                     </div>
                 )}
                 {visited.has('notes') && (

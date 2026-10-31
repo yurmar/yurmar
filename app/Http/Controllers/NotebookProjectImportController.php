@@ -7,6 +7,7 @@ use App\Services\ProjectMarkdownImporter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use App\Services\ProjectJournal;
 
 class NotebookProjectImportController extends Controller
 {
@@ -19,6 +20,8 @@ class NotebookProjectImportController extends Controller
         }
 
         $project = $importer->import($request->user(), $parsed);
+        ProjectJournal::created($project, 'project', $project);
+        ProjectJournal::imported($project, $parsed['totals']);
 
         return response()->json([
             'project' => $project,
@@ -39,6 +42,7 @@ class NotebookProjectImportController extends Controller
         }
 
         $filled = $importer->importInto($notebookProject, $parsed);
+        ProjectJournal::imported($notebookProject, $parsed['totals']);
 
         return response()->json([
             'project' => $notebookProject->fresh(),

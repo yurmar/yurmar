@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Services\ProjectJournal;
 
 class ProjectLinkController extends Controller
 {
@@ -20,6 +21,7 @@ class ProjectLinkController extends Controller
         $data['sort_order'] = ((int) $notebookProject->links()->max('sort_order')) + 1;
 
         $link = $notebookProject->links()->create($data);
+        ProjectJournal::created($notebookProject, 'link', $link);
 
         return response()->json($link->fresh(), 201);
     }
@@ -32,7 +34,9 @@ class ProjectLinkController extends Controller
         $data = $request->validate($this->rules(false));
         $data = $this->normalize($data, $projectLink);
 
+        $original = $projectLink->getRawOriginal();
         $projectLink->update($data);
+        ProjectJournal::updated($notebookProject, 'link', $projectLink, $original);
 
         return response()->json($projectLink->fresh());
     }
@@ -42,6 +46,7 @@ class ProjectLinkController extends Controller
         $this->authorize('update', $notebookProject);
         abort_unless($projectLink->notebook_project_id === $notebookProject->id, 404);
 
+        ProjectJournal::deleted($notebookProject, 'link', $projectLink);
         $projectLink->delete();
 
         return response()->json(null, 204);

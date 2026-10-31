@@ -75,6 +75,11 @@ class NotebookProject extends Model
         return $this->hasMany(ProjectFolder::class)->orderBy('name');
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ProjectActivity::class);
+    }
+
     public function notes(): BelongsToMany
     {
         return $this->belongsToMany(Note::class, 'project_notes', 'notebook_project_id', 'note_id')

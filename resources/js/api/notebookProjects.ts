@@ -241,3 +241,31 @@ export const apiImportProject = (markdown: string) =>
         '/notebook-projects/import',
         { markdown },
     )
+
+export type ActivityAction = 'created' | 'updated' | 'deleted' | 'attached' | 'detached' | 'reordered' | 'imported'
+export type ActivityEntity = 'project' | 'milestone' | 'task' | 'link' | 'file' | 'folder' | 'note'
+
+export interface ActivityChange {
+    field: string
+    from?: unknown
+    to?: unknown
+}
+
+export interface ProjectActivity {
+    id: number
+    action: ActivityAction
+    entity: ActivityEntity
+    entity_id: number | null
+    title: string | null
+    changes: ActivityChange[] | null
+    created_at: string
+}
+
+export interface ActivityPage {
+    data: ProjectActivity[]
+    current_page: number
+    last_page: number
+}
+
+export const apiGetProjectJournal = (projectId: number, page = 1) =>
+    client.get<ActivityPage>(`${planUrl(projectId)}/journal`, { params: { page } })

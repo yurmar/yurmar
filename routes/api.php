@@ -110,6 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notebook-projects', [NotebookProjectController::class, 'store']);
     Route::get('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'show']);
     Route::put('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'update']);
+    Route::get('/notebook-projects/{notebookProject}/journal', [NotebookProjectController::class, 'journal']);
     Route::delete('/notebook-projects/{notebookProject}', [NotebookProjectController::class, 'destroy']);
 
     Route::post('/notebook-projects/{notebookProject}/import-plan', [NotebookProjectImportController::class, 'storeInto']);

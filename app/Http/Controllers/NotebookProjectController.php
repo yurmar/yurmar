@@ -7,6 +7,7 @@ use App\Models\ProjectFolder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Services\ProjectJournal;
 
 class NotebookProjectController extends Controller
 {
@@ -36,6 +37,7 @@ class NotebookProjectController extends Controller
         }
 
         $project = $request->user()->notebookProjects()->create($data);
+        ProjectJournal::created($project, 'project', $project);
 
         return response()->json($project->fresh(), 201);
     }
@@ -68,6 +70,15 @@ class NotebookProjectController extends Controller
         return response()->json($notebookProject);
     }
 
+    public function journal(Request $request, NotebookProject $notebookProject): JsonResponse
+    {
+        $this->authorize('view', $notebookProject);
+
+        $page = $notebookProject->activities()->orderByDesc('id')->paginate(50);
+
+        return response()->json($page);
+    }
+
     public function update(Request $request, NotebookProject $notebookProject): JsonResponse
     {
         $this->authorize('update', $notebookProject);
@@ -78,7 +89,9 @@ class NotebookProjectController extends Controller
             $data['name'] = NotebookProject::UNTITLED;
         }
 
+        $original = $notebookProject->getRawOriginal();
         $notebookProject->update($data);
+        ProjectJournal::updated($notebookProject, 'project', $notebookProject, $original);
 
         return response()->json($notebookProject->fresh());
     }
@@ -87,6 +100,7 @@ class NotebookProjectController extends Controller
     {
         $this->authorize('delete', $notebookProject);
 
+        ProjectJournal::deleted($notebookProject, 'project', $notebookProject);
         $notebookProject->delete();
 
         return response()->json(null, 204);

@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Services\ProjectJournal;
 
 class ProjectFileController extends Controller
 {
@@ -59,6 +60,8 @@ class ProjectFileController extends Controller
             'description' => $data['description'] ?? null,
         ]);
 
+        ProjectJournal::created($notebookProject, 'file', $file);
+
         return response()->json($file->fresh(), 201);
     }
 
@@ -78,7 +81,9 @@ class ProjectFileController extends Controller
             $data['name'] = $name === '' ? $projectFile->original_name : $name;
         }
 
+        $original = $projectFile->getRawOriginal();
         $projectFile->update($data);
+        ProjectJournal::updated($notebookProject, 'file', $projectFile, $original);
 
         return response()->json($projectFile->fresh());
     }
@@ -101,6 +106,7 @@ class ProjectFileController extends Controller
         $this->ensureBelongs($notebookProject, $projectFile);
 
         Storage::disk(ProjectFile::DISK)->delete($projectFile->path);
+        ProjectJournal::deleted($notebookProject, 'file', $projectFile);
         $projectFile->delete();
 
         return response()->json(null, 204);

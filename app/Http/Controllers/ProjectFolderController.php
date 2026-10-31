@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Services\ProjectJournal;
 
 class ProjectFolderController extends Controller
 {
@@ -31,6 +32,8 @@ class ProjectFolderController extends Controller
             'name' => $this->cleanName($data['name']),
             'parent_id' => $data['parent_id'] ?? null,
         ]);
+
+        ProjectJournal::created($notebookProject, 'folder', $folder);
 
         return response()->json($folder->fresh(), 201);
     }
@@ -66,7 +69,9 @@ class ProjectFolderController extends Controller
             throw ValidationException::withMessages(['parent_id' => 'Нельзя переместить папку внутрь самой себя.']);
         }
 
+        $original = $projectFolder->getRawOriginal();
         $projectFolder->update($data);
+        ProjectJournal::updated($notebookProject, 'folder', $projectFolder, $original);
 
         return response()->json($projectFolder->fresh());
     }
@@ -90,6 +95,8 @@ class ProjectFolderController extends Controller
             $files->delete();
             ProjectFolder::whereIn('id', $ids)->delete();
         });
+
+        ProjectJournal::deleted($notebookProject, 'folder', $projectFolder);
 
         return response()->json(null, 204);
     }
